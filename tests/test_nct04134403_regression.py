@@ -274,6 +274,37 @@ def test_element_status_separates_defaults(protocol):
     assert protocol.provenance.prompt_version == "trialist-v2"
 
 
+# --- found in the real trialist-v2 run on Hellbender (qwen3:32b, 2026-10-24) -----------------
+
+
+def test_new_protocols_are_schema_v2(protocol):
+    # The first v2 run on Hellbender wrote "schema_version": 1.
+    assert protocol.schema_version == 2
+    roundtrip = TargetTrialProtocol.model_validate_json(protocol.model_dump_json())
+    assert roundtrip.schema_version == 2
+
+
+def test_within_relation_without_window_and_ungrounded_unit():
+    """qwen3:32b v2 output: E7 kept x_within_t_before_y with no window; I1 gave MAP a unit
+    ("mmHg") the registry never wrote."""
+    e7 = [atom([concept("sepsis", "Condition", "episode of sepsis")],
+               value=value(">", 1, "episode", ">1 episode"),
+               temporal=temporal("x_within_t_before_y", "time_zero", "in hospital admission"))]
+    i1 = [atom([concept("vasopressor", "Drug", "Vasopressor")],
+               value=value(">=", 65, "mmHg", "required to maintain MAP ≥ 65"))]  # fmt: skip
+    answers = iter([json.dumps({"atoms": a, "atom_logic": "all", "category": "clinical",
+                                "complexity": "complex"}) for a in (e7, i1)])  # fmt: skip
+    t = Trialist(ScriptedClient(lambda m, s: next(answers)))
+    c = t.parse_criterion("E7", "exclusion", ">1 episode of sepsis in hospital admission")
+    assert c.atoms[0].temporal.relation == "x_at_time_of_y"
+    assert "x_within_t_before_y without a window" in c.notes
+    assert c.atoms[0].value.unit == "episode"  # plural/singular match, no flag
+    c = t.parse_criterion("I1", "inclusion", s_i1 := extract_sections(STUDY).inclusion[0])
+    assert c.atoms[0].value.unit == "mmHg"  # kept for review, not dropped
+    assert "unit 'mmHg' not in criterion text" in c.notes
+    assert "MAP ≥ 65" in s_i1
+
+
 # --- backward compatibility ----------------------------------------------------------------
 
 

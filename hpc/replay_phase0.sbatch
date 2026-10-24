@@ -28,7 +28,8 @@ export OLLAMA_HOST="127.0.0.1:$PORT"
 export OLLAMA_KEEP_ALIVE=-1 OLLAMA_MAX_LOADED_MODELS=1 OLLAMA_NUM_PARALLEL=4 OLLAMA_FLASH_ATTENTION=1
 export ATTE_OLLAMA_HOST="http://$OLLAMA_HOST"
 
-RUN_DIR="runs/replay0-$SLURM_JOB_ID"
+# exit_run_submit.sh sets ATTE_RUN_DIR to runs/exit-<GPU>/<model>/rep<k>.
+RUN_DIR="${ATTE_RUN_DIR:-runs/replay0-$SLURM_JOB_ID}"
 mkdir -p "$RUN_DIR" logs "$OLLAMA_MODELS"
 
 # Pass every OLLAMA_* setting with --env: the ollama/ollama image sets its own
@@ -58,6 +59,9 @@ curl -sf "$ATTE_OLLAMA_HOST/api/version" || { echo "[atte] Ollama did not start"
   echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
   echo "model=$ATTE_MODEL"
   echo "think=${ATTE_THINK:-}"
+  echo "replicate=${ATTE_REPLICATE:-}"
+  echo "cache_dir=$ATTE_CACHE_DIR"
+  echo "restart_count=${SLURM_RESTART_COUNT:-0}"   # >0 after preemption: cache hits expected
   echo "trials=$TRIALS"
   echo "started=$(date -Is)"
 } | tee "$RUN_DIR/manifest.txt"

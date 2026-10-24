@@ -184,6 +184,19 @@ def _sentence_with(pattern: re.Pattern[str], *texts: str | None) -> str | None:
     return None
 
 
+_NEEDS_WINDOW = {TemporalRelation.X_WITHIN_T_BEFORE_Y, TemporalRelation.X_WITHIN_T_AFTER_Y,
+                 TemporalRelation.CUMULATIVE_DURATION}  # fmt: skip
+
+
+def _unit_grounded(unit: str, text: str) -> bool:
+    """Time units are normalized ("years" -> "year"), so only other units are checked; plural
+    forms count as present."""
+    if as_time_unit(unit):
+        return True
+    have = {w.rstrip("s") for w in re.findall(r"[a-z0-9]+", text.lower())}
+    return all(w.rstrip("s") in have for w in re.findall(r"[a-z0-9]+", unit.lower()))
+
+
 def _without_window(relation: str, text: str | None) -> str | None:
     """The relation left once an invented window is removed. "in hospital admission" means
     during the admission (E7), not before it."""
@@ -330,6 +343,10 @@ class Trialist:
                 notes.append(f"dropped value not in criterion text: {a.value.text!r}")
             else:
                 value = ValueConstraint(**a.value.model_dump())
+                if value.unit and not _unit_grounded(value.unit, text):
+                    # Kept: often a correct clinical inference ("MAP ≥ 65" -> mmHg), but the
+                    # registry did not say it, so a reviewer should see it.
+                    notes.append(f"unit {value.unit!r} not in criterion text")
 
         temporal = None
         if a.temporal:
@@ -374,7 +391,11 @@ class Trialist:
         if window is not None and window not in durations_in(text):
             notes.append(f"dropped window {window.amount:g} {window.unit} not in criterion text")
             window = None
-            relation = _without_window(relation, t.text)
+        if window is None and relation in _NEEDS_WINDOW:
+            # "within t" with no t (E7 on Hellbender: "in hospital admission").
+            fixed = _without_window(relation, t.text)
+            notes.append(f"{relation} without a window read as {fixed or 'no time constraint'}")
+            relation = fixed
             if relation is None:
                 return None
         return TemporalConstraint(

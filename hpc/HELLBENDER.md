@@ -7,10 +7,10 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 | What | Path | Notes |
 |---|---|---|
 | Repo checkout | `~/data/Agentic-TTE` | Cloned from GitHub. Never edit code here; see "Sync rules" |
-| Per-project caches | `~/data/Agentic-TTE/.hpc-data/` (`$ATTE_PROJECT_DIR`) | CT.gov cache, LLM cache, uv cache. Git-ignored |
+| Per-project caches | `~/data/Agentic-TTE/.hpc-data/` (`$ATTE_PROJECT_DIR`) | CT.gov cache, LLM cache, uv cache. Git-ignored. Exit-run replicates each get a fresh cache in `.hpc-data/exit/<GPU>/<model>/rep<k>/` |
 | Ollama models | `/cluster/pixstor/data/$USER/tte-project/ollama-models` (`$OLLAMA_MODELS`) | Shared with older projects. Do not move |
 | Ollama container | `/cluster/pixstor/data/$USER/tte-project/containers/ollama-0.40.3.sif` (`$OLLAMA_SIF`) | 3.2 GB |
-| Run outputs | `~/data/Agentic-TTE/runs/` | Git-ignored. `runs/replay0-<jobid>/`, `runs/interactive/` |
+| Run outputs | `~/data/Agentic-TTE/runs/` | Git-ignored. `runs/replay0-<jobid>/`, `runs/interactive/`, and `runs/exit-<GPU>/<model>/rep<k>/` for the exit run (`runs/exit-<GPU>.jobs` lists batch job IDs) |
 | Slurm logs | `~/data/Agentic-TTE/logs/` | Git-ignored |
 | Apptainer build scratch | `/local/scratch/$USER/apptainer-{tmp,cache}` | Node-local, temporary |
 

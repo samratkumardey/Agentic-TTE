@@ -331,8 +331,15 @@ class TargetTrialProtocol(_Model):
     @model_validator(mode="before")
     @classmethod
     def _upgrade_v1(cls, data: Any) -> Any:
-        # v1 files carry no schema_version and had registry-unaware defaults.
-        if isinstance(data, dict) and "schema_version" not in data:
+        """Label v1 files as such. A v1 dump has no schema_version and no
+        causal_contrast_origin but does carry causal_contrast; objects built in code omit
+        schema_version too, so its absence alone does not mean v1."""
+        if (
+            isinstance(data, dict)
+            and "schema_version" not in data
+            and "causal_contrast" in data
+            and "causal_contrast_origin" not in data
+        ):
             data = {**data, "schema_version": 1}
         return data
 

@@ -19,7 +19,7 @@ mkdir -p "$ATTE_PROJECT_DIR/cache" logs "$(dirname "$OLLAMA_SIF")" "$APPTAINER_T
 
 curl -LsSf https://astral.sh/uv/install.sh | sh   # once; installs uv to ~/.local/bin
 uv sync --extra dev
-uv run pytest                                     # 47 tests, no GPU needed
+uv run pytest                                     # all must pass; no GPU needed
 
 # Only if the container is missing:
 [ -f "$OLLAMA_SIF" ] || apptainer pull --disable-cache "$OLLAMA_SIF" docker://ollama/ollama:0.40.3
@@ -74,7 +74,67 @@ Output goes to `runs/replay0-<jobid>/`: `manifest.txt` (job, node, GPU, git comm
 
 Re-running is cheap: identical requests come from the LLM cache in `$ATTE_CACHE_DIR`, keyed by model digest. Pass `--no-cache` to `agentic-tte draft` to force fresh calls.
 
-## 6. Long-running service (needed from Phase 4)
+## 6. Phase 0 exit run
+
+Design and scoring are fixed in [eval/SCORING.md](../eval/SCORING.md):
+- 10 trials × 3 models (`qwen3:32b` with `ATTE_THINK=false`; `gpt-oss:20b` and `alibayram/medgemma:27b` with `none`) × 2 replicates;
+- trialist-v2 at one commit; one GPU type for all six runs;
+- a fresh LLM cache per model and replicate.
+
+Disk use is under 50 MB in `~/data`: protocols, logs, manifests and six small SQLite caches. No new models are pulled.
+
+Both options below write the same layout, which the checker and the scorer read:
+
+```
+runs/exit-<GPU>/<model>/rep<k>/   manifest.txt, <NCT>.protocol.json, <NCT>.log
+.hpc-data/exit/<GPU>/<model>/rep<k>/   that replicate's fresh LLM cache and a CT.gov copy
+```
+
+Before either option, the checkout must be clean and on the latest commit, and the 10 records must be in the CT.gov cache (section 3). The scripts check both and refuse to start otherwise.
+
+```bash
+git pull && git status --short          # must print nothing
+uv run pytest -q
+```
+
+**Option A: batch jobs (6 jobs, one per model and replicate)**
+
+```bash
+bash hpc/exit_run_submit.sh gpu_requeue gpu:A100:1    # usually starts quickly; preemptible
+bash hpc/exit_run_submit.sh gpu gpu:H100:1            # not preemptible; the queue can take hours
+squeue -u $USER -o "%.10i %.9P %.8T %.20R %.20S"
+cat runs/exit-A100.jobs                                # model, think, replicate, job id, run dir
+```
+
+Run only one of the two lines: the label (`A100`, `H100`) comes from the GRES. A preempted job requeues under the same ID and resumes from its own cache. Its manifest then shows `restart_count` > 0, and cache hits are expected for that replicate only.
+
+**Option B: in your OnDemand GPU session (sequential, no queue)**
+
+```bash
+tmux new -s atte                      # if available, so closing the browser tab doesn't stop the run
+bash hpc/exit_run_interactive.sh      # all 3 models x 2 replicates on this session's GPU
+```
+
+The GPU label comes from `nvidia-smi`. g020 is an H100, so the output goes to `runs/exit-H100/`. The OnDemand session itself runs on `gpu_requeue` and can be preempted. If that happens, delete the unfinished replicate's run directory and its cache, then start the script again. It refuses to reuse a cache that already holds answers.
+
+**After either option: check the run before scoring**
+
+```bash
+uv run python eval/check_exit_run.py runs/exit-A100    # or runs/exit-H100
+```
+
+It prints one row per run (protocols, calls, cache hits, tokens, failures). It ends with `OK: ready to score`, or with each problem it found: mixed GPU types, commits or Ollama versions; a dirty commit; missing trials; non-v2 protocols; cache hits without a restart.
+
+To bring the results to the PC, archive the run directory (under 5 MB) and copy it the same way as the earlier protocol files:
+
+```bash
+tar czf runs/exit-A100.tgz runs/exit-A100 runs/exit-A100.jobs    # after Option A on A100
+```
+```bash
+tar czf runs/exit-H100.tgz runs/exit-H100                        # after Option B on H100
+```
+
+## 7. Long-running service (needed from Phase 4)
 
 ```bash
 sbatch -p "$SLURM_GPU_PARTITION" --gres="$SLURM_GPU_GRES" -A "$SLURM_ACCOUNT" hpc/ollama_service.sbatch
