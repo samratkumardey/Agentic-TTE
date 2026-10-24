@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# Local state
+.cache/
+.env
+runs/
+logs/
+llm_cache.sqlite
+hpc/env.sh
+
+# Patient-level data never goes into git (MIMIC-IV DUA, Oracle EHR, HIPAA).
+# Synthetic data is regenerated from code; real data stays on Hellbender storage.
+data/
+*.parquet
+*.feather
+*.duckdb
+*.pkl
+
+# Reference paper (CC BY-NC-ND; keep locally)
+*.pdf

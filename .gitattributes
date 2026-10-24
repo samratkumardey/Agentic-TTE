@@ -1,0 +1,5 @@
+* text=auto
+# Run on Hellbender (Linux): CRLF line endings break bash and Slurm.
+*.sh text eol=lf
+*.sbatch text eol=lf
+*.def text eol=lf

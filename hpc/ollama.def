@@ -1,0 +1,10 @@
+Bootstrap: docker
+# Pinned to the Ollama version tested locally. Change the tag only together with a benchmark re-run.
+From: ollama/ollama:0.40.3
+
+%labels
+    Project agentic-tte
+    Purpose Ollama LLM service for Hellbender GPU nodes
+
+%runscript
+    exec /bin/ollama "$@"

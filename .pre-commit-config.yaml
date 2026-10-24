@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: no-patient-data
+        name: block patient-level data files
+        entry: python scripts/check_no_patient_data.py
+        language: system
+        pass_filenames: true
+      - id: ruff
+        name: ruff
+        entry: ruff check
+        language: system
+        types: [python]
+        exclude: ^third_party/
