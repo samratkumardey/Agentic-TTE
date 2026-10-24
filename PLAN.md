@@ -204,4 +204,4 @@ Decided 2026-10-24: (1) React + FastAPI; (2) Ollama now, vLLM later behind the s
 
 Done: package scaffold; protocol schema with versioning and diffs; CT.gov client and deterministic extractor (reproduces upstream's GPT-4o criteria split for NCT03872011 exactly); `LLMClient` (Ollama + OpenAI-compatible, schema-constrained, retries, SQLite cache, digest pinning); Trialist draft path and CLI; EmulatRx cache importer as a regression test; Hellbender Slurm/Apptainer scripts; patient-data pre-commit guard.
 
-Open for the Phase 0 exit criterion: run `agentic-tte draft` against `qwen3:32b` (or `gpt-oss:120b`) on the H100 via `hpc/`, and fill in the RCSS values in `hpc/env.sh`.
+Hellbender (2026-10-24): environment set up and documented in `hpc/HELLBENDER.md`; the Trialist drafts protocols with `qwen3:32b` on an H100 in an Open OnDemand session (`hpc/interactive_ollama.sh`). Open for the Phase 0 exit criterion: the 10-trial Replay batch (`hpc/replay_phase0.sbatch`) with `qwen3:32b`, `gpt-oss:20b` and `alibayram/medgemma:27b` on one GPU type.

@@ -1,53 +1,41 @@
 # Running on Hellbender
 
-Phase 0 runs the Trialist: it drafts target-trial protocols for registered trials with an open-weight model on an H100. There are two ways to run it:
+Cluster facts, paths, quotas and known pitfalls are in [HELLBENDER.md](HELLBENDER.md). This page is the procedure.
 
-- **One batch job** (`replay_phase0.sbatch`): starts Ollama, drafts a list of trials, then exits. Easiest; start here.
-- **Long-running service** (`ollama_service.sbatch`): keeps Ollama up for interactive work and, from Phase 4, the web app.
+There are three ways to run the Trialist on a GPU:
 
-## 1. Get the code onto Hellbender
+- **Interactive** (`interactive_ollama.sh`): in an existing GPU session (Open OnDemand). No queue; best for testing.
+- **One batch job** (`replay_phase0.sbatch`): starts Ollama, drafts a list of trials, exits. Use for benchmark runs.
+- **Long-running service** (`ollama_service.sbatch`): keeps Ollama up for interactive clients and, from Phase 4, the web app.
 
-From a Git remote (recommended):
-
-```bash
-ssh <pawprint>@<hellbender login host>
-cd /path/to/project            # project storage, not $HOME
-git clone <your repo url> agentic-tte && cd agentic-tte
-```
-
-Or copy it from your PC with `scp -r` / `rsync`, leaving out `.venv/` and `.cache/`.
-
-## 2. Find the site-specific values
+## 1. One-time setup
 
 ```bash
-sinfo -o "%P %G %l %D" | grep -i -E "gpu|h100"        # partition, gres name, time limit
-sacctmgr -n show assoc user=$USER format=account,qos  # account / QOS, if required
-module avail apptainer 2>&1 | head                    # whether apptainer needs a module load
-```
-
-Then:
-
-```bash
-cp hpc/env.example.sh hpc/env.sh   # fill in the CONFIRM values from above
+cd ~/data
+git clone https://github.com/samratkumardey/Agentic-TTE.git && cd Agentic-TTE
+cp hpc/env.example.sh hpc/env.sh       # values are the confirmed Hellbender settings
 source hpc/env.sh
-mkdir -p "$ATTE_PROJECT_DIR"/{containers,ollama-models,cache} logs
-```
+mkdir -p "$ATTE_PROJECT_DIR/cache" logs "$(dirname "$OLLAMA_SIF")" "$APPTAINER_TMPDIR"
 
-## 3. Python environment and container (login node)
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh   # installs uv to ~/.local/bin, once
+curl -LsSf https://astral.sh/uv/install.sh | sh   # once; installs uv to ~/.local/bin
 uv sync --extra dev
 uv run pytest                                     # 47 tests, no GPU needed
 
-apptainer pull "$OLLAMA_SIF" docker://ollama/ollama:0.40.3
+# Only if the container is missing:
+[ -f "$OLLAMA_SIF" ] || apptainer pull --disable-cache "$OLLAMA_SIF" docker://ollama/ollama:0.40.3
 ```
 
-`apptainer pull` needs no root. Use `hpc/ollama.def` only if you need to customise the image (`apptainer build --fakeroot`).
+## 2. Every new shell
 
-## 4. Pre-fetch trial records (login node)
+```bash
+cd ~/data/Agentic-TTE
+git pull
+source hpc/env.sh
+```
 
-Compute nodes may not have outbound internet. Fetching on the login node fills `$ATTE_CACHE_DIR`, and the job reads from it:
+If `git pull` changed `hpc/env.example.sh`, copy the new lines into `hpc/env.sh`.
+
+## 3. Pre-fetch trial records
 
 ```bash
 for t in NCT00475852 NCT02856698 NCT03872011 NCT04134403 NCT06091982 \
@@ -56,45 +44,50 @@ for t in NCT00475852 NCT02856698 NCT03872011 NCT04134403 NCT06091982 \
 done
 ```
 
-## 5. Get the model weights
+## 4. Interactive run (no queue)
 
-If compute nodes can reach the internet, let the first job pull the model (`ATTE_PULL=1`, below). Otherwise, pull once from an interactive GPU session on a node that can, or ask RCSS which nodes allow outbound HTTPS. The weights land in `$OLLAMA_MODELS` and are reused by every later job (`qwen3:32b` is ~20 GB).
-
-## 6. Run the Replay batch
+In a session that has a GPU:
 
 ```bash
-sbatch -p "$SLURM_GPU_PARTITION" --gres="$SLURM_GPU_GRES" ${SLURM_ACCOUNT:+-A $SLURM_ACCOUNT} \
-       --export=ALL,ATTE_PULL=1 hpc/replay_phase0.sbatch
-squeue -u $USER
+source hpc/interactive_ollama.sh          # starts Ollama on port 11500 and runs llm-check
+uv run agentic-tte draft NCT04134403 -o runs/interactive/NCT04134403.protocol.json
+source hpc/interactive_ollama.sh stop     # free the GPU when done
+```
+
+## 5. Batch run
+
+```bash
+# Final benchmark runs (one GPU type for every model):
+sbatch -p "$SLURM_GPU_PARTITION" --gres="$SLURM_GPU_GRES" -A "$SLURM_ACCOUNT" hpc/replay_phase0.sbatch
+
+# Faster start for development (preemptible):
+sbatch -p gpu_requeue --gres=gpu:A100:1 -A "$SLURM_ACCOUNT" hpc/replay_phase0.sbatch
+
+# Other model or trial list:
+sbatch ... --export=ALL,ATTE_MODEL=gpt-oss:20b,ATTE_THINK=none,ATTE_TRIALS="NCT04134403" hpc/replay_phase0.sbatch
+
+squeue -u $USER -o "%.10i %.9P %.8T %.20R %.20S"   # state, reason, estimated start
 tail -f logs/replay0-<jobid>.out
 ```
 
-The output goes to `runs/replay0-<jobid>/`, with one `<NCT>.protocol.json` and one `<NCT>.log` per trial, plus `ollama.log`. Each log ends with the LLM call and token counts and any incomplete TTE elements. To use a different model or trial list:
+Output goes to `runs/replay0-<jobid>/`: `manifest.txt` (job, node, GPU, git commit, Ollama version, model), one `<NCT>.protocol.json` and `<NCT>.log` per trial, and `ollama.log`. Each trial log ends with the LLM call and token counts and any incomplete TTE elements.
+
+Re-running is cheap: identical requests come from the LLM cache in `$ATTE_CACHE_DIR`, keyed by model digest. Pass `--no-cache` to `agentic-tte draft` to force fresh calls.
+
+## 6. Long-running service (needed from Phase 4)
 
 ```bash
-sbatch ... --export=ALL,ATTE_MODEL=gpt-oss:120b,ATTE_THINK=none,ATTE_TRIALS="NCT04134403 NCT00475852" hpc/replay_phase0.sbatch
-```
-
-`ATTE_THINK=none` leaves reasoning at the model's default; gpt-oss has no on/off switch.
-
-Re-running is cheap: identical requests come from the LLM cache in `$ATTE_CACHE_DIR`, which is keyed by the model digest. Pass `--no-cache` to `agentic-tte draft` to force fresh calls.
-
-## 7. Long-running service (optional now, needed in Phase 4)
-
-```bash
-sbatch -p "$SLURM_GPU_PARTITION" --gres="$SLURM_GPU_GRES" hpc/ollama_service.sbatch
+sbatch -p "$SLURM_GPU_PARTITION" --gres="$SLURM_GPU_GRES" -A "$SLURM_ACCOUNT" hpc/ollama_service.sbatch
 cat "$ATTE_ENDPOINT_FILE"                          # "<url> <jobid> <node>"
 srun --jobid=<jobid> --overlap --pty bash          # a shell on the GPU node
-bash hpc/pull_models.sh                            # pull $ATTE_MODELS
 export ATTE_OLLAMA_HOST="$(cut -d' ' -f1 "$ATTE_ENDPOINT_FILE")"
 uv run agentic-tte llm-check
-uv run agentic-tte draft NCT04134403 -o runs/NCT04134403/protocol.json
 ```
 
-The service job requeues itself about 5 minutes before its wall-time limit. With the default `OLLAMA_BIND=127.0.0.1`, clients must run on the same node. To let a separate service tier reach the GPU node, set `OLLAMA_BIND=0.0.0.0`. Ollama has no authentication, so agree on this with RCSS first; it exposes the model to the whole cluster network. By design the agents only send protocol text and schemas, never patient rows.
+The service job requeues itself about 5 minutes before its wall-time limit. With `OLLAMA_BIND=127.0.0.1`, clients must run on the same node. Ollama has no authentication; binding `0.0.0.0` exposes the model to the whole cluster network, so agree on it with RCSS first.
 
 ## Still to confirm with RCSS
 
-- Outbound internet from compute nodes (CT.gov, model pulls)
-- Maximum wall time for service jobs, and whether the service tier (FastAPI, Postgres) runs as a Slurm job or a dedicated VM behind Open OnDemand
-- Project storage path and quota (~150 GB for the three default models)
+- Outbound internet from batch compute nodes (the OnDemand node has it)
+- Whether the service tier (FastAPI, Postgres) runs as a Slurm job or a dedicated VM behind Open OnDemand
+- Approved storage for MIMIC-IV / EHR data (data classification level)

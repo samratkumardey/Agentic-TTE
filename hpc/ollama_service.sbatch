@@ -6,8 +6,8 @@
 #SBATCH --job-name=atte-ollama
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128G
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
 #SBATCH --time=2-00:00:00
 #SBATCH --requeue
 #SBATCH --signal=B:USR1@300
@@ -37,9 +37,13 @@ fi
 echo "$ADVERTISED $SLURM_JOB_ID $(hostname -f)" > "$ATTE_ENDPOINT_FILE"
 echo "[atte] Ollama at $ADVERTISED (job $SLURM_JOB_ID on $(hostname -f))"
 
+# Pass every OLLAMA_* setting with --env: the ollama/ollama image sets its own
+# OLLAMA_HOST=0.0.0.0:11434, which overrides the host value inside Apptainer.
 apptainer exec --nv \
   --bind "$OLLAMA_MODELS:$OLLAMA_MODELS" \
-  --env OLLAMA_MODELS="$OLLAMA_MODELS" \
+  --env OLLAMA_MODELS="$OLLAMA_MODELS" --env OLLAMA_HOST="$OLLAMA_HOST" \
+  --env OLLAMA_KEEP_ALIVE="$OLLAMA_KEEP_ALIVE" --env OLLAMA_MAX_LOADED_MODELS="$OLLAMA_MAX_LOADED_MODELS" \
+  --env OLLAMA_NUM_PARALLEL="$OLLAMA_NUM_PARALLEL" --env OLLAMA_FLASH_ATTENTION="$OLLAMA_FLASH_ATTENTION" \
   "$OLLAMA_SIF" ollama serve &
 SERVER_PID=$!
 wait "$SERVER_PID"

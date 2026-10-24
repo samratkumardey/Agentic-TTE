@@ -29,7 +29,7 @@ uv run agentic-tte llm-check
 uv run agentic-tte draft NCT04134403 --model qwen3:8b -o runs/NCT04134403/protocol.json
 ```
 
-Settings come from `ATTE_*` environment variables (see `agentic_tte/config.py`): for example `ATTE_OLLAMA_HOST`, `ATTE_MODEL` and `ATTE_CACHE_DIR`. For Hellbender, see [hpc/README.md](hpc/README.md).
+Settings come from `ATTE_*` environment variables (see `agentic_tte/config.py`): for example `ATTE_OLLAMA_HOST`, `ATTE_MODEL` and `ATTE_CACHE_DIR`. For Hellbender, see [hpc/README.md](hpc/README.md) (procedure) and [hpc/HELLBENDER.md](hpc/HELLBENDER.md) (cluster facts and pitfalls).
 
 Run the live test against a real model (deselected by default):
 

@@ -7,8 +7,8 @@
 #SBATCH --job-name=atte-replay0
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128G
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
 #SBATCH --time=08:00:00
 #SBATCH --output=logs/replay0-%j.out
 
@@ -31,7 +31,12 @@ export ATTE_OLLAMA_HOST="http://$OLLAMA_HOST"
 RUN_DIR="runs/replay0-$SLURM_JOB_ID"
 mkdir -p "$RUN_DIR" logs "$OLLAMA_MODELS"
 
-apptainer exec --nv --bind "$OLLAMA_MODELS" --env OLLAMA_MODELS="$OLLAMA_MODELS" \
+# Pass every OLLAMA_* setting with --env: the ollama/ollama image sets its own
+# OLLAMA_HOST=0.0.0.0:11434, which overrides the host value inside Apptainer.
+apptainer exec --nv --bind "$OLLAMA_MODELS" \
+  --env OLLAMA_MODELS="$OLLAMA_MODELS" --env OLLAMA_HOST="$OLLAMA_HOST" \
+  --env OLLAMA_KEEP_ALIVE="$OLLAMA_KEEP_ALIVE" --env OLLAMA_MAX_LOADED_MODELS="$OLLAMA_MAX_LOADED_MODELS" \
+  --env OLLAMA_NUM_PARALLEL="$OLLAMA_NUM_PARALLEL" --env OLLAMA_FLASH_ATTENTION="$OLLAMA_FLASH_ATTENTION" \
   "$OLLAMA_SIF" ollama serve > "$RUN_DIR/ollama.log" 2>&1 &
 OLLAMA_PID=$!
 trap 'kill "$OLLAMA_PID" 2>/dev/null || true' EXIT
@@ -41,10 +46,25 @@ for _ in $(seq 60); do
   sleep 2
 done
 curl -sf "$ATTE_OLLAMA_HOST/api/version" || { echo "[atte] Ollama did not start"; exit 1; }
-nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+# Run manifest: results may come from H100, A100 or H200 nodes, so record what ran where.
+{
+  echo "job_id=$SLURM_JOB_ID"
+  echo "partition=${SLURM_JOB_PARTITION:-}"
+  echo "node=$(hostname -s)"
+  echo "gpu=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader | head -n1)"
+  echo "git_commit=$(git rev-parse --short HEAD 2>/dev/null)$(git diff --quiet 2>/dev/null || echo -dirty)"
+  echo "ollama_image=$OLLAMA_SIF"
+  echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
+  echo "model=$ATTE_MODEL"
+  echo "think=${ATTE_THINK:-}"
+  echo "trials=$TRIALS"
+  echo "started=$(date -Is)"
+} | tee "$RUN_DIR/manifest.txt"
 
 if [[ "${ATTE_PULL:-0}" == "1" ]]; then
-  apptainer exec --env OLLAMA_HOST="$OLLAMA_HOST" "$OLLAMA_SIF" ollama pull "$ATTE_MODEL"
+  apptainer exec --env OLLAMA_HOST="$OLLAMA_HOST" --env OLLAMA_MODELS="$OLLAMA_MODELS" \
+    --bind "$OLLAMA_MODELS" "$OLLAMA_SIF" ollama pull "$ATTE_MODEL"
 fi
 uv run agentic-tte llm-check || { echo "[atte] model $ATTE_MODEL missing; see hpc/README.md"; exit 1; }
 
@@ -57,4 +77,5 @@ for t in $TRIALS; do
   fi
   tail -n 2 "$RUN_DIR/$t.log"
 done
+echo "finished=$(date -Is) failed=$failed" >> "$RUN_DIR/manifest.txt"
 echo "[atte] done: $RUN_DIR ($failed failed)"

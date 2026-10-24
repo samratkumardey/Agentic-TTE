@@ -26,3 +26,6 @@ data/
 
 # Reference paper (CC BY-NC-ND; keep locally)
 *.pdf
+
+# Hellbender per-project caches (ATTE_PROJECT_DIR in hpc/env.sh)
+.hpc-data/
