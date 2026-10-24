@@ -17,6 +17,7 @@ from agentic_tte.protocol.models import (
     Comparator,
     ConceptRef,
     Criterion,
+    CriterionAtom,
     Domain,
     TrialSource,
     ValueConstraint,
@@ -49,6 +50,7 @@ class RegistryOutcome(BaseModel):
 class TrialSections(BaseModel):
     source: TrialSource
     brief_summary: str | None = None
+    detailed_description: str | None = None
     inclusion: list[str] = Field(default_factory=list)
     exclusion: list[str] = Field(default_factory=list)
     structured_criteria: list[Criterion] = Field(default_factory=list)
@@ -105,8 +107,14 @@ def split_eligibility(text: str | None) -> tuple[list[str], list[str], list[str]
             parent_indent = 0
 
     for key in sections:
+        merged = _merge_definitions(sections[key])
+        if len(merged) < len(sections[key]):
+            warnings.append(
+                f"{key}: {len(sections[key]) - len(merged)} definition item(s) merged into the "
+                "criterion they define"
+            )
         expanded = []
-        for item in sections[key]:
+        for item in merged:
             parts = _split_inline_roman(item)
             if len(parts) > 1:
                 warnings.append(f"{key}: inline i./ii./... list split into {len(parts)} items")
@@ -152,9 +160,36 @@ def _unescape(text: str) -> str:
     return _MD_ESCAPE.sub(r"\1", text)
 
 
+_TRAILING_CONJ = re.compile(r"(?::|\b(?:and|or|and/or)\b)\s*$", re.IGNORECASE)
+
+
 def _join_child(parent: str, child: str) -> str:
-    sep = " " if parent.endswith(":") else "; "
+    """Append a sub-bullet. A parent ending in ":" or a conjunction ("MAP ≥ 65 AND") reads on
+    into the child, so no "; " goes in between (C9)."""
+    sep = " " if _TRAILING_CONJ.search(parent) else "; "
     return f"{parent}{sep}{child}"
+
+
+_DEFINES_RE = re.compile(
+    r"^(?:.*?\bdefines\s+(?P<a>.+?)\s+as\b|(?P<b>.+?)\s+(?:is|are)\s+defined\s+as\b)",
+    re.IGNORECASE,
+)
+
+
+def _merge_definitions(items: list[str]) -> list[str]:
+    """ "SEPSIS-3 defines septic shock as …" after "Septic shock admitted to the ICU…" is the
+    definition of a term in the previous item, not a criterion of its own (NCT04134403, C9).
+    Only merged when the defined term appears in the previous item, so "Pregnant defined by
+    negative serum HCG" (a criterion with its own definition) stays separate."""
+    out: list[str] = []
+    for item in items:
+        m = _DEFINES_RE.match(item)
+        term = (m.group("a") or m.group("b")).strip().lower() if m else None
+        if out and term and term in out[-1].lower():
+            out[-1] = f"{out[-1]} [definition: {item}]"
+        else:
+            out.append(item)
+    return out
 
 
 _AGE_IN_TEXT = re.compile(r"\bage[ds]?\b|\byears?\s+(?:old|of age)\b|\b\d+\s*(?:years|yrs)\b", re.I)
@@ -173,10 +208,17 @@ def structured_criteria(eligibility: dict[str, Any], free_text: list[str]) -> li
                     id=f"S{len(out) + 1}",
                     kind="inclusion",
                     text=f"{field}: {eligibility[field]}",
-                    concepts=[ConceptRef(name="age", domain=Domain.DEMOGRAPHIC)],
-                    value=ValueConstraint(
-                        comparator=comparator, value=age[0], unit=age[1], text=eligibility[field]
-                    ),
+                    atoms=[
+                        CriterionAtom(
+                            concepts=[ConceptRef(name="age", domain=Domain.DEMOGRAPHIC)],
+                            value=ValueConstraint(
+                                comparator=comparator,
+                                value=age[0],
+                                unit=age[1],
+                                text=eligibility[field],
+                            ),
+                        )
+                    ],
                     complexity="simple",
                     source="registry_structured",
                 )
@@ -188,8 +230,12 @@ def structured_criteria(eligibility: dict[str, Any], free_text: list[str]) -> li
                 id=f"S{len(out) + 1}",
                 kind="inclusion",
                 text=f"sex: {sex}",
-                concepts=[ConceptRef(name="sex", domain=Domain.DEMOGRAPHIC)],
-                value=ValueConstraint(comparator=Comparator.EQ, text=sex.lower()),
+                atoms=[
+                    CriterionAtom(
+                        concepts=[ConceptRef(name="sex", domain=Domain.DEMOGRAPHIC)],
+                        value=ValueConstraint(comparator=Comparator.PRESENT, text=sex.lower()),
+                    )
+                ],
                 complexity="simple",
                 source="registry_structured",
             )
@@ -246,19 +292,33 @@ def extract_sections(study: dict[str, Any]) -> TrialSections:
     ]
 
     retrieved = study.get("_retrieved_at")
+    design_info = design.get("designInfo") or {}
+    enrollment = design.get("enrollmentInfo") or {}
     source = TrialSource(
         nct_id=ident.get("nctId"),
         title=ident.get("officialTitle") or ident.get("briefTitle"),
         phase=design.get("phases", []),
-        enrollment=(design.get("enrollmentInfo") or {}).get("count"),
+        study_type=design.get("studyType"),
+        overall_status=ps.get("statusModule", {}).get("overallStatus"),
+        allocation=design_info.get("allocation"),
+        intervention_model=design_info.get("interventionModel"),
+        masking=(design_info.get("maskingInfo") or {}).get("masking"),
+        enrollment=enrollment.get("count"),
+        enrollment_type=enrollment.get("type"),
         conditions=ps.get("conditionsModule", {}).get("conditions", []),
         has_results=study.get("hasResults"),
         retrieved_at=datetime.fromisoformat(retrieved) if retrieved else None,
         record_sha256=record_sha256({k: v for k, v in study.items() if not k.startswith("_")}),
     )
+    if study.get("hasResults") is False:
+        warnings.append(
+            "no results posted on ClinicalTrials.gov; a Replay comparison needs a publication"
+        )
+    description = ps.get("descriptionModule", {})
     return TrialSections(
         source=source,
-        brief_summary=ps.get("descriptionModule", {}).get("briefSummary"),
+        brief_summary=description.get("briefSummary"),
+        detailed_description=description.get("detailedDescription"),
         inclusion=inclusion,
         exclusion=exclusion,
         structured_criteria=structured_criteria(elig, inclusion + exclusion),

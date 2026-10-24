@@ -88,6 +88,86 @@ def parse_value(text: str | None) -> ValueConstraint | None:
     return ValueConstraint(comparator=Comparator.EQ, value=value, unit=unit, text=t)
 
 
+def durations_in(text: str | None) -> list[Duration]:
+    """Every "<number> <time unit>" in ``text``."""
+    return [
+        Duration(amount=float(m.group(1)), unit=_UNIT_ALIASES[m.group(2).lower()])
+        for m in _DURATION_RE.finditer(text or "")
+    ]
+
+
+def as_time_unit(unit: str | None) -> TimeUnit | None:
+    """"hours" -> hour; None for non-time units such as "mmol/L"."""
+    return _UNIT_ALIASES.get((unit or "").strip().lower())
+
+
+_END_EVENT_RE = re.compile(
+    r"\bor\s+(?:until\s+)?(?:(icu|hospital)\s+)?discharge(?:\s+from\s+(?:the\s+)?(icu|hospital))?",
+    re.IGNORECASE,
+)
+
+
+def parse_time_frame(text: str | None) -> tuple[Duration | None, str | None, str | None]:
+    """"28 days or discharge (whichever comes first)" -> (28 day, "hospital discharge", "first").
+    Returns (horizon, end_event, end_rule); end_rule defaults to "first" for "or until X"."""
+    horizon = parse_duration(text)
+    if not text:
+        return horizon, None, None
+    m = _END_EVENT_RE.search(text)
+    if not m:
+        return horizon, None, None
+    place = (m.group(1) or m.group(2) or "hospital").lower()
+    event = "ICU discharge" if place == "icu" else "hospital discharge"
+    rule = "last" if re.search(r"whichever (?:comes |is )?(?:last|later)", text, re.I) else "first"
+    return horizon, event, rule
+
+
+_FREQUENCY_BEFORE = re.compile(r"(?:\bevery|\bq|\bper|/)\s*$", re.IGNORECASE)
+
+
+def parse_course_duration(text: str | None) -> Duration | None:
+    """Treatment course length, skipping dosing intervals: in "50 mg, every 6 hours, 7 days"
+    the course is 7 days, not 6 hours."""
+    if not text:
+        return None
+    for m in _DURATION_RE.finditer(text):
+        if _FREQUENCY_BEFORE.search(text[max(0, m.start() - 8) : m.start()]):
+            continue
+        return Duration(amount=float(m.group(1)), unit=_UNIT_ALIASES[m.group(2).lower()])
+    return None
+
+
+_TIME_ZERO_ANCHORS = re.compile(
+    r"^\s*(?:the\s+)?(?:time\s+of\s+)?(?:randomi[sz]ation|enrol?l?ment|study\s+entry|"
+    r"inclusion|screening|baseline|time[_ ]zero|study\s+start)\s*$",
+    re.IGNORECASE,
+)
+
+
+def normalize_anchor(anchor: str | None) -> str:
+    """Randomization, enrollment and similar anchors all mean time zero in an emulation (C6)."""
+    if not anchor or _TIME_ZERO_ANCHORS.match(anchor):
+        return "time_zero"
+    return anchor.strip()
+
+
+_STOPWORDS = {"a", "an", "and", "or", "of", "to", "the", "in", "on", "with", "for", "at", "by",
+              "not", "no", "any", "is", "as", "be"}  # fmt: skip
+
+
+def _words(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def grounded_fraction(span: str | None, source: str) -> float:
+    """Share of the content words in ``span`` that occur in ``source`` (1.0 for empty spans).
+    Used to catch text the model wrote that the criterion never said (C5)."""
+    words = _words(span or "") - _STOPWORDS
+    if not words:
+        return 1.0
+    return len(words & _words(source)) / len(words)
+
+
 def parse_age(text: str | None) -> tuple[float, str] | None:
     """CT.gov structured ages: "18 Years" -> (18.0, "years")."""
     if not text:

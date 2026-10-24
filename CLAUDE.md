@@ -26,4 +26,4 @@ Read [PLAN.md](PLAN.md) for the architecture and roadmap, and [hpc/HELLBENDER.md
 
 ## Current state (2026-10-24)
 
-Phase 0 runs end to end on Hellbender: the Trialist drafts protocols with `qwen3:32b` in an OnDemand GPU session via `hpc/interactive_ollama.sh`. Next: the 10-trial Replay batch with `qwen3:32b`, `gpt-oss:20b` and `alibayram/medgemma:27b` on one GPU type, then Phase 1.
+Phase 0 runs end to end on Hellbender: the Trialist drafts protocols with `qwen3:32b` in an OnDemand GPU session via `hpc/interactive_ollama.sh`. The code is now at trialist-v2 / protocol schema v2 (see PLAN.md §12); the only Hellbender output so far (NCT04134403) is trialist-v1. Next: the 10-trial Replay batch on trialist-v2 with `qwen3:32b`, `gpt-oss:20b` and `alibayram/medgemma:27b` on one GPU type, using a fresh LLM cache per model and GPU type, then Phase 1.

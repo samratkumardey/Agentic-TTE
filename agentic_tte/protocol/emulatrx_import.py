@@ -21,6 +21,7 @@ from typing import Any
 from agentic_tte.protocol.annotation import parse_annotation
 from agentic_tte.protocol.models import (
     Criterion,
+    CriterionAtom,
     FollowUp,
     MappingStatus,
     Outcome,
@@ -58,11 +59,16 @@ def _criteria(parsed: list[dict] | None, queried: list[dict] | None, kind: str,
                 id=f"{prefix}{i}",
                 kind=kind,
                 text=row["text"],
-                concepts=ann.concepts,
-                concept_logic="any",  # upstream does not record it
-                value=parse_value(ann.values[0]) if ann.values else None,
-                temporal=parse_temporal(ann.temporals),
-                negated=bool(ann.negations),
+                # Upstream keeps one annotation per criterion: one atom, logic not recorded.
+                atoms=[
+                    CriterionAtom(
+                        concepts=ann.concepts,
+                        concept_logic="any",
+                        value=parse_value(ann.values[0]) if ann.values else None,
+                        temporal=parse_temporal(ann.temporals),
+                        negated=bool(ann.negations),
+                    )
+                ],
                 source="registry_text",
                 notes="imported from EmulatRx cache",
             )

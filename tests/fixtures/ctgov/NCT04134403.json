@@ -1,0 +1,297 @@
+{
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT04134403",
+      "orgStudyIdInfo": {
+        "id": "STASIS"
+      },
+      "organization": {
+        "fullName": "Baqiyatallah Medical Sciences University",
+        "class": "OTHER"
+      },
+      "briefTitle": "Steroids, Thiamine and Ascorbic Acid in Septic Shock",
+      "officialTitle": "Steroids, Thiamine and Ascorbic Acid Supplementation in Septic Shock (STASIS): A Prospective Crossover Randomized Controlled Study",
+      "acronym": "STASIS"
+    },
+    "statusModule": {
+      "statusVerifiedDate": "2019-10",
+      "overallStatus": "UNKNOWN",
+      "lastKnownStatus": "NOT_YET_RECRUITING",
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "startDateStruct": {
+        "date": "2019-12-01",
+        "type": "ESTIMATED"
+      },
+      "primaryCompletionDateStruct": {
+        "date": "2020-11-01",
+        "type": "ESTIMATED"
+      },
+      "completionDateStruct": {
+        "date": "2020-12-01",
+        "type": "ESTIMATED"
+      },
+      "studyFirstSubmitDate": "2019-09-18",
+      "studyFirstSubmitQcDate": "2019-10-19",
+      "studyFirstPostDateStruct": {
+        "date": "2019-10-22",
+        "type": "ACTUAL"
+      },
+      "lastUpdateSubmitDate": "2019-10-19",
+      "lastUpdatePostDateStruct": {
+        "date": "2019-10-22",
+        "type": "ACTUAL"
+      }
+    },
+    "sponsorCollaboratorsModule": {
+      "responsibleParty": {
+        "type": "PRINCIPAL_INVESTIGATOR",
+        "investigatorFullName": "Amir Vahedian-Azimi",
+        "investigatorTitle": "Principle Investigator, Associate Professor",
+        "investigatorAffiliation": "Baqiyatallah Medical Sciences University"
+      },
+      "leadSponsor": {
+        "name": "Baqiyatallah Medical Sciences University",
+        "class": "OTHER"
+      },
+      "collaborators": [
+        {
+          "name": "Hamadan University of Medical Science",
+          "class": "OTHER"
+        },
+        {
+          "name": "Tehran University of Medical Sciences",
+          "class": "OTHER"
+        }
+      ]
+    },
+    "oversightModule": {
+      "oversightHasDmc": true,
+      "isFdaRegulatedDrug": false,
+      "isFdaRegulatedDevice": false
+    },
+    "descriptionModule": {
+      "briefSummary": "The objective of this project is to determine if in patients admitted to the hospital with septic shock (population), does treatment with a bundle including hydrocortisone, thiamine, and ascorbic acid improve in-hospital or 28-day mortality (primary outcomes) or surrogate markers of illness severity including: (1) ICU or hospital length-of-stay, (2) duration of invasive mechanical ventilation, (3) duration of vasopressor administration, (4) incidence and severity of ICU delirium, and (5) illness severity (secondary outcomes).",
+      "detailedDescription": "This trial is designed as a multi-center prospective, double-blinded, randomized controlled study. The objective of this project is to determine if in patients admitted to the hospital with septic shock (population), does treatment with a bundle including hydrocortisone, thiamine, and ascorbic acid improve in-hospital or 28-day mortality (primary outcomes) or surrogate markers of illness severity including: (1) ICU or hospital length-of-stay, (2) duration of invasive mechanical ventilation, (3) duration of vasopressor administration, (4) incidence and severity of ICU delirium, and (5) illness severity (secondary outcomes). The calculated sample size is 80. Subjects will be followed for 28 days or until hospital discharge.\n\nPatients eligible for inclusion must be admitted with septic shock (as defined by SEPSIS-3) requiring vasopressors to maintain MAP \u2265 65 AND serum lactate level \\>2 mmol/L after adequate fluid resuscitation (generally recognized at 30 ml/kg crystalloid unless contraindicated as deemed by treating clinician) within the first three hours.\n\nThe exclusion criteria are: age \\< 18 years, pregnant, patients with limitation of care (i.e. do not resuscitate \\[DNR\\]), known Glucose-6-Phosphate Dehydrogenase (G6PD) Deficiency, and vasopressor use for \\> 24 hours prior to study enrollment.\n\nPatients in Arm 1 will randomized to receive usual care + hydrocortisone, thiamine and ascorbic acid. Arm 2 will be randomized to receive usual care alone. Crossover is not allowed. If a patient is randomized into study Arm 2, the treating physician may decide to administer study medications if they feel it is in the best interest of the patient. In this case the patient will continue to be analyzed in their assigned arm on an intention to treat basis. Source of participants will be in-hospital and Emergency Department patients."
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Septic Shock"
+      ],
+      "keywords": [
+        "Steroids",
+        "Thiamine",
+        "Ascorbic Acid Supplementation",
+        "Septic Shock",
+        "STASIS"
+      ]
+    },
+    "designModule": {
+      "studyType": "INTERVENTIONAL",
+      "phases": [
+        "PHASE3"
+      ],
+      "designInfo": {
+        "allocation": "RANDOMIZED",
+        "interventionModel": "PARALLEL",
+        "interventionModelDescription": "A Prospective Parallel Randomized Controlled clinical Study",
+        "primaryPurpose": "TREATMENT",
+        "maskingInfo": {
+          "masking": "QUADRUPLE",
+          "whoMasked": [
+            "PARTICIPANT",
+            "CARE_PROVIDER",
+            "INVESTIGATOR",
+            "OUTCOMES_ASSESSOR"
+          ]
+        }
+      },
+      "enrollmentInfo": {
+        "count": 80,
+        "type": "ESTIMATED"
+      }
+    },
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "label": "Arm 1: Intervention",
+          "type": "EXPERIMENTAL",
+          "description": "Arm will be those that are randomized to receive usual care plus hydrocortisone, thiamine and ascorbic acid.",
+          "interventionNames": [
+            "Drug: STASIS"
+          ]
+        },
+        {
+          "label": "Arm 2: Usual care",
+          "type": "NO_INTERVENTION",
+          "description": "Arm will be those that are randomized to receive usual care alone."
+        }
+      ],
+      "interventions": [
+        {
+          "type": "DRUG",
+          "name": "STASIS",
+          "description": "Hydrocortisone sodium succinate, 50 mg, every 6 hours, 7 days or until ICU discharge Thiamine, 200 mg, every 12 hours, 4 days or until ICU discharge Ascorbic acid, 1,500 mg, every 6 hours, 4 days or until ICU discharge",
+          "armGroupLabels": [
+            "Arm 1: Intervention"
+          ]
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "measure": "In-hospital or 28-day mortality rate",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care versus standard care in septic shock confers an in-hospital and 28-day mortality benefit",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        }
+      ],
+      "secondaryOutcomes": [
+        {
+          "measure": "Illness Severity (Change in SOFA Score)",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers more rapid improvements in illness severity",
+          "timeFrame": "72 hours"
+        },
+        {
+          "measure": "Hospital length-of-stay ICU LOS Duration of intubation",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers improved hospital length-of-stay metrics",
+          "timeFrame": "1 year or discharge (whichever comes first)"
+        },
+        {
+          "measure": "ICU length-of-stay",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers improved ICU length-of-stay metrics",
+          "timeFrame": "90 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "Vasopressor duration (days)",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers improvement in vasopressor requirements",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "ICU delerium (CAM-ICU score)",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence or severity of ICU delerium",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "Mechanical ventilation",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence or duration of invasive mechanical ventilation.",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "Cardiac arrest",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence of cardiac arrest or need for cardiopulmonary resuscitation",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "Renal replacement therapy",
+          "description": "o determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence of cardiac arrest or need for renal replacement therapy.",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "C-reactive protein",
+          "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the biochemical profiling in septic patients including a more rapid improvement in C-reactive protein",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        },
+        {
+          "measure": "Procalcitonin",
+          "description": "o determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the biochemical profiling in septic patients including a more rapid improvement in procalcitonin.",
+          "timeFrame": "28 days or discharge (whichever comes first)"
+        }
+      ]
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria:\n\n* Septic shock admitted to the ICU within 24 hours as defined by SEPSIS-3\n* SEPSIS-3 defines septic shock as sepsis with the following criteria despite adequate fluid resuscitation:\n\n  * Vasopressor required to maintain MAP \u2265 65 AND\n  * Serum lactate level \\>2.0 mmol/L\n* Age \u2265 18 years\n* Non-pregnant\n* Ability to consent with medical capacity or legally authorized representative (LAR) consent\n\nExclusion Criteria:\n\n* Age \\< 18 years\n* Pregnant defined by negative serum HCG in all females\n* Patients with limitation of care (i.e. DNR)\n* Known G6PD deficiency\n* Excluding primary admission diagnosis including the following:\n\n  * Acute stroke\n  * Acute coronary syndrome\n  * Active gastrointestinal bleed\n  * Burn\n  * Trauma\n* Prisoners\n* \\>1 episode of sepsis in hospital admission\n* Vasopressor use prior to randomization for more than 24 hours",
+      "healthyVolunteers": false,
+      "sex": "ALL",
+      "minimumAge": "18 Years",
+      "stdAges": [
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "contactsLocationsModule": {
+      "centralContacts": [
+        {
+          "name": "Amir Vahedian-Azimi, PhD",
+          "role": "CONTACT",
+          "phone": "+98 919 6017 138",
+          "email": "amirvahedian63@gmail.com"
+        },
+        {
+          "name": "Andrew C Miller, MD",
+          "role": "CONTACT",
+          "email": "Taqwa1@gmail.com"
+        }
+      ],
+      "overallOfficials": [
+        {
+          "name": "Amir Vahedian-Azimi, PhD",
+          "affiliation": "Baqiyatallah University of Medical Scienecs",
+          "role": "PRINCIPAL_INVESTIGATOR"
+        },
+        {
+          "name": "Andrew C Miller, MD",
+          "affiliation": "East Carolina University",
+          "role": "PRINCIPAL_INVESTIGATOR"
+        }
+      ]
+    },
+    "ipdSharingStatementModule": {
+      "ipdSharing": "NO"
+    }
+  },
+  "derivedSection": {
+    "miscInfoModule": {
+      "versionHolder": "2026-10-23"
+    },
+    "conditionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D012772",
+          "term": "Shock, Septic"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D018805",
+          "term": "Sepsis"
+        },
+        {
+          "id": "D007239",
+          "term": "Infections"
+        },
+        {
+          "id": "D018746",
+          "term": "Systemic Inflammatory Response Syndrome"
+        },
+        {
+          "id": "D007249",
+          "term": "Inflammation"
+        },
+        {
+          "id": "D010335",
+          "term": "Pathologic Processes"
+        },
+        {
+          "id": "D013568",
+          "term": "Pathological Conditions, Signs and Symptoms"
+        },
+        {
+          "id": "D012769",
+          "term": "Shock"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "meshes": [
+        {
+          "id": "C555654",
+          "term": "IbsC protein, E coli"
+        }
+      ]
+    }
+  },
+  "hasResults": false,
+  "_retrieved_at": "2026-10-24T05:31:10.483451+00:00"
+}

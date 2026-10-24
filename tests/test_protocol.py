@@ -41,11 +41,23 @@ def _protocol() -> TargetTrialProtocol:
     )
 
 
-def test_completeness_all_elements():
+def test_completeness_does_not_count_defaults():
     p = _protocol()
-    assert all(p.completeness().values())
+    status = p.element_status()
+    assert status["time_zero"] == "agent" and status["eligibility"] == "registry"
+    assert status["assignment"] == "default" and status["causal_contrast"] == "default"
+    done = p.completeness()
+    assert done["eligibility"] and done["time_zero"] and done["outcomes"]
+    assert not done["assignment"] and not done["analysis_plan"]
     assert [c.id for c in p.inclusion] == ["I1"]
     assert [c.id for c in p.exclusion] == ["E1"]
+
+
+def test_v1_criterion_shape_is_upgraded_to_one_atom():
+    c = _protocol().eligibility[0]
+    assert len(c.atoms) == 1 and c.atoms[0].value.value == 18
+    assert [x.name for x in c.concepts] == ["age"]
+    assert _protocol().eligibility[1].atoms == []  # nothing to wrap
 
 
 def test_completeness_flags_missing_time_zero():
@@ -62,14 +74,12 @@ def test_content_hash_ignores_provenance_and_version():
 
 def test_new_version_and_diff():
     a = _protocol()
-    relaxed = [c.model_copy() for c in a.eligibility]
-    relaxed[0] = relaxed[0].model_copy(
-        update={"value": ValueConstraint(comparator=Comparator.GE, value=16, unit="years")}
-    )
+    relaxed = [c.model_copy(deep=True) for c in a.eligibility]
+    relaxed[0].atoms[0].value = ValueConstraint(comparator=Comparator.GE, value=16, unit="years")
     b = new_version(a, created_by="redesign", eligibility=relaxed, mode="redesign")
-    assert a.eligibility[0].value.value == 18  # parent untouched
+    assert a.eligibility[0].atoms[0].value.value == 18  # parent untouched
     changes = {c.path: (c.before, c.after) for c in diff(a, b)}
-    assert changes["eligibility[id=I1].value.value"] == (18, 16)
+    assert changes["eligibility[id=I1].atoms[0].value.value"] == (18, 16)
     assert changes["mode"] == ("replay", "redesign")
     assert a.content_hash() != b.content_hash()
 

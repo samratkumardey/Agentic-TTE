@@ -40,5 +40,6 @@ uv run pytest -m live
 ## Rules the code enforces
 
 - The LLM only fills typed schemas. Numbers, splitting, durations and comparator arms are computed deterministically wherever possible.
-- A failed parse is kept and flagged in `Criterion.notes`, never dropped. Concepts not found verbatim in the criterion are flagged.
+- A failed parse is kept and flagged in `Criterion.notes`, never dropped. Concepts not found verbatim in the criterion are flagged. Values, time constraints, windows and grace periods the model wrote but the source never said are dropped, with a note.
+- Every TTE element records where it came from (`registry`, `derived`, `agent`, `user`, `default`), and `completeness()` doesn't count defaults.
 - No patient-level data in git: `.gitignore` plus a pre-commit hook (`scripts/check_no_patient_data.py`). Install the hook with `uv run pre-commit install`.

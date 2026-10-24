@@ -10,15 +10,16 @@ def test_import_nct03872011():
     assert len(p.inclusion) == 2 and len(p.exclusion) == 9
 
     age, onset = p.inclusion
-    assert age.value.comparator == ">=" and age.value.value == 18
+    assert age.atoms[0].value.comparator == ">=" and age.atoms[0].value.value == 18
     assert age.concepts[0].omop_concept_id == 4265453  # upstream Athena lookup
     shock = onset.concepts[0]
     assert (shock.name, shock.omop_concept_id, shock.status) == ("septic shock", 196236, "mapped")
-    assert onset.temporal.window.amount == 12
+    assert onset.atoms[0].temporal.window.amount == 12
 
     steroids = p.exclusion[0]
-    assert steroids.temporal.relation == "x_within_t_before_y"
-    assert steroids.temporal.window.amount == 3 and steroids.temporal.window.unit == "month"
+    t = steroids.atoms[0].temporal
+    assert t.relation == "x_within_t_before_y"
+    assert t.window.amount == 3 and t.window.unit == "month"
 
     allergy = next(c for c in p.exclusion if "allergy" in c.text)
     assert len(allergy.concepts) == 3  # upstream's multi-concept prompt fix

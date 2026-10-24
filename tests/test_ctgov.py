@@ -26,7 +26,9 @@ def test_split_matches_upstream_llm_split(nct03872011_study):
     s = extract_sections(nct03872011_study)
     assert s.inclusion == info["Inclusion Criteria"]
     assert s.exclusion == info["Exclusion Criteria"]
-    assert s.warnings == []
+    assert s.warnings == [
+        "no results posted on ClinicalTrials.gov; a Replay comparison needs a publication"
+    ]
 
 
 def test_extract_sections_metadata(nct03872011_study):
@@ -52,7 +54,8 @@ def test_structured_age_added_when_text_is_silent(nct03872011_study):
     )
     elig["maximumAge"] = "80 Years"
     s = extract_sections(study)
-    assert [(c.value.comparator, c.value.value) for c in s.structured_criteria] == [
+    values = [c.atoms[0].value for c in s.structured_criteria]
+    assert [(v.comparator, v.value) for v in values] == [
         (">=", 18.0),
         ("<=", 80.0),
     ]

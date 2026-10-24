@@ -205,3 +205,11 @@ Decided 2026-10-24: (1) React + FastAPI; (2) Ollama now, vLLM later behind the s
 Done: package scaffold; protocol schema with versioning and diffs; CT.gov client and deterministic extractor (reproduces upstream's GPT-4o criteria split for NCT03872011 exactly); `LLMClient` (Ollama + OpenAI-compatible, schema-constrained, retries, SQLite cache, digest pinning); Trialist draft path and CLI; EmulatRx cache importer as a regression test; Hellbender Slurm/Apptainer scripts; patient-data pre-commit guard.
 
 Hellbender (2026-10-24): environment set up and documented in `hpc/HELLBENDER.md`; the Trialist drafts protocols with `qwen3:32b` on an H100 in an Open OnDemand session (`hpc/interactive_ollama.sh`). Open for the Phase 0 exit criterion: the 10-trial Replay batch (`hpc/replay_phase0.sbatch`) with `qwen3:32b`, `gpt-oss:20b` and `alibayram/medgemma:27b` on one GPU type.
+
+**trialist-v2 / schema v2 (2026-10-24)**, from the review of qwen3:32b's NCT04134403 draft (`tests/test_nct04134403_regression.py`):
+- Criteria are lists of atoms, each with its own value and time constraint (C1).
+- Every element records its origin (`registry | derived | agent | user | default`); `completeness()` no longer counts defaults (C2, C3).
+- There is no default censoring on death (C4). Time frames and treatment courses can end at an event ("28 days or discharge, whichever first") (C8, C10). Administrative criteria are labelled (C13).
+- The extractor merges definition bullets, keeps AND/OR in joins, and records the design, status and enrollment type. It reads the detailed description, so ITT can come from the registry (C9, C11).
+- Value and temporal text, windows, the time-zero evidence and the grace period must be grounded in the source text, or they are dropped with a note (C5, C14). Anchors such as "randomization" become `time_zero` (C6), "null" strings become null (C7), and a value with no number becomes `present` (C12).
+- The few-shot example is no longer taken from a Replay trial. v1 protocol files still load (upgraded to one atom per criterion).

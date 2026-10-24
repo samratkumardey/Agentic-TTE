@@ -67,9 +67,15 @@ def draft(
         f"completion_tokens={u.completion_tokens}",
         err=True,
     )
-    missing = [k for k, ok in protocol.completeness().items() if not ok]
-    if missing:
-        typer.echo(f"[protocol] incomplete TTE elements: {', '.join(missing)}", err=True)
+    status = protocol.element_status()
+    counts: dict[str, int] = {}
+    for v in status.values():
+        counts[v] = counts.get(v, 0) + 1
+    summary = ", ".join(f"{n} {k}" for k, n in sorted(counts.items()))
+    typer.echo(f"[protocol] TTE elements by origin: {summary}", err=True)
+    unspecified = [k for k, ok in protocol.completeness().items() if not ok]
+    if unspecified:
+        typer.echo(f"[protocol] default or missing: {', '.join(unspecified)}", err=True)
 
 
 @app.command("llm-check")

@@ -1,4 +1,5 @@
 from agentic_tte.protocol.models import (
+    SCHEMA_VERSION,
     TTE_ELEMENTS,
     AnalysisPlan,
     AssignmentProcedure,
@@ -6,11 +7,13 @@ from agentic_tte.protocol.models import (
     Comparator,
     ConceptRef,
     Criterion,
+    CriterionAtom,
     Domain,
     Duration,
     Estimand,
     FollowUp,
     MappingStatus,
+    Origin,
     Outcome,
     Provenance,
     TargetTrialProtocol,
@@ -26,6 +29,7 @@ from agentic_tte.protocol.models import (
 from agentic_tte.protocol.versioning import FieldChange, diff, new_version
 
 __all__ = [
+    "SCHEMA_VERSION",
     "TTE_ELEMENTS",
     "AnalysisPlan",
     "AssignmentProcedure",
@@ -33,12 +37,14 @@ __all__ = [
     "Comparator",
     "ConceptRef",
     "Criterion",
+    "CriterionAtom",
     "Domain",
     "Duration",
     "Estimand",
     "FieldChange",
     "FollowUp",
     "MappingStatus",
+    "Origin",
     "Outcome",
     "Provenance",
     "TargetTrialProtocol",
