@@ -38,7 +38,7 @@ Reproducibility (eval/SCORING.md amendments 7-10, hpc/HELLBENDER.md):
 - Every scored run uses OLLAMA_NUM_PARALLEL=1, restarts Ollama per replicate and unloads the model before each trial (the script defaults). Never score a run without these settings in its manifest.
 - The 586e128 exit run is the pilot, not scored for accuracy.
 
-Next on the cluster: the order-independence test (`hpc/repro_test.sh`), then the final benchmark run (hpc/README.md §6). Its arms are qwen3, medgemma, gpt-oss default, and gpt-oss `low` (exploratory).
+Order independence was confirmed on 2026-10-25 (forward vs reverse, 6/6 identical). Next on the cluster: the final benchmark run (hpc/README.md §6). Hellbender writes outputs only under `runs/` (HELLBENDER.md sync rule 4). Its arms are qwen3, medgemma, gpt-oss default, and gpt-oss `low` (exploratory).
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

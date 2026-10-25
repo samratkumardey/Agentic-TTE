@@ -131,3 +131,5 @@ Reasoning tokens (gpt-oss) are reported separately when the server exposes them,
      - 10 trials × 2 replicates, one GPU type (H100), a fresh cache per replicate.
      - With identical replicates expected, part D becomes a check of determinism. Any remaining disagreement is reported, never averaged away.
   10. **gpt-oss timeouts under the final settings.** A call that runs away now ends at the output cap (or the 600 s timeout) as a criterion-level `parse_failed`, scored as missing (amendment 1). A trial-level failure, meaning no protocol at all, now only happens if the draft itself crashes, and is scored as all-missing. Both failure rates are reported per arm. No reruns of model-caused failures (amendment 2).
+- 2026-10-25, order-independence test (commit 45dc961, g020 H100; `hpc/repro_test.sh`): qwen3:32b and medgemma:27b, 3 trials drafted forward and in reverse, with OLLAMA_NUM_PARALLEL=1 and the model unloaded before every trial.
+  11. **All 6 trial-model pairs were identical on every field** in both orders. The gate in amendment 8 is passed. The final benchmark runs with these settings, in the standard trial order, with no fixed-order fallback needed.

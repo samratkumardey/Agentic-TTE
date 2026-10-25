@@ -156,7 +156,7 @@ cd ~/data/Agentic-TTE && git pull && source hpc/env.sh && bash hpc/repro_test.sh
 uv run python eval/compare_runs.py runs/repro-H100/np1_fwd runs/repro-H100/np1_rev
 ```
 
-Send me the `compare_runs.py` output. "6 identical" means order doesn't matter, and the final run can start.
+Done on 2026-10-25: 6 of 6 identical, so order doesn't matter and the final run can start.
 
 ### Final benchmark run
 
