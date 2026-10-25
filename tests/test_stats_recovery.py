@@ -29,7 +29,7 @@ from agentic_tte.stats import (
 from agentic_tte.stats.survival import log_error
 from agentic_tte.synth.dgp import Scenario, generate
 
-pytestmark = pytest.mark.slow  # ~2 min; skip with -m "not slow"
+pytestmark = pytest.mark.slow  # ~2 min; skip with -m "not slow and not live"
 
 TOL = 0.15
 N = 6000

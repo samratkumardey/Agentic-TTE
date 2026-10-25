@@ -32,7 +32,7 @@ It builds on and extends [EmulatRx](https://github.com/TrialLab/EmulatRx) (Li et
 ```bash
 uv sync --extra dev
 uv run pytest                 # all tests (~5 min)
-uv run pytest -m "not slow"   # skip the statistical recovery tests
+uv run pytest -m "not slow and not live"   # quick: skip the statistical recovery tests
 ```
 
 Draft a protocol with a local Ollama model:
@@ -44,10 +44,10 @@ uv run agentic-tte draft NCT04134403 --model qwen3:8b -o runs/NCT04134403/protoc
 
 Settings come from `ATTE_*` environment variables (see `agentic_tte/config.py`): for example `ATTE_OLLAMA_HOST`, `ATTE_MODEL` and `ATTE_CACHE_DIR`. For Hellbender, see [hpc/README.md](hpc/README.md) (procedure) and [hpc/HELLBENDER.md](hpc/HELLBENDER.md) (cluster facts and pitfalls).
 
-Run the live test against a real model (deselected by default):
+Run the live test against a real model (skipped unless `ATTE_LIVE=1`):
 
 ```bash
-uv run pytest -m live
+ATTE_LIVE=1 uv run pytest -m live
 ```
 
 ## Rules the code enforces

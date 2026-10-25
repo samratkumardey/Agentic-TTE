@@ -11,7 +11,7 @@
 # 11434. Results land in the same LLM cache as batch jobs.
 #
 # Server settings can be changed for reproducibility tests (hpc/repro_test.sh):
-#   ATTE_OLLAMA_NUM_PARALLEL (default 4), ATTE_OLLAMA_FLASH_ATTENTION (default 1).
+#   ATTE_OLLAMA_NUM_PARALLEL (default 1: reproducible; see hpc/HELLBENDER.md), ATTE_OLLAMA_FLASH_ATTENTION (default 1).
 # A running server is reused only if it was started with the same settings.
 
 # shellcheck source=/dev/null
@@ -19,7 +19,7 @@ source "${ATTE_ENV:-hpc/env.sh}"
 export OLLAMA_HOST="127.0.0.1:$OLLAMA_PORT"
 export ATTE_OLLAMA_HOST="http://$OLLAMA_HOST"
 export OLLAMA_KEEP_ALIVE=-1 OLLAMA_MAX_LOADED_MODELS=1
-export OLLAMA_NUM_PARALLEL="${ATTE_OLLAMA_NUM_PARALLEL:-4}"
+export OLLAMA_NUM_PARALLEL="${ATTE_OLLAMA_NUM_PARALLEL:-1}"
 export OLLAMA_FLASH_ATTENTION="${ATTE_OLLAMA_FLASH_ATTENTION:-1}"
 _atte_log="runs/interactive/ollama.log"
 _atte_pidfile="runs/interactive/ollama.pid"

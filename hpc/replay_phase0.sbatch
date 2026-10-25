@@ -26,7 +26,7 @@ export ATTE_MODEL="${ATTE_MODEL:-qwen3:32b}"
 PORT=$((20000 + SLURM_JOB_ID % 20000))
 export OLLAMA_HOST="127.0.0.1:$PORT"
 export OLLAMA_KEEP_ALIVE=-1 OLLAMA_MAX_LOADED_MODELS=1
-export OLLAMA_NUM_PARALLEL="${ATTE_OLLAMA_NUM_PARALLEL:-4}"
+export OLLAMA_NUM_PARALLEL="${ATTE_OLLAMA_NUM_PARALLEL:-1}"
 export OLLAMA_FLASH_ATTENTION="${ATTE_OLLAMA_FLASH_ATTENTION:-1}"
 export ATTE_OLLAMA_HOST="http://$OLLAMA_HOST"
 
@@ -61,6 +61,7 @@ curl -sf "$ATTE_OLLAMA_HOST/api/version" || { echo "[atte] Ollama did not start"
   echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
   echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
   echo "ollama_flash_attention=$OLLAMA_FLASH_ATTENTION"
+  echo "unload_per_trial=${ATTE_UNLOAD_PER_TRIAL:-1}"
   echo "model=$ATTE_MODEL"
   echo "think=${ATTE_THINK:-}"
   echo "num_predict=${ATTE_NUM_PREDICT:-8192}"
@@ -81,6 +82,12 @@ uv run agentic-tte llm-check || { echo "[atte] model $ATTE_MODEL missing; see hp
 failed=0
 for t in $TRIALS; do
   echo "[atte] $(date +%T) drafting $t"
+  # Unload the model first, so the trial's output does not depend on earlier requests
+  # (repro test 2026-10-24; hpc/HELLBENDER.md).
+  if [[ "${ATTE_UNLOAD_PER_TRIAL:-1}" == "1" ]]; then
+    curl -sf "$ATTE_OLLAMA_HOST/api/generate" -d "{\"model\": \"$ATTE_MODEL\", \"keep_alive\": 0}" \
+      > /dev/null || echo "[atte] warning: could not unload $ATTE_MODEL"
+  fi
   if ! uv run agentic-tte draft "$t" -o "$RUN_DIR/$t.protocol.json" 2> "$RUN_DIR/$t.log"; then
     echo "[atte] $t failed, see $RUN_DIR/$t.log"
     failed=$((failed + 1))

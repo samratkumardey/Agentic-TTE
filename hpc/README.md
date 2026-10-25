@@ -134,31 +134,61 @@ tar czf runs/exit-A100.tgz runs/exit-A100 runs/exit-A100.jobs    # after Option 
 tar czf runs/exit-H100.tgz runs/exit-H100                        # after Option B on H100
 ```
 
-### Reproducibility test (before any further benchmark run)
+### Reproducibility settings (apply to every scored run)
 
-Does `OLLAMA_NUM_PARALLEL=1` make replicates identical? The test covers qwen3:32b and medgemma:27b, on 3 trials whose replicates differed. It runs 2 configurations × 2 replicates, restarting Ollama before every replicate. It takes about 2 hours on the H100 and under 10 MB of disk.
+Test 1 (2026-10-24) found the cause of the exit run's replicate disagreement: server state.
+- With Ollama restarted before each replicate, replicates were identical.
+- The parallelism setting itself changes outputs.
+
+The scripts therefore default to `OLLAMA_NUM_PARALLEL=1`, restart Ollama per replicate, and unload the model before every trial. Each `manifest.txt` records `ollama_num_parallel`, `ollama_flash_attention` and `unload_per_trial`. Results: `eval/results/repro/`.
+
+### Test 2: order independence (run before the final benchmark)
+
+The same 3 trials are drafted forward and in reverse, for qwen3:32b and medgemma:27b, one replicate each. It takes about 1.2 hours on the H100 and under 10 MB of disk.
 
 ```bash
 tmux new -s atte
 ```
 ```bash
-source hpc/env.sh && bash hpc/repro_test.sh
+cd ~/data/Agentic-TTE && git pull && source hpc/env.sh && bash hpc/repro_test.sh
 ```
 ```bash
-for c in runs/repro-H100/*/; do uv run python eval/score_phase0.py "$c" --out eval/results/repro; done
+uv run python eval/compare_runs.py runs/repro-H100/np1_fwd runs/repro-H100/np1_rev
 ```
 
-Send me `eval/results/repro/` (two `.md` and two `.json` files). Each run's `manifest.txt` records `ollama_num_parallel` and `ollama_flash_attention`.
+Send me the `compare_runs.py` output. "6 identical" means order doesn't matter, and the final run can start.
+
+### Final benchmark run
+
+Pre-registered in `eval/SCORING.md`, amendments 9 and 10:
+- 10 trials × 4 arms × 2 replicates on H100: qwen3:32b, medgemma:27b and gpt-oss:20b as pre-registered, plus gpt-oss:20b `low` (exploratory).
+- One commit, with the settings above.
+- Disk use: under 50 MB. Time: about 10–12 GPU-hours, mostly gpt-oss.
+
+**Recommended:** batch jobs on the non-preemptible `gpu` partition. That's 8 independent jobs, each within the 8-hour job limit:
+
+```bash
+ATTE_EXIT_TAG=final ATTE_EXIT_MODELS="qwen3:32b|false alibayram/medgemma:27b|none gpt-oss:20b|none gpt-oss:20b|low" bash hpc/exit_run_submit.sh gpu gpu:H100:1
+```
+
+**Alternative:** your OnDemand H100 session, in tmux, if it has at least 12 hours left:
+
+```bash
+ATTE_EXIT_TAG=final ATTE_EXIT_MODELS="qwen3:32b|false alibayram/medgemma:27b|none gpt-oss:20b|none gpt-oss:20b|low" bash hpc/exit_run_interactive.sh
+```
+
+Then check the run and archive it:
+
+```bash
+uv run python eval/check_exit_run.py runs/exit-H100-final
+```
+```bash
+tar czf runs/exit-H100-final.tgz runs/exit-H100-final runs/exit-H100-final.jobs 2>/dev/null; ls -la runs/exit-H100-final.tgz
+```
 
 ### New arms (tagged)
 
-A new arm on a GPU type that already has a run needs `ATTE_EXIT_TAG`, so it never overwrites the pre-registered run. For example, the exploratory gpt-oss arm with a fixed reasoning level:
-
-```bash
-ATTE_EXIT_TAG=gptoss-low ATTE_EXIT_MODELS="gpt-oss:20b|low" bash hpc/exit_run_interactive.sh
-```
-
-This writes `runs/exit-H100-gptoss-low/`. Check it with `uv run python eval/check_exit_run.py runs/exit-H100-gptoss-low`.
+A new arm on a GPU type that already has a run needs `ATTE_EXIT_TAG`, so it never overwrites an earlier run. Arms of one model with different reasoning levels get separate directories (`gpt-oss_20b`, `gpt-oss_20b-low`).
 
 ## 7. Long-running service (needed from Phase 4)
 

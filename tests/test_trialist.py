@@ -154,6 +154,8 @@ def test_null_strings_become_none():
 
 
 @pytest.mark.live
+@pytest.mark.skipif(not os.environ.get("ATTE_LIVE"),
+                    reason="set ATTE_LIVE=1 to run against a real model")
 def test_live_ollama_draft(nct03872011_study, tmp_path):
     """Real model, offline registry record: ATTE_OLLAMA_HOST / ATTE_MODEL select the server."""
     llm = OllamaClient(

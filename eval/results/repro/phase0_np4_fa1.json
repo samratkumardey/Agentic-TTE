@@ -1,0 +1,153 @@
+{
+  "run_root": "runs\\repro-H100\\np4_fa1",
+  "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
+  "git_commit": "df348a8",
+  "ollama_version": "{\"version\":\"0.40.3\"}",
+  "trials": [
+    "NCT01223690",
+    "NCT02856698",
+    "NCT06091982"
+  ],
+  "checker_problems": [],
+  "models": {
+    "alibayram/medgemma:27b": {
+      "completion": {
+        "rep1": {
+          "protocols": 3,
+          "trials": 3,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 3,
+          "trials": 3,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 24,
+          "cache_hits": 0,
+          "prompt_tokens": 19517,
+          "completion_tokens": 4411,
+          "completion_tokens_per_call": 183.79166666666666,
+          "wall_hours": 0.28444444444444444
+        },
+        "rep2": {
+          "calls": 24,
+          "cache_hits": 0,
+          "prompt_tokens": 19517,
+          "completion_tokens": 4411,
+          "completion_tokens_per_call": 183.79166666666666,
+          "wall_hours": 0.3036111111111111
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 3,
+        "assignment:default": 3,
+        "causal_contrast:default": 3,
+        "eligibility:registry": 3,
+        "follow_up:derived": 3,
+        "outcomes:registry": 3,
+        "time_zero:agent": 3,
+        "treatment_strategies:registry": 3
+      },
+      "stability": {
+        "trials_compared": 3,
+        "identical_full": 3,
+        "identical_substantive": 3,
+        "element_identical": {
+          "eligibility": 3,
+          "treatment_strategies": 3,
+          "assignment": 3,
+          "time_zero": 3,
+          "follow_up": 3,
+          "outcomes": 3,
+          "causal_contrast": 3,
+          "analysis_plan": 3
+        },
+        "criteria_identical": 17,
+        "criteria_compared": 17,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      }
+    },
+    "qwen3:32b": {
+      "completion": {
+        "rep1": {
+          "protocols": 3,
+          "trials": 3,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 3,
+          "trials": 3,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 24,
+          "cache_hits": 0,
+          "prompt_tokens": 19374,
+          "completion_tokens": 4328,
+          "completion_tokens_per_call": 180.33333333333334,
+          "wall_hours": 0.31055555555555553
+        },
+        "rep2": {
+          "calls": 24,
+          "cache_hits": 0,
+          "prompt_tokens": 19374,
+          "completion_tokens": 4328,
+          "completion_tokens_per_call": 180.33333333333334,
+          "wall_hours": 0.2336111111111111
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 3,
+        "assignment:default": 3,
+        "causal_contrast:default": 3,
+        "eligibility:registry": 3,
+        "follow_up:derived": 3,
+        "outcomes:registry": 3,
+        "time_zero:agent": 3,
+        "treatment_strategies:registry": 3
+      },
+      "stability": {
+        "trials_compared": 3,
+        "identical_full": 3,
+        "identical_substantive": 3,
+        "element_identical": {
+          "eligibility": 3,
+          "treatment_strategies": 3,
+          "assignment": 3,
+          "time_zero": 3,
+          "follow_up": 3,
+          "outcomes": 3,
+          "causal_contrast": 3,
+          "analysis_plan": 3
+        },
+        "criteria_identical": 17,
+        "criteria_compared": 17,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      }
+    }
+  },
+  "inter_model_agreement": {
+    "alibayram/medgemma:27b vs qwen3:32b": {
+      "trials": 3,
+      "f1_relaxed": 0.6329113924050633,
+      "f1_strict": 0.4050632911392405
+    }
+  }
+}

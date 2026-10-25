@@ -11,8 +11,24 @@ EXIT_REPS="${ATTE_EXIT_REPS:-2}"
 # Optional tag for a new arm, so it never collides with an earlier run: runs/exit-H100-<tag>/
 EXIT_TAG="${ATTE_EXIT_TAG:-}"
 
-# Directory name for a model: qwen3:32b -> qwen3_32b
-exit_slug() { echo "$1" | tr '/:' '__'; }
+# Unload the model before every trial, so a trial's output never depends on which requests the
+# server handled before it (repro test 2026-10-24: outputs depended on server state).
+EXIT_UNLOAD_PER_TRIAL="${ATTE_UNLOAD_PER_TRIAL:-1}"
+
+# Directory name for a model arm: qwen3:32b -> qwen3_32b; gpt-oss:20b with THINK=low ->
+# gpt-oss_20b-low, so two reasoning levels of one model never share a directory.
+exit_slug() {
+  local slug
+  slug="$(echo "$1" | tr '/:' '__')"
+  case "${2:-}" in low|medium|high|true) slug="$slug-$2" ;; esac
+  echo "$slug"
+}
+
+# Free the model's runner (and its prompt cache) without stopping the server.
+exit_unload_model() {
+  curl -sf "$ATTE_OLLAMA_HOST/api/generate" -d "{\"model\": \"$1\", \"keep_alive\": 0}" \
+    > /dev/null || echo "[atte] warning: could not unload $1"
+}
 
 # "H100" -> "H100" or "H100-<tag>"
 exit_label() { echo "$1${EXIT_TAG:+-$EXIT_TAG}"; }
@@ -61,6 +77,7 @@ exit_write_manifest() {
     echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
     echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
     echo "ollama_flash_attention=$OLLAMA_FLASH_ATTENTION"
+    echo "unload_per_trial=$EXIT_UNLOAD_PER_TRIAL"
     echo "model=$model"
     echo "think=$think"
     echo "num_predict=${ATTE_NUM_PREDICT:-8192}"
@@ -78,6 +95,7 @@ exit_draft_trials() {
   local run="$1" model="$2" rep="$3" failed=0 t
   for t in $EXIT_TRIALS; do
     echo "[atte] $(date +%T) $model rep$rep $t"
+    [[ "$EXIT_UNLOAD_PER_TRIAL" == "1" ]] && exit_unload_model "$model"
     if ! uv run agentic-tte draft "$t" -o "$run/$t.protocol.json" 2> "$run/$t.log"; then
       echo "[atte] $t failed, see $run/$t.log"
       failed=$((failed + 1))

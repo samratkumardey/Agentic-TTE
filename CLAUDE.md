@@ -33,7 +33,12 @@ The Phase 0 exit criterion is met. The exit run (commit 586e128, H100, interacti
 
 Accuracy endpoints (`eval/SCORING.md` parts B and C) need the human gold annotation (`eval/gold/`), which does not exist yet. Never report an accuracy number without it.
 
-Next on the cluster: `hpc/repro_test.sh` (OLLAMA_NUM_PARALLEL 4 vs 1), then the tagged gpt-oss `low` arm.
+Reproducibility (eval/SCORING.md amendments 7-10, hpc/HELLBENDER.md):
+- Replicates are identical once Ollama restarts per replicate. The exit run's disagreement came from server state.
+- Every scored run uses OLLAMA_NUM_PARALLEL=1, restarts Ollama per replicate and unloads the model before each trial (the script defaults). Never score a run without these settings in its manifest.
+- The 586e128 exit run is the pilot, not scored for accuracy.
+
+Next on the cluster: the order-independence test (`hpc/repro_test.sh`), then the final benchmark run (hpc/README.md §6). Its arms are qwen3, medgemma, gpt-oss default, and gpt-oss `low` (exploratory).
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

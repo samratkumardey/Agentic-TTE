@@ -23,7 +23,7 @@ mkdir -p "$OLLAMA_MODELS" "$(dirname "$ATTE_ENDPOINT_FILE")" logs
 export OLLAMA_HOST="$OLLAMA_BIND:$OLLAMA_PORT"
 export OLLAMA_KEEP_ALIVE=-1          # keep the model in VRAM between agent calls
 export OLLAMA_MAX_LOADED_MODELS=1    # one large model on the 80 GB card
-export OLLAMA_NUM_PARALLEL=4         # concurrent agent requests
+export OLLAMA_NUM_PARALLEL="${ATTE_OLLAMA_NUM_PARALLEL:-1}"  # 1: reproducible outputs (HELLBENDER.md)
 export OLLAMA_FLASH_ATTENTION=1
 
 # Requeue before the wall-time limit so the service comes back by itself.

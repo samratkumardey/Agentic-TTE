@@ -23,7 +23,7 @@ exit_preflight
 JOBS="runs/exit-$LABEL.jobs"
 mkdir -p "runs/exit-$LABEL" logs
 for spec in $EXIT_MODELS; do
-  MODEL="${spec%|*}"; THINK="${spec#*|}"; SLUG="$(exit_slug "$MODEL")"
+  MODEL="${spec%|*}"; THINK="${spec#*|}"; SLUG="$(exit_slug "$MODEL" "$THINK")"
   for REP in $(seq "$EXIT_REPS"); do
     CACHE="$ATTE_PROJECT_DIR/exit/$LABEL/$SLUG/rep$REP"
     RUN="runs/exit-$LABEL/$SLUG/rep$REP"
