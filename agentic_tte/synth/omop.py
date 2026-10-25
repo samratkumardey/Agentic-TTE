@@ -142,6 +142,14 @@ def to_omop(cohort: Cohort) -> dict[str, pd.DataFrame]:
         "drug_exposure": drug,
         "death": death,
         "concept": concept_table(s.n_noise),
+        # CDM metadata, read by the Data Support Gate.
+        "cdm_source": pd.DataFrame([{
+            "cdm_source_name": "Agentic-TTE synthetic ICU cohort",
+            "cdm_source_abbreviation": "ATTE-SYNTH",
+            "cdm_version": "5.4",
+            "vocabulary_version": "ATTE-SYNTH local concepts",
+            "source_description": f"agentic_tte.synth, seed {s.seed}, n {s.n}",
+        }]),  # fmt: skip
     }
 
 

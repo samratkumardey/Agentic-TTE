@@ -326,3 +326,17 @@ To confirm with MU IT and Oracle: compute allowed in the tenancy, the data forma
 5. The three-model benchmark (`eval/SCORING.md`), with the gold annotation done in parallel.
 
 Proprietary-model arms, the Oracle data plane, and the Rehearse and Redesign interfaces follow the first manuscript.
+
+## 15. Phase 2 status (started 2026-10-25)
+
+**1. Data Support Gate: built** (`agentic_tte/omop/gate.py`, tests in `tests/test_gate.py`).
+- It checks an OMOP CDM database against a protocol and reports green/amber/red per check; red blocks the run.
+- Checks: structure, CDM version (`cdm_source`), vocabulary, volume, time resolution against the protocol's finest window, death records, follow-up coverage, plausibility, patients per protocol concept (with descendants when `concept_ancestor` exists), and governance (declared data classification and RCSS approval; no patient rows to any LLM).
+- Counts below 11 are suppressed. On the synthetic database with the NCT04134403 protocol it reports amber: local vocabulary only, and concepts not yet mapped.
+
+**Next:**
+2. OMOP concept mapping from vocabulary tables (`concept`, `concept_synonym`, `concept_ancestor`), producing the gate's `concept_sets`, with a clinician review step.
+3. The criteria-to-SQL compiler.
+4. The attrition table and feasibility (eligible N, events), which close the gate's last check.
+
+**Gold annotation (decision pending):** LLM pre-annotation is allowed only as a separate, disclosed arm, not as gold (see the discussion of 2026-10-25). The gold standard stays two blinded human annotators plus an adjudicator.
