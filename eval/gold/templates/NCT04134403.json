@@ -1,0 +1,177 @@
+{
+  "nct_id": "NCT04134403",
+  "record_sha256": "78333bfa1da1f039c3e140d46cd10ba889ac09f03bbf825833af45de5ce42f83",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Septic shock admitted to the ICU within 24 hours as defined by SEPSIS-3 [definition: SEPSIS-3 defines septic shock as sepsis with the following criteria despite adequate fluid resuscitation: Vasopressor required to maintain MAP ≥ 65 AND Serum lactate level >2.0 mmol/L]",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Age ≥ 18 years",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Non-pregnant",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Ability to consent with medical capacity or legally authorized representative (LAR) consent",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Age < 18 years",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Pregnant defined by negative serum HCG in all females",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Patients with limitation of care (i.e. DNR)",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Known G6PD deficiency",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Excluding primary admission diagnosis including the following: Acute stroke; Acute coronary syndrome; Active gastrointestinal bleed; Burn; Trauma",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Prisoners",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": ">1 episode of sepsis in hospital admission",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Vasopressor use prior to randomization for more than 24 hours",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Arm 1: Intervention",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Arm will be those that are randomized to receive usual care plus hydrocortisone, thiamine and ascorbic acid.",
+      "intervention_text": [
+        "STASIS: Hydrocortisone sodium succinate, 50 mg, every 6 hours, 7 days or until ICU discharge Thiamine, 200 mg, every 12 hours, 4 days or until ICU discharge Ascorbic acid, 1,500 mg, every 6 hours, 4 days or until ICU discharge"
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "Arm 2: Usual care",
+      "arm_type": "NO_INTERVENTION",
+      "description": "Arm will be those that are randomized to receive usual care alone.",
+      "intervention_text": [],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "In-hospital or 28-day mortality rate",
+    "time_frame": "28 days or discharge (whichever comes first)",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "This trial is designed as a multi-center prospective, double-blinded, randomized controlled study. The objective of this project is to determine if in patients admitted to the hospital with septic shock (population), does treatment with a bundle including hydrocortisone, thiamine, and ascorbic acid improve in-hospital or 28-day mortality (primary outcomes) or surrogate markers of illness severity including: (1) ICU or hospital length-of-stay, (2) duration of invasive mechanical ventilation, (3) duration of vasopressor administration, (4) incidence and severity of ICU delirium, and (5) illness severity (secondary outcomes). The calculated sample size is 80. Subjects will be followed for 28 days or until hospital discharge.\n\nPatients eligible for inclusion must be admitted with septic shock (as defined by SEPSIS-3) requiring vasopressors to maintain MAP ≥ 65 AND serum lactate level \\>2 mmol/L after adequate fluid resuscitation (generally recognized at 30 ml/kg crystalloid unless contraindicated as deemed by treating clinician) within the first three hours.\n\nThe exclusion criteria are: age \\< 18 years, pregnant, patients with limitation of care (i.e. do not resuscitate \\[DNR\\]), known Glucose-6-Phosphate Dehydrogenase (G6PD) Deficiency, and vasopressor use for \\> 24 hours prior to study enrollment.\n\nPatients in Arm 1 will randomized to receive usual care + hydrocortisone, thiamine and ascorbic acid. Arm 2 will be randomized to receive usual care alone. Crossover is not allowed. If a patient is randomized into study Arm 2, the treating physician may decide to administer study medications if they feel it is in the best interest of the patient. In this case the patient will continue to be analyzed in their assigned arm on an intention to treat basis. Source of participants will be in-hospital and Emergency Department patients.",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=28.0 unit='day'",
+      "hospital discharge",
+      "first"
+    ]
+  }
+}

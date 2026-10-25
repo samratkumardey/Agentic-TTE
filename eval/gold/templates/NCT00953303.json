@@ -1,0 +1,149 @@
+{
+  "nct_id": "NCT00953303",
+  "record_sha256": "f1d7909f9386ccd0f4d5da2247418deeb64eb74e000106bd32e8eaa89d056e88",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Patients with dyspnea at rest due to acutely decompensated CHF requiring hospitalization and intravenous therapy. The cardiac etiology for acutely decompensated CHF was established by echocardiogram and/or a chest x-ray film and 2 of the following: >2-pillow orthopnea before study entry; Jugular venous distention and/or abdominal discomfort due to mesenteric congestion.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Patients may have had acute decompensation of chronic heart failure, gradual worsening of chronic heart failure, or new onset of acutely decompensated CHF. Patients who were receiving intravenous therapy i.e. Inotropic and/or vasodilator but who otherwise met entry criteria were also permitted into the study. Patients with signs of cardiac shock were also permitted into the study.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Patient refusal",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Any signs of infection",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "any condition that would contraindicate a glucocorticoids use",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Poor controlled hypertension",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Poor controlled diabetes mellitus",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Active myocarditis",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Malignancy or other terminal illness",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "glucocorticoid",
+      "arm_type": "EXPERIMENTAL",
+      "description": null,
+      "intervention_text": [
+        "glucocorticoid: One dose of Dexamethasone (20mg/day) followed by prednisone 1mg/kg/day with a maximum dose of 60mg/day."
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "Standard care",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": null,
+      "intervention_text": [
+        "standard care: The patients will be given standard care such as diuretics, inotropic and/or vasodilator in acute decompensated congestive heart failure management."
+      ],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "Cardiovascular mortality in the 30 days following randomization.",
+    "time_frame": "30 days following randomization",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "Newly emerging clinical evidence showed glucocorticoids, when added to best conventional therapy, could produce potent diuretic effects, and improve renal functions in patients with decompensated congestive heart failure. It holds ture even in the patients who failed to respond to high dose of furosemide (\\>200mg/day). The present study is to confirm the clinical efficacy of glucocorticoids on cardiovascular mortality in patients with decompensated congestive heart failure who are on best conventional therapy.",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=30.0 unit='day'",
+      "None",
+      "None"
+    ]
+  }
+}

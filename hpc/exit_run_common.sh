@@ -1,15 +1,21 @@
 #!/bin/bash
-# Shared settings for the Phase 0 exit run (eval/SCORING.md). Sourced by exit_run_submit.sh and
-# exit_run_interactive.sh; not run on its own.
+# Shared settings for the Phase 0 exit run (eval/SCORING.md) and the reproducibility test.
+# Sourced by exit_run_submit.sh, exit_run_interactive.sh and repro_test.sh; not run on its own.
 
 # The paper's 10 MIMIC-IV acute-care trials (eval/reference/replay_trials.json).
 EXIT_TRIALS="${ATTE_TRIALS:-NCT00475852 NCT02856698 NCT03872011 NCT04134403 NCT06091982 NCT03258684 NCT03592693 NCT01560650 NCT01223690 NCT00953303}"
-# "model|ATTE_THINK" pairs (eval/SCORING.md, Design).
+# "model|ATTE_THINK" pairs (eval/SCORING.md, Design). ATTE_THINK: false/true, low/medium/high
+# (gpt-oss reasoning level), or none (model default).
 EXIT_MODELS="${ATTE_EXIT_MODELS:-qwen3:32b|false gpt-oss:20b|none alibayram/medgemma:27b|none}"
 EXIT_REPS="${ATTE_EXIT_REPS:-2}"
+# Optional tag for a new arm, so it never collides with an earlier run: runs/exit-H100-<tag>/
+EXIT_TAG="${ATTE_EXIT_TAG:-}"
 
 # Directory name for a model: qwen3:32b -> qwen3_32b
 exit_slug() { echo "$1" | tr '/:' '__'; }
+
+# "H100" -> "H100" or "H100-<tag>"
+exit_label() { echo "$1${EXIT_TAG:+-$EXIT_TAG}"; }
 
 # Refuse to start if a trial record is missing from the shared CT.gov cache (compute nodes may
 # have no internet) or if the working tree has uncommitted changes (the manifest would say
@@ -39,4 +45,44 @@ exit_fresh_cache() {
     return 1
   fi
   mkdir -p "$dir/ctgov" && cp -n "$ATTE_PROJECT_DIR"/cache/ctgov/*.json "$dir/ctgov/"
+}
+
+# manifest.txt for an interactive run (CLAUDE.md rule 7). Batch jobs write theirs in
+# replay_phase0.sbatch with the same keys.
+exit_write_manifest() {
+  local run="$1" model="$2" think="$3" rep="$4"
+  {
+    echo "job_id=${SLURM_JOB_ID:-interactive}"
+    echo "partition=${SLURM_JOB_PARTITION:-}"
+    echo "node=$(hostname -s)"
+    echo "gpu=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader | head -n1)"
+    echo "git_commit=$(git rev-parse --short HEAD)$(git diff --quiet || echo -dirty)"
+    echo "ollama_image=$OLLAMA_SIF"
+    echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
+    echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
+    echo "ollama_flash_attention=$OLLAMA_FLASH_ATTENTION"
+    echo "model=$model"
+    echo "think=$think"
+    echo "num_predict=${ATTE_NUM_PREDICT:-8192}"
+    echo "llm_timeout_s=${ATTE_LLM_TIMEOUT_S:-600}"
+    echo "replicate=$rep"
+    echo "cache_dir=$ATTE_CACHE_DIR"
+    echo "restart_count=0"
+    echo "trials=$EXIT_TRIALS"
+    echo "started=$(date -Is)"
+  } | tee "$run/manifest.txt"
+}
+
+# Draft every trial into $run, then close the manifest with the finish time and failures.
+exit_draft_trials() {
+  local run="$1" model="$2" rep="$3" failed=0 t
+  for t in $EXIT_TRIALS; do
+    echo "[atte] $(date +%T) $model rep$rep $t"
+    if ! uv run agentic-tte draft "$t" -o "$run/$t.protocol.json" 2> "$run/$t.log"; then
+      echo "[atte] $t failed, see $run/$t.log"
+      failed=$((failed + 1))
+    fi
+    tail -n 3 "$run/$t.log"
+  done
+  echo "finished=$(date -Is) failed=$failed" >> "$run/manifest.txt"
 }

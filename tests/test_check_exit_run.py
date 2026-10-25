@@ -47,10 +47,46 @@ def test_detects_mixed_gpu_cache_hits_v1_and_dirty(tmp_path):
     _, problems = mod.check(tmp_path)
     text = "\n".join(problems)
     assert "runs differ in gpu" in text
-    assert "cache hits without a restart" in text
+    assert "has 3 cache hits, 0 explained" in text
     assert "schema_version 1" in text
     assert "uncommitted changes" in text
     assert "no 'finished' line" in text
+
+
+def _study(nct, exclusions):
+    return {"protocolSection": {
+        "identificationModule": {"nctId": nct, "briefTitle": nct},
+        "eligibilityModule": {"eligibilityCriteria":
+                              "Inclusion Criteria:\n\n* Septic shock\n\nExclusion Criteria:\n\n"
+                              + "\n".join(f"* {e}" for e in exclusions)}}}  # fmt: skip
+
+
+def test_repeated_requests_within_a_run_explain_cache_hits(tmp_path):
+    """Exit run: NCT03592693 repeats "Age < 18 years" and "Pregnant" from earlier trials, so a
+    fresh cache answers them; that is not a stale cache."""
+    ctgov = tmp_path / "ctgov"
+    ctgov.mkdir()
+    (ctgov / "NCT1.json").write_text(json.dumps(_study("NCT1", ["Pregnant"])))
+    (ctgov / "NCT2.json").write_text(json.dumps(_study("NCT2", ["Pregnant", "Prisoners"])))
+    runs = tmp_path / "runs"
+    _run(runs, "qwen3_32b", 1)  # NCT2's log reports 0 hits: fine
+    rows, problems = mod.check(runs, ctgov)
+    assert problems == [] and rows[0]["expected_repeats"] == 2  # inclusion + "Pregnant"
+    assert mod.expected_repeats(["NCT1", "NCT2"], ctgov) == {"NCT1": 0, "NCT2": 2}
+    _run(runs, "medgemma", 1, hits=3)  # 3 hits per trial: NCT1 can explain none
+    _, problems = mod.check(runs, ctgov)
+    assert any("NCT1 has 3 cache hits, 0 explained" in p for p in problems)
+    assert any("NCT2 has 3 cache hits, 2 explained" in p for p in problems)
+
+
+def test_missing_protocol_reports_the_cause(tmp_path):
+    _run(tmp_path, "gpt-oss_20b", 1)
+    run = tmp_path / "gpt-oss_20b" / "rep1"
+    (run / "NCT2.protocol.json").unlink()
+    (run / "NCT2.log").write_text("Traceback ...\nReadTimeout: timed out\n")
+    rows, problems = mod.check(tmp_path)
+    assert rows[0]["missing"] == {"NCT2": "ReadTimeout"}
+    assert any("missing NCT2.protocol.json (ReadTimeout)" in p for p in problems)
 
 
 def test_cache_hits_allowed_after_preemption(tmp_path):

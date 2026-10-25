@@ -1,0 +1,286 @@
+{
+  "run_root": "runs\\exit-H100",
+  "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
+  "git_commit": "586e128",
+  "ollama_version": "{\"version\":\"0.40.3\"}",
+  "trials": [
+    "NCT00475852",
+    "NCT00953303",
+    "NCT01223690",
+    "NCT01560650",
+    "NCT02856698",
+    "NCT03258684",
+    "NCT03592693",
+    "NCT03872011",
+    "NCT04134403",
+    "NCT06091982"
+  ],
+  "checker_problems": [
+    "runs\\exit-H100\\gpt-oss_20b\\rep1: missing NCT00475852.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep1: missing NCT04134403.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep1: missing NCT06091982.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep1: missing NCT03592693.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep1: missing NCT01223690.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep2: missing NCT00475852.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep2: missing NCT04134403.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep2: missing NCT01223690.protocol.json (ReadTimeout)",
+    "runs\\exit-H100\\gpt-oss_20b\\rep2: missing NCT00953303.protocol.json (ReadTimeout)"
+  ],
+  "models": {
+    "alibayram/medgemma:27b": {
+      "completion": {
+        "rep1": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 88257,
+          "completion_tokens": 17598,
+          "completion_tokens_per_call": 174.23762376237624,
+          "wall_hours": 1.0897222222222223
+        },
+        "rep2": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 88257,
+          "completion_tokens": 17724,
+          "completion_tokens_per_call": 175.4851485148515,
+          "wall_hours": 1.0580555555555555
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 10,
+        "assignment:default": 10,
+        "causal_contrast:default": 9,
+        "causal_contrast:registry": 1,
+        "eligibility:registry": 10,
+        "follow_up:derived": 8,
+        "follow_up:missing": 2,
+        "outcomes:registry": 10,
+        "time_zero:agent": 10,
+        "treatment_strategies:registry": 10
+      },
+      "stability": {
+        "trials_compared": 10,
+        "identical_full": 2,
+        "identical_substantive": 4,
+        "element_identical": {
+          "eligibility": 5,
+          "treatment_strategies": 10,
+          "assignment": 10,
+          "time_zero": 8,
+          "follow_up": 10,
+          "outcomes": 10,
+          "causal_contrast": 10,
+          "analysis_plan": 10
+        },
+        "criteria_identical": 72,
+        "criteria_compared": 77,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 0.9763313609467456,
+        "concept_f1_strict": 0.9408284023668638
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.5,
+        "recall": 0.3888888888888889,
+        "f1": 0.43750000000000006,
+        "tp": 7,
+        "pred": 14,
+        "ref": 18
+      }
+    },
+    "gpt-oss:20b": {
+      "completion": {
+        "rep1": {
+          "protocols": 5,
+          "trials": 10,
+          "trial_failures": {
+            "NCT00475852": "ReadTimeout",
+            "NCT04134403": "ReadTimeout",
+            "NCT06091982": "ReadTimeout",
+            "NCT03592693": "ReadTimeout",
+            "NCT01223690": "ReadTimeout"
+          },
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 6,
+          "trials": 10,
+          "trial_failures": {
+            "NCT00475852": "ReadTimeout",
+            "NCT04134403": "ReadTimeout",
+            "NCT01223690": "ReadTimeout",
+            "NCT00953303": "ReadTimeout"
+          },
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 50,
+          "cache_hits": 0,
+          "prompt_tokens": 44718,
+          "completion_tokens": 48264,
+          "completion_tokens_per_call": 965.28,
+          "wall_hours": 2.801388888888889
+        },
+        "rep2": {
+          "calls": 56,
+          "cache_hits": 2,
+          "prompt_tokens": 50049,
+          "completion_tokens": 57314,
+          "completion_tokens_per_call": 1023.4642857142857,
+          "wall_hours": 3.006111111111111
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 5,
+        "assignment:default": 5,
+        "causal_contrast:default": 5,
+        "eligibility:registry": 5,
+        "follow_up:derived": 4,
+        "follow_up:missing": 1,
+        "outcomes:registry": 5,
+        "time_zero:agent": 5,
+        "treatment_strategies:registry": 5
+      },
+      "stability": {
+        "trials_compared": 4,
+        "identical_full": 0,
+        "identical_substantive": 0,
+        "element_identical": {
+          "eligibility": 1,
+          "treatment_strategies": 0,
+          "assignment": 4,
+          "time_zero": 0,
+          "follow_up": 4,
+          "outcomes": 4,
+          "causal_contrast": 4,
+          "analysis_plan": 4
+        },
+        "criteria_identical": 17,
+        "criteria_compared": 25,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 0.9302325581395349,
+        "concept_f1_strict": 0.7906976744186046
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.5333333333333333,
+        "recall": 0.4444444444444444,
+        "f1": 0.4848484848484848,
+        "tp": 8,
+        "pred": 15,
+        "ref": 18
+      }
+    },
+    "qwen3:32b": {
+      "completion": {
+        "rep1": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 87400,
+          "completion_tokens": 16428,
+          "completion_tokens_per_call": 162.65346534653466,
+          "wall_hours": 0.9338888888888889
+        },
+        "rep2": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 87400,
+          "completion_tokens": 16432,
+          "completion_tokens_per_call": 162.69306930693068,
+          "wall_hours": 0.9238888888888889
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 10,
+        "assignment:default": 10,
+        "causal_contrast:default": 9,
+        "causal_contrast:registry": 1,
+        "eligibility:registry": 10,
+        "follow_up:derived": 8,
+        "follow_up:missing": 2,
+        "outcomes:registry": 10,
+        "time_zero:agent": 10,
+        "treatment_strategies:registry": 10
+      },
+      "stability": {
+        "trials_compared": 10,
+        "identical_full": 4,
+        "identical_substantive": 6,
+        "element_identical": {
+          "eligibility": 10,
+          "treatment_strategies": 8,
+          "assignment": 10,
+          "time_zero": 8,
+          "follow_up": 10,
+          "outcomes": 10,
+          "causal_contrast": 10,
+          "analysis_plan": 10
+        },
+        "criteria_identical": 77,
+        "criteria_compared": 77,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.5384615384615384,
+        "recall": 0.3888888888888889,
+        "f1": 0.45161290322580644,
+        "tp": 7,
+        "pred": 13,
+        "ref": 18
+      }
+    }
+  },
+  "inter_model_agreement": {
+    "alibayram/medgemma:27b vs gpt-oss:20b": {
+      "trials": 5,
+      "f1_relaxed": 0.5957446808510638,
+      "f1_strict": 0.425531914893617
+    },
+    "alibayram/medgemma:27b vs qwen3:32b": {
+      "trials": 10,
+      "f1_relaxed": 0.5916398713826367,
+      "f1_strict": 0.41157556270096457
+    },
+    "gpt-oss:20b vs qwen3:32b": {
+      "trials": 5,
+      "f1_relaxed": 0.5294117647058824,
+      "f1_strict": 0.35294117647058826
+    }
+  }
+}

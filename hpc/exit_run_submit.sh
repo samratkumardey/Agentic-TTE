@@ -15,8 +15,9 @@ GRES="${2:?usage: bash hpc/exit_run_submit.sh <partition> <gres, e.g. gpu:A100:1
 # shellcheck source=/dev/null
 source hpc/exit_run_common.sh
 
-LABEL="$(echo "$GRES" | cut -d: -f2)"       # gpu:A100:1 -> A100 (GRES names are case-sensitive)
-[[ "$LABEL" =~ ^[A-Z][A-Za-z0-9]+$ ]] || { echo "[atte] GRES must name a GPU type, e.g. gpu:A100:1"; exit 1; }
+GPU="$(echo "$GRES" | cut -d: -f2)"         # gpu:A100:1 -> A100 (GRES names are case-sensitive)
+[[ "$GPU" =~ ^[A-Z][A-Za-z0-9]+$ ]] || { echo "[atte] GRES must name a GPU type, e.g. gpu:A100:1"; exit 1; }
+LABEL="$(exit_label "$GPU")"                # A100, or A100-<tag> with ATTE_EXIT_TAG
 exit_preflight
 
 JOBS="runs/exit-$LABEL.jobs"

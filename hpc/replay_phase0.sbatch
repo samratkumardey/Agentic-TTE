@@ -25,7 +25,9 @@ export ATTE_MODEL="${ATTE_MODEL:-qwen3:32b}"
 # A per-job port, so two jobs that land on the same node don't collide.
 PORT=$((20000 + SLURM_JOB_ID % 20000))
 export OLLAMA_HOST="127.0.0.1:$PORT"
-export OLLAMA_KEEP_ALIVE=-1 OLLAMA_MAX_LOADED_MODELS=1 OLLAMA_NUM_PARALLEL=4 OLLAMA_FLASH_ATTENTION=1
+export OLLAMA_KEEP_ALIVE=-1 OLLAMA_MAX_LOADED_MODELS=1
+export OLLAMA_NUM_PARALLEL="${ATTE_OLLAMA_NUM_PARALLEL:-4}"
+export OLLAMA_FLASH_ATTENTION="${ATTE_OLLAMA_FLASH_ATTENTION:-1}"
 export ATTE_OLLAMA_HOST="http://$OLLAMA_HOST"
 
 # exit_run_submit.sh sets ATTE_RUN_DIR to runs/exit-<GPU>/<model>/rep<k>.
@@ -57,8 +59,12 @@ curl -sf "$ATTE_OLLAMA_HOST/api/version" || { echo "[atte] Ollama did not start"
   echo "git_commit=$(git rev-parse --short HEAD 2>/dev/null)$(git diff --quiet 2>/dev/null || echo -dirty)"
   echo "ollama_image=$OLLAMA_SIF"
   echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
+  echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
+  echo "ollama_flash_attention=$OLLAMA_FLASH_ATTENTION"
   echo "model=$ATTE_MODEL"
   echo "think=${ATTE_THINK:-}"
+  echo "num_predict=${ATTE_NUM_PREDICT:-8192}"
+  echo "llm_timeout_s=${ATTE_LLM_TIMEOUT_S:-600}"
   echo "replicate=${ATTE_REPLICATE:-}"
   echo "cache_dir=$ATTE_CACHE_DIR"
   echo "restart_count=${SLURM_RESTART_COUNT:-0}"   # >0 after preemption: cache hits expected

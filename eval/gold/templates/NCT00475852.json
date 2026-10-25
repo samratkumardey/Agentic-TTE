@@ -1,0 +1,129 @@
+{
+  "nct_id": "NCT00475852",
+  "record_sha256": "a0078f27eecbdea607ba13bbb70096481a46345986824b16ea45c78ce9fa0f9e",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Hospitalized for the management of acute decompensated heart failure (ADHF) or diagnosed with ADHF within 48 hours after being hospitalized for another reason",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Diagnosis of ADHF is defined as dyspnea (difficulty breathing) at rest or dyspnea with minimal activity.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "At high risk for hypotension (low blood pressure)",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Acute coronary syndrome as primary diagnosis",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "History of cardiac valvular stenosis, restrictive cardiomyopathy, hypertrophic cardiomyopathy, or pericardial tamponade",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Previous enrollment in a nesiritide study",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Persistent, uncontrolled hypertension (SBP [systolic blood pressure] >180 mmHg).",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "001",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Nesiritide 0.01 mcg/kg/min intravenous (IV) infusion (with or without 2 mcg/kg bolus) for 24 to 168 hours (hrs)",
+      "intervention_text": [
+        "Nesiritide: 0.01 mcg/kg/min IV infusion (with or without 2 mcg/kg bolus) for 24 to 168 hrs"
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "002",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Placebo matching placebo infusion:0.01 mcg/kg/min IV infusion (with or without 2 mcg/kg bolus) for 24 to 168 hrs",
+      "intervention_text": [
+        "Placebo: matching placebo infusion:0.01 mcg/kg/min IV infusion (with or without 2 mcg/kg bolus) for 24 to 168 hrs"
+      ],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "Composite of Rehospitalization Due to Heart Failure and All-Cause Mortality",
+    "time_frame": "Randomization to Day 30",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "Acute Decompensated Heart Failure (ADHF) is the inability of the heart to pump efficiently, which can result in symptoms like shortness of breath at rest or with minimal activity. ADHF is a condition in which the heart cannot perform the necessary circulation of blood through the body. This is a randomized (study medication is assigned by chance), double-blind (neither the patient or the doctor knows whether the patient is assigned to receive study drug or placebo \\[does not contain study drug\\]), placebo-controlled, parallel group, multicenter study of the effectiveness of nesiritide administered continuously through a vein for a minimum of 24 hours up to a maximum of 7 days. The study hypothesis is that nesiritide given in addition to standard care is superior to placebo given in addition to standard care as measured by relief of breathing difficulties (by patient evaluation utilizing a breathlessness scale) at 6 hours or 24 hours after nesiritide administration, and reduction in rehospitalization due to heart failure and death from study drug administration through Day 30. The study drug (nesiritide) or placebo dose being studied is 0.010 mcg/kg/min with or without a 2 mcg/kg initial bolus (one time injection) of nesiritide. Patient safety will be monitored throughout the study through physical exams, vital signs (heart rate, blood pressure, respiratory rate, and temperature), blood tests, and side effects. The patients assigned to the nesiritide group will receive a continuous intravenous (into a vein) infusion at 0.010 mcg/kg/min of nesiritide with or without a 2 mcg/kg bolus (one time injection). The patients assigned to the placebo group will receive matching placebo bolus and infusion. The bolus is given over one minute and the continuous infusion is given for at least 24 hours and up to 7 days.",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=30.0 unit='day'",
+      "None",
+      "None"
+    ]
+  }
+}

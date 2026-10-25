@@ -19,6 +19,7 @@ def make_client(settings: Settings, *, use_cache: bool = True) -> LLMClient:
             settings.model,
             host=settings.ollama_host,
             num_ctx=settings.num_ctx,
+            num_predict=settings.num_predict,
             think=settings.think,
             timeout_s=settings.llm_timeout_s,
             **common,
@@ -26,6 +27,7 @@ def make_client(settings: Settings, *, use_cache: bool = True) -> LLMClient:
     return OpenAICompatClient(
         settings.model,
         base_url=settings.openai_compat_base_url,
+        max_tokens=settings.num_predict,
         timeout_s=settings.llm_timeout_s,
         **common,
     )

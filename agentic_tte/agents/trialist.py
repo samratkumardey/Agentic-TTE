@@ -294,15 +294,9 @@ class Trialist:
 
     def parse_criterion(self, cid: str, kind: Literal["inclusion", "exclusion"],
                         text: str) -> Criterion:  # fmt: skip
-        messages = [
-            Message(role="system", content=prompts.CRITERION_SYSTEM),
-            Message(role="user", content=prompts.CRITERION_EXAMPLE_USER),
-            Message(role="assistant", content=prompts.CRITERION_EXAMPLE_ASSISTANT),
-            Message(role="user", content=f"Criterion type: {kind}\nCriterion: {text}"),
-        ]
         category = "administrative" if _ADMINISTRATIVE_RE.search(text) else "clinical"
         try:
-            p = self.llm.structured(messages, CriterionParse)
+            p = self.llm.structured(criterion_messages(kind, text), CriterionParse)
         except LLMOutputError as exc:
             self.on_event("parse_failed", {"criterion": cid, "error": str(exc)})
             return Criterion(id=cid, kind=kind, text=text, category=category,
@@ -406,23 +400,9 @@ class Trialist:
         )
 
     def parse_arm(self, arm: Arm) -> TreatmentStrategy:
-        details = "\n".join(
-            f"- {iv.type or 'INTERVENTION'}: {iv.name}"
-            + (f" (also: {', '.join(iv.other_names)})" if iv.other_names else "")
-            + (f"\n  {iv.description}" if iv.description else "")
-            for iv in arm.interventions
-        )
-        user = (
-            f"Arm label: {arm.label}\nArm type: {arm.type or 'unknown'}\n"
-            f"Arm description: {arm.description or '-'}\nInterventions:\n{details or '-'}"
-        )
         by_type = arm.type in _COMPARATOR_ARM_TYPES if arm.type else None
         try:
-            p = self.llm.structured(
-                [Message(role="system", content=prompts.TREATMENT_SYSTEM),
-                 Message(role="user", content=user)],
-                TreatmentParse,
-            )  # fmt: skip
+            p = self.llm.structured(arm_messages(arm), TreatmentParse)
         except LLMOutputError as exc:
             self.on_event("parse_failed", {"arm": arm.label, "error": str(exc)})
             return TreatmentStrategy(
@@ -465,23 +445,10 @@ class Trialist:
     def propose_time_zero(
         self, s: TrialSections
     ) -> tuple[TimeZero | None, Duration | None, str | None]:
-        primary = next((o for o in s.outcomes if o.primary), None)
-        user = (
-            f"Title: {s.source.title}\nConditions: {', '.join(s.source.conditions)}\n"
-            "Inclusion criteria:\n" + "\n".join(f"- {c}" for c in s.inclusion)
-            + "\nExclusion criteria:\n" + "\n".join(f"- {c}" for c in s.exclusion)
-            + "\nArms:\n" + "\n".join(f"- {a.label} ({a.type}): {a.description}" for a in s.arms)
-            + (f"\nPrimary outcome: {primary.measure}; time frame: {primary.time_frame}"
-               if primary else "")
-            + (f"\nDetailed description: {s.detailed_description}"
-               if s.detailed_description else "")
-        )  # fmt: skip
+        messages = design_messages(s)
+        user = messages[-1].content
         try:
-            p = self.llm.structured(
-                [Message(role="system", content=prompts.DESIGN_SYSTEM),
-                 Message(role="user", content=user)],
-                DesignProposal,
-            )  # fmt: skip
+            p = self.llm.structured(messages, DesignProposal)
         except LLMOutputError as exc:
             self.on_event("parse_failed", {"element": "time_zero", "error": str(exc)})
             return None, None, None
@@ -539,6 +506,60 @@ class Trialist:
             competing_events=[] if all_cause_death else ["death"],
             origin=Origin.DERIVED if primary.horizon else Origin.DEFAULT,
         )
+
+
+# --- prompts as data: also used by eval/check_exit_run.py to rebuild a run's exact requests ---
+
+
+def criterion_messages(kind: str, text: str) -> list[Message]:
+    return [
+        Message(role="system", content=prompts.CRITERION_SYSTEM),
+        Message(role="user", content=prompts.CRITERION_EXAMPLE_USER),
+        Message(role="assistant", content=prompts.CRITERION_EXAMPLE_ASSISTANT),
+        Message(role="user", content=f"Criterion type: {kind}\nCriterion: {text}"),
+    ]
+
+
+def arm_messages(arm: Arm) -> list[Message]:
+    details = "\n".join(
+        f"- {iv.type or 'INTERVENTION'}: {iv.name}"
+        + (f" (also: {', '.join(iv.other_names)})" if iv.other_names else "")
+        + (f"\n  {iv.description}" if iv.description else "")
+        for iv in arm.interventions
+    )
+    user = (
+        f"Arm label: {arm.label}\nArm type: {arm.type or 'unknown'}\n"
+        f"Arm description: {arm.description or '-'}\nInterventions:\n{details or '-'}"
+    )
+    return [Message(role="system", content=prompts.TREATMENT_SYSTEM),
+            Message(role="user", content=user)]  # fmt: skip
+
+
+def design_messages(s: TrialSections) -> list[Message]:
+    primary = next((o for o in s.outcomes if o.primary), None)
+    user = (
+        f"Title: {s.source.title}\nConditions: {', '.join(s.source.conditions)}\n"
+        "Inclusion criteria:\n" + "\n".join(f"- {c}" for c in s.inclusion)
+        + "\nExclusion criteria:\n" + "\n".join(f"- {c}" for c in s.exclusion)
+        + "\nArms:\n" + "\n".join(f"- {a.label} ({a.type}): {a.description}" for a in s.arms)
+        + (f"\nPrimary outcome: {primary.measure}; time frame: {primary.time_frame}"
+           if primary else "")
+        + (f"\nDetailed description: {s.detailed_description}"
+           if s.detailed_description else "")
+    )  # fmt: skip
+    return [Message(role="system", content=prompts.DESIGN_SYSTEM),
+            Message(role="user", content=user)]  # fmt: skip
+
+
+def first_requests(s: TrialSections) -> list[list[Message]]:
+    """The first-attempt request of every LLM call a draft makes, in order. Retries add to
+    these conversations, so they never coincide with another first attempt."""
+    return (
+        [criterion_messages("inclusion", t) for t in s.inclusion]
+        + [criterion_messages("exclusion", t) for t in s.exclusion]
+        + [arm_messages(a) for a in s.arms]
+        + [design_messages(s)]
+    )
 
 
 def _component_segment(name: str, all_names: list[str], text: str) -> str:

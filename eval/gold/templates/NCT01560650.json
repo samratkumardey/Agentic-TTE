@@ -1,0 +1,109 @@
+{
+  "nct_id": "NCT01560650",
+  "record_sha256": "35fcbf40f14a7f896a52a459b22ad223116e22cdecb5c5c9914f6eed7ea5c1b2",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "> = 18 years of age, CRRT indications for acute kidney injury (RIFLE criteria) patients with cardiac surgery",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "< 18 years old,",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "with chronic kidney disease,",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "dialysis history, to leave the ICU patients with acute kidney injury (AKI). - chronic kidney disease,",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "all causes kidney damage (pathology, hematuria, and radiographic abnormalities)> = 3 months or glomerular filtration rate < 60ml/min for 3 months or more.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "high dose (35ml/kg/h)",
+      "arm_type": "EXPERIMENTAL",
+      "description": "\\> = 18 years of age, CRRT indications for acute kidney injury (RIFLE criteria) patients with cardiac surgery, was given filtration at a rate of 35 mL/kg/h.",
+      "intervention_text": [
+        "CRRT: Difference dose of CRRT"
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "low dose (25ml/kg/h)",
+      "arm_type": "EXPERIMENTAL",
+      "description": "\\> = 18 years of age, CRRT indications for acute kidney injury (RIFLE criteria) patients with cardiac surgery, was given filtration at a rate of 25 mL/kg/h.",
+      "intervention_text": [
+        "CRRT: Difference dose of CRRT"
+      ],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "death from any cause",
+    "time_frame": "14, 28 ,90 and 365 days after randomization",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "Acute kidney injury (AKI) is a major complication in patients with cardiac surgery and is an independent predictor of mortality. However, the optimal intensity of renal replacement therapy for such patients is still controversial. we randomly assigned the patients with Cardiac surgery-associated acute kidney injury (CSA-AKI) to continuous renal replacement therapy with different treatment dose (35ml / kg / h or 25ml/kg／h),The primary study outcome was death from any cause within 14, 28 and 90 days.",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=365.0 unit='day'",
+      "None",
+      "None"
+    ]
+  }
+}

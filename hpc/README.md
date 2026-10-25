@@ -134,6 +134,32 @@ tar czf runs/exit-A100.tgz runs/exit-A100 runs/exit-A100.jobs    # after Option 
 tar czf runs/exit-H100.tgz runs/exit-H100                        # after Option B on H100
 ```
 
+### Reproducibility test (before any further benchmark run)
+
+Does `OLLAMA_NUM_PARALLEL=1` make replicates identical? The test covers qwen3:32b and medgemma:27b, on 3 trials whose replicates differed. It runs 2 configurations × 2 replicates, restarting Ollama before every replicate. It takes about 2 hours on the H100 and under 10 MB of disk.
+
+```bash
+tmux new -s atte
+```
+```bash
+source hpc/env.sh && bash hpc/repro_test.sh
+```
+```bash
+for c in runs/repro-H100/*/; do uv run python eval/score_phase0.py "$c" --out eval/results/repro; done
+```
+
+Send me `eval/results/repro/` (two `.md` and two `.json` files). Each run's `manifest.txt` records `ollama_num_parallel` and `ollama_flash_attention`.
+
+### New arms (tagged)
+
+A new arm on a GPU type that already has a run needs `ATTE_EXIT_TAG`, so it never overwrites the pre-registered run. For example, the exploratory gpt-oss arm with a fixed reasoning level:
+
+```bash
+ATTE_EXIT_TAG=gptoss-low ATTE_EXIT_MODELS="gpt-oss:20b|low" bash hpc/exit_run_interactive.sh
+```
+
+This writes `runs/exit-H100-gptoss-low/`. Check it with `uv run python eval/check_exit_run.py runs/exit-H100-gptoss-low`.
+
 ## 7. Long-running service (needed from Phase 4)
 
 ```bash

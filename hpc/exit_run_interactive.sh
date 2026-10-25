@@ -5,8 +5,11 @@
 #
 #   bash hpc/exit_run_interactive.sh
 #
-# Writes the same layout as exit_run_submit.sh: runs/exit-<GPU>/<model>/rep<k>/ with
-# manifest.txt, one protocol and log per trial, and a fresh LLM cache per replicate.
+# A new arm on the same GPU needs a tag, e.g. gpt-oss with a fixed reasoning level:
+#   ATTE_EXIT_TAG=gptoss-low ATTE_EXIT_MODELS="gpt-oss:20b|low" bash hpc/exit_run_interactive.sh
+#
+# Writes runs/exit-<GPU>[-<tag>]/<model>/rep<k>/ with manifest.txt, one protocol and log per
+# trial, and a fresh LLM cache per replicate.
 set -uo pipefail
 [[ -n "${ATTE_PROJECT_DIR:-}" ]] || { echo "[atte] source hpc/env.sh first"; exit 1; }
 # shellcheck source=/dev/null
@@ -15,8 +18,8 @@ exit_preflight || exit 1
 
 GPU_NAME="$(nvidia-smi --query-gpu=name --format=csv,noheader | head -n1)"
 [[ -n "$GPU_NAME" ]] || { echo "[atte] no GPU in this session"; exit 1; }
-LABEL="$(echo "$GPU_NAME" | grep -oE 'H100|H200|A100|L40S' | head -n1)"
-LABEL="${LABEL:-$(echo "$GPU_NAME" | tr -c 'A-Za-z0-9\n' '_')}"
+GPU="$(echo "$GPU_NAME" | grep -oE 'H100|H200|A100|L40S' | head -n1)"
+LABEL="$(exit_label "${GPU:-$(echo "$GPU_NAME" | tr -c 'A-Za-z0-9\n' '_')}")"
 echo "[atte] exit run on $GPU_NAME -> runs/exit-$LABEL"
 
 for spec in $EXIT_MODELS; do
@@ -31,32 +34,8 @@ for spec in $EXIT_MODELS; do
     exit_fresh_cache "$CACHE" || exit 1
     export ATTE_CACHE_DIR="$CACHE"          # after interactive_ollama.sh, which resets it
     mkdir -p "$RUN"
-    {
-      echo "job_id=${SLURM_JOB_ID:-interactive}"
-      echo "partition=${SLURM_JOB_PARTITION:-}"
-      echo "node=$(hostname -s)"
-      echo "gpu=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader | head -n1)"
-      echo "git_commit=$(git rev-parse --short HEAD)$(git diff --quiet || echo -dirty)"
-      echo "ollama_image=$OLLAMA_SIF"
-      echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
-      echo "model=$MODEL"
-      echo "think=$THINK"
-      echo "replicate=$REP"
-      echo "cache_dir=$ATTE_CACHE_DIR"
-      echo "restart_count=0"
-      echo "trials=$EXIT_TRIALS"
-      echo "started=$(date -Is)"
-    } | tee "$RUN/manifest.txt"
-    failed=0
-    for t in $EXIT_TRIALS; do
-      echo "[atte] $(date +%T) $MODEL rep$REP $t"
-      if ! uv run agentic-tte draft "$t" -o "$RUN/$t.protocol.json" 2> "$RUN/$t.log"; then
-        echo "[atte] $t failed, see $RUN/$t.log"
-        failed=$((failed + 1))
-      fi
-      tail -n 3 "$RUN/$t.log"
-    done
-    echo "finished=$(date -Is) failed=$failed" >> "$RUN/manifest.txt"
+    exit_write_manifest "$RUN" "$MODEL" "$THINK" "$REP"
+    exit_draft_trials "$RUN" "$MODEL" "$REP"
   done
 done
 # shellcheck source=/dev/null

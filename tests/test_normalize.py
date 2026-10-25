@@ -12,6 +12,10 @@ from agentic_tte.protocol.normalize import parse_age, parse_duration, parse_temp
         ("within 12 hours", 12, "hour"),
         ("within the last 3 months", 3, "month"),
         ("6 wks", 6, "week"),
+        # Unit before number: NCT00475852 and NCT03258684 lost their follow-up horizon to this.
+        ("Randomization to Day 30", 30, "day"),
+        ("Up to Day 14", 14, "day"),
+        ("Week 12", 12, "week"),
     ],
 )
 def test_parse_duration(text, amount, unit):

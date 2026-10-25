@@ -1,0 +1,99 @@
+{
+  "nct_id": "NCT03258684",
+  "record_sha256": "bce20452bfa9783df0fb7442507b60e8fa1408096bc722379a58f9ebfa2cc544",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "A primary diagnosis of sepsis or septic shock (the diagnoses of sepsis and septic shock are based on the 2016 the Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3)) and a procalcitonin (PCT) level≥2ng/mL.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Sepsis: Sepsis is defined as life-threatening organ dysfunction caused by a dysregulated host response to infection.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Septic shock: Septic shock is a subset of sepsis in which underlying circulatory and cellular/metabolic abnormalities are profound enough to substantially increase mortality.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Patients < 18 years of age, pregnant patients, and patients with limitations of care.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "vitamin C、hydrocortisone、thiamine",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "Intravenous vitamin C (1.5 g every 6 h for 4 days or until ICU discharge), hydrocortisone (50 mg every 6 h for 7 days or until ICU discharge followed by a taper over 3 days), as well as intravenous thiamine (200 mg every 12 h for 4 days or until ICU discharge).",
+      "intervention_text": [
+        "Hydrocortisone, Vitamin C, and Thiamine: Intervention"
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "normal saline",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Normal saline 500ml every day for 4 days，then 200ml every day for 3 days.",
+      "intervention_text": [
+        "Normal saline: Placebo"
+      ],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "hospital survival",
+    "time_frame": "Up to Day 14",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "A prospective randomized controlled trial is conducted.One hundred and forty severe sepsis or septic shock participants admit to the Department of Critical Care Medicine of Zhujiang Hospital,Southern Medical University from September 2017.The participants are divided into control group ( n = 70 ) and treatment group ( n = 70 ).The participants in both groups are treated according to \"2016 international guidelines for management of sepsis and septic shock\",and the participants in treatment group receive intravenous vitamin C, hydrocortisone, and thiamine. The participants in control group receive normal saline.The patients' clinical and demographic data, including age, sex, admitting diagnosis, comorbidities, requirement for mechanical ventilation, use of vasopressors, daily urine output, fluid balance after 24 and 72 h, length of ICU stay (LOS),and laboratory data (serum creatinine, White Blood Cell (WBC), platelet count, total bilirubin, procalcitonin(PCT), and lactate levels), are recorded.The primary outcome is hospital survival. Secondary outcomes include duration of vasopressor therapy,requirement for renal replacement therapy in patients with Acute kidney injury (AKI), ICU LOS, and the change in serum procalcitonin and Sepsis-Related Organ Failure Assessment (SOFA score) over the first 72 h. Summary statistics are used to describe the clinical data and are presented as means±SD, medians and interquartile range, or percentages as appropriate.Statistical analysis is performed with NCSS 11 (NCSS Statistical Software) and SPSS Statistics version 24 (IBM).",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=14.0 unit='day'",
+      "None",
+      "None"
+    ]
+  }
+}

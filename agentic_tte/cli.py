@@ -64,7 +64,7 @@ def draft(
     u = llm.usage
     typer.echo(
         f"[llm] calls={u.calls} cache_hits={u.cache_hits} prompt_tokens={u.prompt_tokens} "
-        f"completion_tokens={u.completion_tokens}",
+        f"completion_tokens={u.completion_tokens} failures={u.failures}",
         err=True,
     )
     status = protocol.element_status()

@@ -106,6 +106,36 @@ def test_draft_from_registry_record(nct03872011_study):
     assert "parse_failed" in events and "drafted" in events
 
 
+def test_timeout_on_one_criterion_does_not_lose_the_draft(nct03872011_study):
+    """Exit run: one gpt-oss timeout discarded a whole trial. Now it is one failed item."""
+    import httpx
+
+    def respond(messages, schema):
+        if "Criterion: Known hemachromatosis" in messages[-1].content:
+            raise httpx.ReadTimeout("timed out")
+        return _respond(messages, schema)
+
+    events = []
+    p = Trialist(ScriptedClient(respond, max_retries=1),
+                 on_event=lambda k, d: events.append((k, d))).draft_from_study(nct03872011_study)
+    hemo = next(c for c in p.eligibility if "hemachromatosis" in c.text)
+    assert hemo.notes.startswith("parse_failed") and "ReadTimeout" in hemo.notes
+    assert len(p.eligibility) == 11 and p.time_zero is not None
+
+
+def test_first_requests_match_what_the_draft_sends(nct03872011_study):
+    from agentic_tte.agents.trialist import first_requests
+    from agentic_tte.sources.ctgov import extract_sections
+
+    llm = ScriptedClient(_respond, max_retries=0)
+    Trialist(llm).draft_from_study(nct03872011_study)
+    expected = first_requests(extract_sections(nct03872011_study))
+    first_attempts = [msgs for msgs, _ in llm.requests if msgs[-1].role == "user"
+                      and not msgs[-1].content.startswith("Your previous reply")]  # fmt: skip
+    assert [[m.model_dump() for m in r] for r in first_attempts] == \
+        [[m.model_dump() for m in r] for r in expected]  # fmt: skip
+
+
 def test_grounding_check():
     from agentic_tte.agents.trialist import _grounded
 

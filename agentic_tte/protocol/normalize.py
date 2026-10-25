@@ -36,15 +36,23 @@ _DURATION_RE = re.compile(
 )
 
 
+# Registry time frames often put the unit first: "Randomization to Day 30", "Up to Day 14".
+_DAY_N_RE = re.compile(r"\b(hour|day|week|month|year)s?\s+(\d+(?:\.\d+)?)\b", re.IGNORECASE)
+
+
 def parse_duration(text: str | None) -> Duration | None:
     """First "<number> <time unit>" in ``text``: "90 days after randomization" -> 90 day,
-    "28-day mortality" -> 28 day. Returns None when there is no explicit duration."""
+    "28-day mortality" -> 28 day; otherwise "<unit> <number>": "up to Day 14" -> 14 day.
+    Returns None when there is no explicit duration."""
     if not text:
         return None
     m = _DURATION_RE.search(text)
-    if not m:
-        return None
-    return Duration(amount=float(m.group(1)), unit=_UNIT_ALIASES[m.group(2).lower()])
+    if m:
+        return Duration(amount=float(m.group(1)), unit=_UNIT_ALIASES[m.group(2).lower()])
+    m = _DAY_N_RE.search(text)
+    if m:
+        return Duration(amount=float(m.group(2)), unit=_UNIT_ALIASES[m.group(1).lower()])
+    return None
 
 
 _GE = r"(?:or (?:older|more|greater|above|higher)|at least|minimum|≥|>=|no (?:less|fewer) than)"

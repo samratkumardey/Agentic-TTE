@@ -1,0 +1,169 @@
+{
+  "nct_id": "NCT03872011",
+  "record_sha256": "b55dc6e26f22ceef2c7f296003f057cb190756eb487b9d44d4cbc477edcb2e24",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Age 18 years old or older",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Onset of septic shock within 12 hours",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Systemic corticosteroid therapy within the last 3 months before septic shock",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "High-dose steroid therapy",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Immunosuppression",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Pregnant",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Known glucose-6 phosphate dehydrogenase (G-6PD) deficiency",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Known hemachromatosis",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Known allergy to vitamin C, hydrocortisone, or thiamine",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Anticipated death from a preexisting disease within 90 days after randomization (as determined by the enrolling physician)",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Refusal of the attending staff or patient family",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Vitamin C,thiamine,hydrocortisone",
+      "arm_type": "EXPERIMENTAL",
+      "description": "The combination of vitamin C, thiamine, hydrocortisone :\n\nVitamin C 2g every 6 hours x 5-days Thiamine 200mg every 12 hours x 5-days Hydrocortisone 200mg as a continuous infusion x 5-days",
+      "intervention_text": [
+        "Vitamin C,thiamine,hydrocortisone: Vitamin C (2g) will be diluted in 100ml 0.9%NACL and administered ivd every 6 hours for 5 days or until participant is discharged from the ICU.\n\nThiamine(200mg) will be diluted in 100ml 0.9%NACL and administered ivd every 12 hours for 5 days or until participant is discharged from the ICU. Hydrocortisone was administered 200 mg/d as a continuous infusion for 5 days or until participant is discharged from the ICU."
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "Placebo",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Normal Saline Solution (0.9%NaCl) in a volume to match all experimental arm components",
+      "intervention_text": [
+        "Placebo: Normal saline (0.9% NaCl solution) volume to match all components"
+      ],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "90-day mortality",
+    "time_frame": "90 days after randomization",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "Septic Shock is a leading cause of morbidity and mortality in critically ill patients worldwide.\n\nA potential benefit of vitamin C with thiamine and low-dose hydrocortisone in the treatment of septic shock has recently been described(PMID 27940189) . The patients with septic shock who received this combination of medications weaned off pressors earlier, suffered less organ failure, and had improved mortality. The doses of vitamin C used in this trial are high, yet seemed to be safe and can be considered for use.\n\nIn this randomized controlled trial, we aim to evaluate the effect of the combination therapy (vitamin C,thiamine and hydrocortisone) on septic shock.",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=90.0 unit='day'",
+      "None",
+      "None"
+    ]
+  }
+}

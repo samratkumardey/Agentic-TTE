@@ -6,7 +6,7 @@ Replaces EmulatRx ``llm_zoo_rlhf.OllamaModel``, which sent one user message with
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 
@@ -20,7 +20,8 @@ class OllamaClient(LLMClient):
         *,
         host: str = "http://localhost:11434",
         num_ctx: int | None = 16384,
-        think: bool | None = None,
+        num_predict: int | None = 8192,
+        think: bool | Literal["low", "medium", "high"] | None = None,
         timeout_s: float = 600.0,
         http: httpx.Client | None = None,
         **kwargs: Any,
@@ -28,7 +29,11 @@ class OllamaClient(LLMClient):
         super().__init__(model, **kwargs)
         self.host = host.rstrip("/")
         self.num_ctx = num_ctx
+        # Output cap: a runaway generation ends as invalid JSON (retried, then a per-item
+        # failure) instead of hitting the HTTP timeout (gpt-oss:20b, exit run 2026-10-24).
+        self.num_predict = num_predict
         # None leaves the model default; Ollama rejects ``think`` for models without reasoning.
+        # gpt-oss takes a level ("low", "medium", "high") instead of true/false.
         self.think = think
         self._http = http or httpx.Client(timeout=timeout_s)
         self._digest: str | None = None
@@ -39,6 +44,8 @@ class OllamaClient(LLMClient):
             options["seed"] = self.seed
         if self.num_ctx:
             options["num_ctx"] = self.num_ctx
+        if self.num_predict:
+            options["num_predict"] = self.num_predict
         body: dict[str, Any] = {
             "model": self.model,
             "messages": [m.model_dump() for m in messages],

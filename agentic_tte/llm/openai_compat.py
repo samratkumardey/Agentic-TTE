@@ -20,12 +20,14 @@ class OpenAICompatClient(LLMClient):
         *,
         base_url: str = "http://localhost:8000/v1",
         api_key: str | None = None,
+        max_tokens: int | None = 8192,
         timeout_s: float = 600.0,
         http: httpx.Client | None = None,
         **kwargs: Any,
     ):
         super().__init__(model, **kwargs)
         self.base_url = base_url.rstrip("/")
+        self.max_tokens = max_tokens
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         self._http = http or httpx.Client(timeout=timeout_s, headers=headers)
 
@@ -37,6 +39,8 @@ class OpenAICompatClient(LLMClient):
         }
         if self.seed is not None:
             body["seed"] = self.seed
+        if self.max_tokens:
+            body["max_tokens"] = self.max_tokens
         if json_schema is not None:
             body["response_format"] = {
                 "type": "json_schema",

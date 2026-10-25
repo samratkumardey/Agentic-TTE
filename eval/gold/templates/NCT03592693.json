@@ -1,0 +1,159 @@
+{
+  "nct_id": "NCT03592693",
+  "record_sha256": "0d42b322c39d169242f95d8c96855f2a665ddfcab7b0cdbe5d7d069516c7080e",
+  "annotator": "",
+  "notes": "",
+  "criteria": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Diagnosis of septic shock within 12 hours of admission to the ICU",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Age < 18 years",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Pregnant",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Patients with an end-stage underlying disease who are unlikely to survive to hospital discharge",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients with acquired immunodeficiency syndrome and a CD4 count of < 50 per microliter",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Patients with known glucose-6 phosphate dehydrogenase (G-6PD) deficiency.",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Patients with septic shock transferred from another hospital",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Patients with septic shock for more than 12 hours",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Patients who require off-label treatment with corticosteroids for an indication other than sepsis",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Lack of written, informed consent",
+      "atoms": [],
+      "atom_logic": null,
+      "category": null,
+      "complexity": null,
+      "registry_error": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Vitamin-Steroid",
+      "arm_type": "EXPERIMENTAL",
+      "description": "\"Combined Vitamin C and Stress-Dose Hydrocortisone\": Patients with septic shock treated with 1500 mg Vitamin C every 6 hours for 4 days after randomization, and stress-dose hydrocortisone for 4 days (250 mg on day 1; and 200 mg on days 2, 3, and 4) after randomization.",
+      "intervention_text": [
+        "Combined Vitamin C and Stress-Dose Hydrocortisone: Treatment of septic shock with vitamin C and stress-dose hydrocortisone aimed at the attenuation of the systemic inflammatory response and the improvement of vasopressor responsiveness."
+      ],
+      "is_comparator": null,
+      "components": []
+    },
+    {
+      "label": "Control",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "\"Placebo plus placebo:\" Patients with septic shock treated with placebo (corresponding to Vitamin C) and placebo (corresponding to hydrocortisone) for 4 days after randomization.",
+      "intervention_text": [
+        "Placebo plus placebo: Treatment of septic shock with placebo (corresponding to Vitamin C) and placebo (corresponding to hydrocortisone)."
+      ],
+      "is_comparator": null,
+      "components": []
+    }
+  ],
+  "time_zero": {
+    "anchor_event": null,
+    "acceptable_alternatives": [],
+    "offset": null
+  },
+  "follow_up": {
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null
+  },
+  "primary_outcome": {
+    "name": "Hospital Mortality",
+    "time_frame": "90 days",
+    "horizon": null,
+    "end_event": null
+  },
+  "causal_contrast": {
+    "value": null,
+    "origin": null,
+    "evidence": null
+  },
+  "detailed_description": "Background and Significance:\n\nThe global burden of sepsis is substantial with an estimated 15 to 19 million cases per year; the vast majority of these cases occur in low income countries. With more timely diagnosis and improvement in supportive care the 28-day mortality from sepsis in high income countries has declined to about 25%, however, the mortality from septic shock remains as high as 45%. Moreover, the mortality from sepsis and septic shock in low income countries is reported to be as high as 60%. Over the last 3 decades over 100 phase II and phase III clinical trials have been performed testing various novel pharmacologic agents and therapeutic interventions in an attempt to improve the outcome of patients with sepsis and septic shock; all of these studies have failed to show an improvement in patient outcomes. A large body of experimental data has demonstrated that both corticosteroids and intravenous vitamin C reduce activation of nuclear factor ƘB (NFƘB) and attenuatethe release of pro-inflammatory mediators, reduce the endothelial injury characteristic of sepsis (thereby reducing endothelial permeability and improving macrocirculatory flow), augment the release of endogenous catecholamines, and enhance vasopressor responsiveness. In addition, recent evidence suggests that thiamine may be neuroprotective in severe shock states.\n\nSpecific Aims of the Study:\n\nThe aim of this study is to determine the effect of the combination of intravenous vitamin C, hydrocortisone and thiamine on the clinical course and outcome of patients with septic shock.\n\nStudy Design:\n\nThis study will be performed at 4 tertiary Greek Intensive Care Units (ICUs). All patients admitted to any ICU of the participating hospitals with the primary diagnosis of severe sepsis or septic shock will be screened for inclusion. The diagnosis of septic shock will be based on recent consensus criteria.\n\nICU management protocol:\n\nAll septic patients enrolled in this study will be managed by a standardized approach which will comprise:\n\ni. Empirical treatment with broad spectrum antibiotics, which will be subsequently deescalated according to microbiological data and clinical improvement ii. A conservative strategy of fluid and vasopressor management. iii. A lung-protective ventilation strategy. iv. Limited use of sedative agents (dexmedetomidine will be the preferred agent) v. Enteral nutrition with a whey-based formula using an intermittent bolus protocol which will preferrably be started within 24 hours of ICU admission.\n\nvi. Prophylaxis against deep venous thrombosis prophylaxis with both enoxaparin (or heparin in patients with a calculated creatinine clearance \\< 30ml/min) and sequential compression.\n\nvii. Permissive hyperglycemia (blood glucose of 150-200 mg/dL).\n\nVitamin C, Hydrocortisone and Thiamine dosing protocol and randomization\n\nThis is a double-blind placebo controlled study. Only the pharmacist will be aware of the treatment allocation. Patients will be randomized to receive either vitamin C/hydrocortisone or placebo plus placebo using a random number table provided to the dispensing pharmacists. Each patient will be allocated a unique participant ID which will be linked to the randomization sequence. Only the dispensing pharmacists will have a record of the participant ID and randomization sequence. The vitamin C/placebo and hydrocortisone/placebo will be formulated as follows:\n\nVitamin C: 1500 mg of vitamin C will be dissolved in a 50 or 100 mL bag of normal saline and will be infused over 1 hour. The dosing schedule will be 1500 mg every 6 hours for 4 days or until discharge from the ICU.\n\nVitamin C placebo will consist of an identical bag of 50 or 100 mL normal saline (but with no vitamin C) and will be labeled vitamin C. Placebo will be infused over 1 hour as per the infusion instructions of the active vitamin.\n\nHydrocortisone: Patients will be treated with hydrocortisone 50mg IV q 6 hourly for 4 days or until ICU discharge.\n\nOptional dosing strategy: Hydrocortisone 50 mg bolus, followed by a 24-hour continuous infusion of 200 mg (in 50 or 100 ml normal saline) for 4 days.\n\nHydrocortisone placebo will be provided as an identical syringe/50 or 100 mL bag of normal saline.\n\nThiamine: As a high percentage of septic patients have been shown to be thiamine deficient, patients will receive intravenous thiamine 200mg q 12 hourly for 4 days or until ICU discharge. Thiamine is also a cofactor for the metabolism of oxalate (a byproduct of vitamin C metabolism), with thiamine deficiency increasing oxalate levels. To simplify the study, both the intervention and control group will receive thiamine.",
+  "_parser_hint_not_gold": {
+    "primary_time_frame": [
+      "amount=90.0 unit='day'",
+      "None",
+      "None"
+    ]
+  }
+}

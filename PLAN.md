@@ -213,3 +213,18 @@ Hellbender (2026-10-24): environment set up and documented in `hpc/HELLBENDER.md
 - The extractor merges definition bullets, keeps AND/OR in joins, and records the design, status and enrollment type. It reads the detailed description, so ITT can come from the registry (C9, C11).
 - Value and temporal text, windows, the time-zero evidence and the grace period must be grounded in the source text, or they are dropped with a note (C5, C14). Anchors such as "randomization" become `time_zero` (C6), "null" strings become null (C7), and a value with no number becomes `present` (C12).
 - The few-shot example is no longer taken from a Replay trial. v1 protocol files still load (upgraded to one atom per criterion).
+
+**Exit run (2026-10-24, H100, commit 586e128).** 10 trials × 3 models × 2 replicates, run interactively on g020. Results: [eval/results/phase0_exit-H100.md](eval/results/phase0_exit-H100.md).
+- qwen3:32b and medgemma:27b drafted 20/20 schema-valid protocols each. gpt-oss:20b drafted 11/20; the other 9 ended in HTTP timeouts.
+- Replicates are not identical at temperature 0: substantively, qwen3 6/10 and medgemma 4/10.
+- The accuracy endpoints wait for the human gold annotation (`eval/gold/`).
+
+Changes since the run, all after commit 586e128:
+- Per-item timeout handling and an 8,192-token output cap.
+- gpt-oss reasoning levels (`ATTE_THINK=low`).
+- The unit-first time-frame fix ("Day 30").
+- A checker that explains repeated requests within a run.
+- Configurable Ollama parallelism, plus a reproducibility test (`hpc/repro_test.sh`).
+- Scoring tools (`eval/phase0_scoring.py`, `eval/score_phase0.py`) and gold templates.
+
+The Phase 0 exit criterion (§9) is met. Phase 1 starts with the synthetic OMOP generator and the statistics port. The Phase 0 benchmark continues alongside it: gold annotation, the reproducibility test, then a final run at one fixed commit.

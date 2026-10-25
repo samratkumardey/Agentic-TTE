@@ -21,7 +21,9 @@ class Settings(BaseSettings):
     temperature: float = 0.0
     seed: int = 42
     num_ctx: int = 16384
-    think: bool | None = None  # Ollama reasoning toggle for qwen3 / gpt-oss style models
+    num_predict: int | None = 8192  # output token cap per call
+    # Reasoning: true/false for qwen3; "low"/"medium"/"high" for gpt-oss; none = model default.
+    think: bool | Literal["low", "medium", "high"] | None = None
     llm_timeout_s: float = 600.0
     llm_max_retries: int = 2
 

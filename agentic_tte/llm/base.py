@@ -14,6 +14,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Literal, TypeVar
 
+import httpx
 from pydantic import BaseModel, Field, ValidationError
 
 from agentic_tte.llm.cache import ResponseCache
@@ -46,6 +47,7 @@ class LLMOutputError(RuntimeError):
 class Usage(BaseModel):
     calls: int = 0
     cache_hits: int = 0
+    failures: int = 0  # requests that timed out or lost the connection
     prompt_tokens: int = 0
     completion_tokens: int = 0
     log: list[dict[str, Any]] = Field(default_factory=list)
@@ -111,7 +113,15 @@ class LLMClient(ABC):
         convo = list(messages)
         last_text = None
         for _ in range(self.max_retries + 1):
-            resp = self.complete(convo, json_schema)
+            try:
+                resp = self.complete(convo, json_schema)
+            except httpx.TransportError as exc:
+                # Timeouts and dropped connections fail this item only, never the whole draft.
+                # Not retried: a runaway generation would just run away again.
+                self.usage.failures += 1
+                raise LLMOutputError(
+                    f"{self.model} request failed: {type(exc).__name__}: {exc}", last_text
+                ) from exc
             last_text = resp.text
             try:
                 return schema.model_validate_json(extract_json(resp.text))

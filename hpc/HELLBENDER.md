@@ -7,10 +7,10 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 | What | Path | Notes |
 |---|---|---|
 | Repo checkout | `~/data/Agentic-TTE` | Cloned from GitHub. Never edit code here; see "Sync rules" |
-| Per-project caches | `~/data/Agentic-TTE/.hpc-data/` (`$ATTE_PROJECT_DIR`) | CT.gov cache, LLM cache, uv cache. Git-ignored. Exit-run replicates each get a fresh cache in `.hpc-data/exit/<GPU>/<model>/rep<k>/` |
+| Per-project caches | `~/data/Agentic-TTE/.hpc-data/` (`$ATTE_PROJECT_DIR`) | CT.gov cache, LLM cache, uv cache. Git-ignored. Exit-run replicates each get a fresh cache in `.hpc-data/exit/<GPU>[-<tag>]/<model>/rep<k>/`, and reproducibility-test replicates in `.hpc-data/repro/<GPU>/<config>/<model>/rep<k>/` |
 | Ollama models | `/cluster/pixstor/data/$USER/tte-project/ollama-models` (`$OLLAMA_MODELS`) | Shared with older projects. Do not move |
 | Ollama container | `/cluster/pixstor/data/$USER/tte-project/containers/ollama-0.40.3.sif` (`$OLLAMA_SIF`) | 3.2 GB |
-| Run outputs | `~/data/Agentic-TTE/runs/` | Git-ignored. `runs/replay0-<jobid>/`, `runs/interactive/`, and `runs/exit-<GPU>/<model>/rep<k>/` for the exit run (`runs/exit-<GPU>.jobs` lists batch job IDs) |
+| Run outputs | `~/data/Agentic-TTE/runs/` | Git-ignored. `runs/replay0-<jobid>/`, `runs/interactive/`, `runs/exit-<GPU>[-<tag>]/<model>/rep<k>/` for the exit run (`runs/exit-<GPU>.jobs` lists batch job IDs), and `runs/repro-<GPU>/<config>/<model>/rep<k>/` for the reproducibility test |
 | Slurm logs | `~/data/Agentic-TTE/logs/` | Git-ignored |
 | Apptainer build scratch | `/local/scratch/$USER/apptainer-{tmp,cache}` | Node-local, temporary |
 
@@ -53,6 +53,9 @@ Jobs request 8 CPUs and 64 GB RAM, which fits every GPU node. The model lives in
 | Symptom | Cause | Fix (already in the scripts) |
 |---|---|---|
 | `listen tcp 0.0.0.0:11434: bind: address already in use` | The `ollama/ollama` image sets `OLLAMA_HOST=0.0.0.0:11434`, which overrides the host value inside Apptainer | Pass every `OLLAMA_*` setting with `--env` on `apptainer exec` |
+| gpt-oss:20b drafts end in `ReadTimeout: timed out` (exit run, 9 of 20) | Runaway generation with the default reasoning level: about 1,000 completion tokens per call, stalling on the same criteria | Output capped at 8,192 tokens (`ATTE_NUM_PREDICT`); timeouts fail one item, not the draft; use `ATTE_THINK=low` for a gpt-oss arm |
+| Replicates differ at temperature 0 (exit run: qwen3 6/10, medgemma 4/10 substantively identical) | Not yet known; suspects are `OLLAMA_NUM_PARALLEL=4` and server state between replicates | Under test with `hpc/repro_test.sh`; settings are recorded in every `manifest.txt` |
+| `interactive_ollama.sh` refuses: "runs with '…', not '…'" | A server started with other parallelism or flash-attention settings is still running | `source hpc/interactive_ollama.sh stop`, then start again |
 | Port 11434 busy on OnDemand nodes | A personal Ollama 0.13.5 often runs there | Project uses port 11500 interactively and a per-job port in batch |
 | `apptainer pull` → "Disk quota exceeded" | Build files and cache went to `~/data` | `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` on `/local/scratch`, and `apptainer pull --disable-cache` |
 | `WARNING: Error changing the container working directory` | `~/data` is a symlink to `/mnt/pixstor`, which is not bound into the container | Harmless. Never pass paths under `~/data` into the container |

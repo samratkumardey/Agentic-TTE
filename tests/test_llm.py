@@ -91,10 +91,33 @@ def test_ollama_request_shape():
     body = json.loads(chat.calls[0].request.content)
     assert body["stream"] is False
     assert body["format"]["properties"]["x"]["type"] == "integer"
-    assert body["options"] == {"temperature": 0.0, "seed": 42, "num_ctx": 16384}
+    assert body["options"] == {"temperature": 0.0, "seed": 42, "num_ctx": 16384,
+                               "num_predict": 8192}  # fmt: skip
     assert "think" not in body  # only sent when configured
     assert llm.model_digest() == "abc"
     assert llm.usage.prompt_tokens == 11 and llm.usage.completion_tokens == 3
+
+
+@respx.mock
+def test_timeout_is_an_item_failure_and_think_level_is_sent():
+    """gpt-oss:20b timed out on whole drafts in the exit run; a timeout must surface as an
+    LLMOutputError (handled per item), not crash the caller."""
+    respx.get("http://ollama:11434/api/tags").mock(return_value=httpx.Response(200, json={}))
+    chat = respx.post("http://ollama:11434/api/chat").mock(side_effect=httpx.ReadTimeout("slow"))
+    llm = OllamaClient("gpt-oss:20b", host="http://ollama:11434", think="low")
+    with pytest.raises(LLMOutputError, match="ReadTimeout"):
+        llm.structured(MSG, Inner)
+    assert llm.usage.failures == 1
+    assert json.loads(chat.calls[0].request.content)["think"] == "low"
+    assert chat.call_count == 1  # not retried
+
+
+def test_settings_accept_think_levels(monkeypatch):
+    from agentic_tte.config import Settings
+
+    for raw, parsed in (("false", False), ("low", "low"), ("none", None)):
+        monkeypatch.setenv("ATTE_THINK", raw)
+        assert Settings().think == parsed
 
 
 @respx.mock

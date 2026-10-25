@@ -26,4 +26,11 @@ Read [PLAN.md](PLAN.md) for the architecture and roadmap, and [hpc/HELLBENDER.md
 
 ## Current state (2026-10-24)
 
-Phase 0 runs end to end on Hellbender: the Trialist drafts protocols with `qwen3:32b` in an OnDemand GPU session via `hpc/interactive_ollama.sh`. The code is now at trialist-v2 / protocol schema v2 (see PLAN.md §12); the only Hellbender output so far (NCT04134403) is trialist-v1. Next: the Phase 0 exit run (`hpc/exit_run_submit.sh` or `hpc/exit_run_interactive.sh`, see hpc/README.md §6). It covers 10 trials × `qwen3:32b`, `gpt-oss:20b` and `alibayram/medgemma:27b` × 2 replicates on one GPU type, each replicate with a fresh LLM cache. It is checked by `eval/check_exit_run.py` and scored as pre-registered in `eval/SCORING.md`. Reference facts for the 10 trials are in `eval/reference/`. Then Phase 1.
+The Phase 0 exit criterion is met. The exit run (commit 586e128, H100, interactive) is in `runs/exit-H100/` on the PC (not in git); results are in `eval/results/phase0_exit-H100.md`.
+- qwen3:32b and medgemma:27b: 20/20 protocols each.
+- gpt-oss:20b: 11/20; the rest timed out.
+- Replicates differ at temperature 0.
+
+Accuracy endpoints (`eval/SCORING.md` parts B and C) need the human gold annotation (`eval/gold/`), which does not exist yet. Never report an accuracy number without it.
+
+Next on the cluster: `hpc/repro_test.sh` (OLLAMA_NUM_PARALLEL 4 vs 1), then the tagged gpt-oss `low` arm. Next in code: Phase 1, starting with the synthetic OMOP generator.
