@@ -1,0 +1,5 @@
+ancestor_concept_id	descendant_concept_id	min_levels_of_separation	max_levels_of_separation
+196236	196236	0	0
+196236	9000001	1	1
+9000020	9000020	0	0
+9000020	9000021	1	1

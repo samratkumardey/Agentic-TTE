@@ -1,0 +1,14 @@
+concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concept	concept_code	valid_start_date	valid_end_date	invalid_reason
+196236	Septic shock	Condition	SNOMED	Clinical Finding	S	76571007	19700101	20991231	
+9000001	Postprocedural septic shock	Condition	SNOMED	Clinical Finding	S	T001	19700101	20991231	
+9000002	Severe sepsis with septic shock	Condition	ICD10CM	7-char billing code		R65.21	19700101	20991231	
+9000099	Septic shock	Condition	SNOMED	Clinical Finding	S	T099	19700101	20151231	D
+9000010	Sepsis	Condition	SNOMED	Clinical Finding	S	T010	19700101	20991231	
+9000020	Hydrocortisone	Drug	RxNorm	Ingredient	S	5492	19700101	20991231	
+9000021	hydrocortisone 50 MG/ML Injectable Solution	Drug	RxNorm	Clinical Drug	S	T021	19700101	20991231	
+9000030	Lactate [Moles/volume] in Blood	Measurement	LOINC	Lab Test	S	T030	19700101	20991231	
+9000031	Lactate [Mass/volume] in Serum or Plasma	Measurement	LOINC	Lab Test	S	T031	19700101	20991231	
+9000040	Glucose-6-phosphate dehydrogenase deficiency	Condition	SNOMED	Clinical Finding	S	T040	19700101	20991231	
+9000050	Pregnancy	Condition	SNOMED	Clinical Finding	S	T050	19700101	20991231	
+9000060	Norepinephrine	Drug	RxNorm	Ingredient	S	T060	19700101	20991231	
+9000070	Dialysis procedure	Procedure	SNOMED	Procedure	S	T070	19700101	20991231	

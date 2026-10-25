@@ -97,5 +97,101 @@ def llm_check():
         raise typer.Exit(1)
 
 
+concepts_app = typer.Typer(no_args_is_help=True,
+                           help="OMOP concept sets: propose from the vocabulary, then review.")
+app.add_typer(concepts_app, name="concepts")
+
+
+def _open_db(db: Path, vocab: Path | None):
+    """Open an OMOP database read-only. With ``vocab``, the clinical tables are exposed as views
+    and the vocabulary tables come from the Athena download instead of the database."""
+    import duckdb
+
+    from agentic_tte.omop.vocab import ATHENA_FILES, load_athena
+
+    if vocab is None:
+        return duckdb.connect(str(db), read_only=True)
+    con = duckdb.connect(":memory:")
+    con.execute(f"ATTACH '{db.as_posix()}' AS cdm (READ_ONLY)")
+    vocab_tables = {f.lower() for f in ATHENA_FILES}
+    for (t,) in con.execute("SELECT table_name FROM information_schema.tables "
+                            "WHERE table_catalog = 'cdm'").fetchall():  # fmt: skip
+        if t.lower() not in vocab_tables:
+            con.execute(f"CREATE VIEW {t} AS SELECT * FROM cdm.{t}")
+    load_athena(con, vocab)
+    return con
+
+
+@concepts_app.command("propose")
+def concepts_propose(
+    protocol: Path,
+    db: Path = typer.Option(..., help="OMOP CDM database (DuckDB file)."),
+    out: Path = typer.Option(..., "--out", "-o", help="Directory for the review files."),
+    vocab: Path = typer.Option(None, help="Athena vocabulary download to search instead."),
+):
+    """Propose concept sets for a protocol. Writes book.json, review.md (for the clinician)
+    and decisions.json (to fill in)."""
+    from agentic_tte.omop.concept_sets import decisions_template, propose, review_sheet
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    book = propose(_open_db(db, vocab), p)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "book.json").write_text(book.model_dump_json(indent=2), encoding="utf-8")
+    (out / "review.md").write_text(review_sheet(book), encoding="utf-8")
+    (out / "decisions.json").write_text(json.dumps(decisions_template(book), indent=2),
+                                        encoding="utf-8")  # fmt: skip
+    typer.echo(f"{book.summary()} -> {out}/review.md; fill in {out}/decisions.json", err=True)
+
+
+@concepts_app.command("apply")
+def concepts_apply(
+    book: Path,
+    decisions: Path,
+    protocol: Path = typer.Option(None, help="Also write a mapped protocol version."),
+    out: Path = typer.Option(..., "--out", "-o", help="Reviewed book (JSON)."),
+):
+    """Apply a clinician's decisions to a concept-set book."""
+    from agentic_tte.omop.concept_sets import ConceptSetBook, apply_decisions, apply_to_protocol
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    b = ConceptSetBook.model_validate_json(book.read_text(encoding="utf-8"))
+    reviewed = apply_decisions(b, json.loads(decisions.read_text(encoding="utf-8")))
+    out.write_text(reviewed.model_dump_json(indent=2), encoding="utf-8")
+    typer.echo(f"{reviewed.summary()}; fully reviewed: {reviewed.fully_reviewed}", err=True)
+    if protocol is not None:
+        p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+        v = apply_to_protocol(p, reviewed)
+        target = protocol.with_name(f"{protocol.stem}.v{v.version}.json")
+        target.write_text(v.model_dump_json(indent=2), encoding="utf-8")
+        typer.echo(f"wrote {target}", err=True)
+
+
+@app.command()
+def gate(
+    protocol: Path,
+    db: Path = typer.Option(..., help="OMOP CDM database (DuckDB file)."),
+    book: Path = typer.Option(None, help="Reviewed concept-set book (approved sets are used)."),
+    classification: str = typer.Option(..., help="synthetic, deidentified, limited, identified"),
+    approved: bool = typer.Option(False, help="Storage/compute approved for this classification."),
+    vocab: Path = typer.Option(None, help="Athena vocabulary download."),
+):
+    """Run the Data Support Gate and print its report. Exits 1 if the run is blocked."""
+    from agentic_tte.omop import DataContext, run_gate
+    from agentic_tte.omop.concept_sets import ConceptSetBook
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    sets = None
+    if book is not None:
+        sets = ConceptSetBook.model_validate_json(book.read_text(encoding="utf-8")).gate_sets()
+    report = run_gate(_open_db(db, vocab), p, concept_sets=sets,
+                      context=DataContext(data_classification=classification,
+                                          approved_by_rcss=approved))  # fmt: skip
+    typer.echo(report.to_markdown())
+    if report.blocks_run:
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()

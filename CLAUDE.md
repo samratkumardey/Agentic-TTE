@@ -46,7 +46,11 @@ Order independence was confirmed on 2026-10-25 (forward vs reverse, 6/6 identica
 
 This is the run that accuracy (parts B and C) will be scored on, once the gold annotation exists. No further GPU runs are needed for Phase 0.
 
-Phase 2 has started (PLAN.md §15): the Data Support Gate (`agentic_tte/omop/gate.py`) is built. Next: OMOP concept mapping, then the SQL compiler.
+Phase 2 (PLAN.md §15): the Data Support Gate (`agentic_tte/omop/gate.py`) and OMOP concept mapping with clinician review (`agentic_tte/omop/vocab.py`, `concept_sets.py`) are built.
+- Concept IDs come only from vocabulary tables.
+- Only reviewer-approved sets are used.
+
+Next: the criteria-to-SQL compiler, then attrition and feasibility.
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

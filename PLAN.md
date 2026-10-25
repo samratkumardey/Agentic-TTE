@@ -334,8 +334,20 @@ Proprietary-model arms, the Oracle data plane, and the Rehearse and Redesign int
 - Checks: structure, CDM version (`cdm_source`), vocabulary, volume, time resolution against the protocol's finest window, death records, follow-up coverage, plausibility, patients per protocol concept (with descendants when `concept_ancestor` exists), and governance (declared data classification and RCSS approval; no patient rows to any LLM).
 - Counts below 11 are suppressed. On the synthetic database with the NCT04134403 protocol it reports amber: local vocabulary only, and concepts not yet mapped.
 
+**2. OMOP concept mapping with clinician review: built** (`agentic_tte/omop/vocab.py`, `agentic_tte/omop/concept_sets.py`; tests in `tests/test_concept_sets.py` and `tests/test_cli_concepts.py`).
+- **IDs come only from the vocabulary tables.** A deterministic search runs within the concept's domain: exact name, then synonym, then all-words matches. Non-standard codes follow `Maps to` to their standard concept, and deprecated concepts are excluded. Bracketed abbreviations, generic words ("level") and drug salt words are tried as extra queries, and drugs prefer the ingredient.
+- **A concept-set book holds one entry per eligibility concept and treatment component.** Each entry has its candidates and a proposed set. Administrative and demographic concepts are marked `not_needed`.
+- **Clinician review:** `review.md` plus a `decisions.json` with one decision per entry: approve, replace, reject, unmappable, or surrogate (which needs a note). Every decision is recorded with the reviewer.
+- **Only approved or surrogate sets reach the gate** (`book.gate_sets()`). `apply_to_protocol` writes the mappings into a new protocol version.
+- **CLI:** `agentic-tte concepts propose|apply` and `agentic-tte gate`, which can use an Athena download (`load_athena`).
+- **Test vocabulary:** `tests/fixtures/vocab/` is a made-up, Athena-format vocabulary. Only 196236 is a real concept ID.
+
+Known limits, to address next:
+- drug classes ("vasopressor") need class concepts (ATC or other drug classes) expanded to their ingredients;
+- abbreviations ("MAP") rely on `concept_synonym`, or on a curated, reviewer-approved abbreviation list;
+- a real Athena vocabulary still has to be downloaded by the user under their own account and licences.
+
 **Next:**
-2. OMOP concept mapping from vocabulary tables (`concept`, `concept_synonym`, `concept_ancestor`), producing the gate's `concept_sets`, with a clinician review step.
 3. The criteria-to-SQL compiler.
 4. The attrition table and feasibility (eligible N, events), which close the gate's last check.
 
