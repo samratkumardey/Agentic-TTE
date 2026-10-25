@@ -29,3 +29,6 @@ data/
 
 # Hellbender per-project caches (ATTE_PROJECT_DIR in hpc/env.sh)
 .hpc-data/
+
+# Jupyter autosave folders (OnDemand)
+.ipynb_checkpoints/

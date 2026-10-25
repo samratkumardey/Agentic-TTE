@@ -84,7 +84,9 @@ def check_run(run: Path, ctgov: Path | None = None) -> tuple[dict, list[str]]:
     trials = m.get("trials", "").split()
     row = {
         "run": str(run),
+        "arm": run.parent.name,  # model + reasoning level, e.g. gpt-oss_20b-low
         "model": m.get("model"),
+        "think": m.get("think"),
         "replicate": m.get("replicate"),
         "gpu": m.get("gpu"),
         "git_commit": m.get("git_commit"),
@@ -169,7 +171,7 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 2
     rows, problems = check(Path(args[0]), ctgov)
-    cols = ["model", "replicate", "protocols", "calls", "cache_hits", "expected_repeats",
+    cols = ["arm", "replicate", "protocols", "calls", "cache_hits", "expected_repeats",
             "prompt_tokens", "completion_tokens", "parse_failed", "dropped",
             "restart_count"]  # fmt: skip
     if rows:

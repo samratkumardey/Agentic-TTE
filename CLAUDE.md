@@ -38,7 +38,13 @@ Reproducibility (eval/SCORING.md amendments 7-10, hpc/HELLBENDER.md):
 - Every scored run uses OLLAMA_NUM_PARALLEL=1, restarts Ollama per replicate and unloads the model before each trial (the script defaults). Never score a run without these settings in its manifest.
 - The 586e128 exit run is the pilot, not scored for accuracy.
 
-Order independence was confirmed on 2026-10-25 (forward vs reverse, 6/6 identical). Next on the cluster: the final benchmark run (hpc/README.md §6). Hellbender writes outputs only under `runs/` (HELLBENDER.md sync rule 4). Its arms are qwen3, medgemma, gpt-oss default, and gpt-oss `low` (exploratory).
+Order independence was confirmed on 2026-10-25 (forward vs reverse, 6/6 identical). Hellbender writes outputs only under `runs/` (HELLBENDER.md sync rule 4).
+
+**Final benchmark run done** (2026-10-25, commit 9e09bdf, `gpu` partition, H100 NVL; `runs/exit-H100-final/` on the PC, not in git; `eval/results/phase0_exit-H100-final.md`). Arms: qwen3:32b, medgemma:27b, gpt-oss:20b default, gpt-oss:20b `low`.
+- 80/80 protocols, with 0 failures.
+- Replicates identical in every arm.
+
+This is the run that accuracy (parts B and C) will be scored on, once the gold annotation exists. No further GPU runs are needed for Phase 0.
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

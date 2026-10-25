@@ -21,6 +21,9 @@ LABEL="$(exit_label "$GPU")"                # A100, or A100-<tag> with ATTE_EXIT
 exit_preflight
 
 JOBS="runs/exit-$LABEL.jobs"
+# Submitting from inside a (requeued) OnDemand job would pass its SLURM_RESTART_COUNT on through
+# --export=ALL; each batch job must report only its own restarts (final run, 2026-10-25).
+unset SLURM_RESTART_COUNT
 mkdir -p "runs/exit-$LABEL" logs
 for spec in $EXIT_MODELS; do
   MODEL="${spec%|*}"; THINK="${spec#*|}"; SLUG="$(exit_slug "$MODEL" "$THINK")"

@@ -1,0 +1,353 @@
+{
+  "run_root": "runs\\exit-H100-final",
+  "gpu": "NVIDIA H100 NVL, 95830 MiB",
+  "git_commit": "9e09bdf",
+  "ollama_version": "{\"version\":\"0.40.3\"}",
+  "trials": [
+    "NCT00475852",
+    "NCT00953303",
+    "NCT01223690",
+    "NCT01560650",
+    "NCT02856698",
+    "NCT03258684",
+    "NCT03592693",
+    "NCT03872011",
+    "NCT04134403",
+    "NCT06091982"
+  ],
+  "checker_problems": [],
+  "models": {
+    "alibayram_medgemma_27b": {
+      "completion": {
+        "rep1": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 88257,
+          "completion_tokens": 17744,
+          "completion_tokens_per_call": 175.68316831683168,
+          "wall_hours": 0.5086111111111111
+        },
+        "rep2": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 88257,
+          "completion_tokens": 17744,
+          "completion_tokens_per_call": 175.68316831683168,
+          "wall_hours": 0.5138888888888888
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 10,
+        "assignment:default": 10,
+        "causal_contrast:default": 9,
+        "causal_contrast:registry": 1,
+        "eligibility:registry": 10,
+        "follow_up:derived": 10,
+        "outcomes:registry": 10,
+        "time_zero:agent": 10,
+        "treatment_strategies:registry": 10
+      },
+      "stability": {
+        "trials_compared": 10,
+        "identical_full": 10,
+        "identical_substantive": 10,
+        "element_identical": {
+          "eligibility": 10,
+          "treatment_strategies": 10,
+          "assignment": 10,
+          "time_zero": 10,
+          "follow_up": 10,
+          "outcomes": 10,
+          "causal_contrast": 10,
+          "analysis_plan": 10
+        },
+        "criteria_identical": 77,
+        "criteria_compared": 77,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.5714285714285714,
+        "recall": 0.4444444444444444,
+        "f1": 0.5,
+        "tp": 8,
+        "pred": 14,
+        "ref": 18
+      }
+    },
+    "gpt-oss_20b": {
+      "completion": {
+        "rep1": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 105,
+          "cache_hits": 2,
+          "prompt_tokens": 96739,
+          "completion_tokens": 150714,
+          "completion_tokens_per_call": 1435.3714285714286,
+          "wall_hours": 1.5391666666666666
+        },
+        "rep2": {
+          "calls": 105,
+          "cache_hits": 2,
+          "prompt_tokens": 96739,
+          "completion_tokens": 150714,
+          "completion_tokens_per_call": 1435.3714285714286,
+          "wall_hours": 1.541388888888889
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 10,
+        "assignment:default": 10,
+        "causal_contrast:default": 9,
+        "causal_contrast:registry": 1,
+        "eligibility:registry": 10,
+        "follow_up:derived": 10,
+        "outcomes:registry": 10,
+        "time_zero:agent": 10,
+        "treatment_strategies:registry": 10
+      },
+      "stability": {
+        "trials_compared": 10,
+        "identical_full": 10,
+        "identical_substantive": 10,
+        "element_identical": {
+          "eligibility": 10,
+          "treatment_strategies": 10,
+          "assignment": 10,
+          "time_zero": 10,
+          "follow_up": 10,
+          "outcomes": 10,
+          "causal_contrast": 10,
+          "analysis_plan": 10
+        },
+        "criteria_identical": 77,
+        "criteria_compared": 77,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.5333333333333333,
+        "recall": 0.4444444444444444,
+        "f1": 0.4848484848484848,
+        "tp": 8,
+        "pred": 15,
+        "ref": 18
+      }
+    },
+    "gpt-oss_20b-low": {
+      "completion": {
+        "rep1": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 91751,
+          "completion_tokens": 22104,
+          "completion_tokens_per_call": 218.85148514851485,
+          "wall_hours": 0.24944444444444444
+        },
+        "rep2": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 91751,
+          "completion_tokens": 22104,
+          "completion_tokens_per_call": 218.85148514851485,
+          "wall_hours": 0.2975
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 10,
+        "assignment:default": 10,
+        "causal_contrast:default": 9,
+        "causal_contrast:registry": 1,
+        "eligibility:registry": 10,
+        "follow_up:derived": 10,
+        "outcomes:registry": 10,
+        "time_zero:agent": 10,
+        "treatment_strategies:registry": 10
+      },
+      "stability": {
+        "trials_compared": 10,
+        "identical_full": 10,
+        "identical_substantive": 10,
+        "element_identical": {
+          "eligibility": 10,
+          "treatment_strategies": 10,
+          "assignment": 10,
+          "time_zero": 10,
+          "follow_up": 10,
+          "outcomes": 10,
+          "causal_contrast": 10,
+          "analysis_plan": 10
+        },
+        "criteria_identical": 77,
+        "criteria_compared": 77,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.42857142857142855,
+        "recall": 0.3333333333333333,
+        "f1": 0.375,
+        "tp": 6,
+        "pred": 14,
+        "ref": 18
+      }
+    },
+    "qwen3_32b": {
+      "completion": {
+        "rep1": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        },
+        "rep2": {
+          "protocols": 10,
+          "trials": 10,
+          "trial_failures": {},
+          "criterion_parse_failed": 0,
+          "dropped_events": 0
+        }
+      },
+      "operations": {
+        "rep1": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 87400,
+          "completion_tokens": 16394,
+          "completion_tokens_per_call": 162.31683168316832,
+          "wall_hours": 0.37083333333333335
+        },
+        "rep2": {
+          "calls": 101,
+          "cache_hits": 2,
+          "prompt_tokens": 87400,
+          "completion_tokens": 16394,
+          "completion_tokens_per_call": 162.31683168316832,
+          "wall_hours": 0.41305555555555556
+        }
+      },
+      "origins": {
+        "analysis_plan:default": 10,
+        "assignment:default": 10,
+        "causal_contrast:default": 9,
+        "causal_contrast:registry": 1,
+        "eligibility:registry": 10,
+        "follow_up:derived": 10,
+        "outcomes:registry": 10,
+        "time_zero:agent": 10,
+        "treatment_strategies:registry": 10
+      },
+      "stability": {
+        "trials_compared": 10,
+        "identical_full": 10,
+        "identical_substantive": 10,
+        "element_identical": {
+          "eligibility": 10,
+          "treatment_strategies": 10,
+          "assignment": 10,
+          "time_zero": 10,
+          "follow_up": 10,
+          "outcomes": 10,
+          "causal_contrast": 10,
+          "analysis_plan": 10
+        },
+        "criteria_identical": 77,
+        "criteria_compared": 77,
+        "atom_logic_flips": [],
+        "concept_f1_relaxed": 1.0,
+        "concept_f1_strict": 1.0
+      },
+      "silver_emulatrx_NCT03872011": {
+        "precision": 0.5384615384615384,
+        "recall": 0.3888888888888889,
+        "f1": 0.45161290322580644,
+        "tp": 7,
+        "pred": 13,
+        "ref": 18
+      }
+    }
+  },
+  "inter_model_agreement": {
+    "alibayram_medgemma_27b vs gpt-oss_20b": {
+      "trials": 10,
+      "f1_relaxed": 0.6006191950464397,
+      "f1_strict": 0.46439628482972134
+    },
+    "alibayram_medgemma_27b vs gpt-oss_20b-low": {
+      "trials": 10,
+      "f1_relaxed": 0.5878594249201278,
+      "f1_strict": 0.3833865814696486
+    },
+    "alibayram_medgemma_27b vs qwen3_32b": {
+      "trials": 10,
+      "f1_relaxed": 0.6045016077170418,
+      "f1_strict": 0.4244372990353698
+    },
+    "gpt-oss_20b vs gpt-oss_20b-low": {
+      "trials": 10,
+      "f1_relaxed": 0.6689189189189189,
+      "f1_strict": 0.5202702702702703
+    },
+    "gpt-oss_20b vs qwen3_32b": {
+      "trials": 10,
+      "f1_relaxed": 0.564625850340136,
+      "f1_strict": 0.33333333333333337
+    },
+    "gpt-oss_20b-low vs qwen3_32b": {
+      "trials": 10,
+      "f1_relaxed": 0.5774647887323943,
+      "f1_strict": 0.3309859154929577
+    }
+  }
+}

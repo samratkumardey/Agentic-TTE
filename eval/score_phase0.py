@@ -51,7 +51,8 @@ def score(root: Path, ctgov: Path | None) -> dict:
     runs: dict[str, dict[str, dict]] = {}
     for r in rows:
         run_dir = Path(r["run"])
-        model, rep = r["model"], f"rep{r['replicate']}"
+        # Key by arm (directory), not model: one model can run at two reasoning levels.
+        model, rep = r["arm"], f"rep{r['replicate']}"
         manifest = check_exit_run.read_manifest(run_dir / "manifest.txt")
         runs.setdefault(model, {})[rep] = {
             "row": r,
@@ -159,7 +160,7 @@ def render(s: dict) -> str:
       "accuracy estimate.\n")  # fmt: skip
 
     w("## Completion and failures\n")
-    w("| Model | Rep | Protocols | Trial-level failures | Criterion parse failures | "
+    w("| Arm | Rep | Protocols | Trial-level failures | Criterion parse failures | "
       "Dropped (grounding) |")  # fmt: skip
     w("|---|---|---|---|---|---|")
     for m in models:
@@ -170,7 +171,7 @@ def render(s: dict) -> str:
     w("")
 
     w("## Operations\n")
-    w("| Model | Rep | LLM calls | Cache hits | Prompt tokens | Completion tokens | "
+    w("| Arm | Rep | LLM calls | Cache hits | Prompt tokens | Completion tokens | "
       "Completion tokens / call | Wall time (h) |")  # fmt: skip
     w("|---|---|---|---|---|---|---|---|")
     for m in models:
@@ -229,7 +230,7 @@ def render(s: dict) -> str:
       "without atom structure). Upstream concept names are tagged spans (\"Systemic "
       "corticosteroid therapy\"), so exact-name matching understates agreement. Indicative "
       "only.\n")  # fmt: skip
-    w("| Model | Precision (%) | Recall (%) | F1 (%) | Matched / predicted / upstream |")
+    w("| Arm | Precision (%) | Recall (%) | F1 (%) | Matched / predicted / upstream |")
     w("|---|---|---|---|---|")
     for m in models:
         v = s["models"][m].get("silver_emulatrx_NCT03872011")

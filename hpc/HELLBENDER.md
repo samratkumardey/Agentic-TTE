@@ -35,7 +35,7 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 
 | Partition | GPUs | Limits | When to use |
 |---|---|---|---|
-| `gpu` | 3 nodes × 2 H100 (64 CPU, ~490 GB RAM) | 2 days, not preemptible | Final benchmark runs. Queue waits can be many hours |
+| `gpu` | 3 nodes × 2 H100 (64 CPU, ~490 GB RAM); nodes g032–g034 report **H100 NVL, 95830 MiB** (2026-10-25) | 2 days, not preemptible | Final benchmark runs. Queue waits can be many hours. OnDemand g020 is a different type (H100 80GB HBM3), so never pool runs from both |
 | `gpu_requeue` | H100 (×8, ×4, ×2 nodes), A100 ×4 on 15 nodes, H200, L40S | 2 days, **preemptible** | Development and fast turnaround; `--gres=gpu:A100:1` usually starts quickly |
 
 Jobs request 8 CPUs and 64 GB RAM, which fits every GPU node. The model lives in GPU memory, not system RAM.
@@ -55,6 +55,7 @@ Jobs request 8 CPUs and 64 GB RAM, which fits every GPU node. The model lives in
 | `listen tcp 0.0.0.0:11434: bind: address already in use` | The `ollama/ollama` image sets `OLLAMA_HOST=0.0.0.0:11434`, which overrides the host value inside Apptainer | Pass every `OLLAMA_*` setting with `--env` on `apptainer exec` |
 | gpt-oss:20b drafts end in `ReadTimeout: timed out` (exit run, 9 of 20) | Runaway generation with the default reasoning level: about 1,000 completion tokens per call, stalling on the same criteria | Output capped at 8,192 tokens (`ATTE_NUM_PREDICT`); timeouts fail one item, not the draft; use `ATTE_THINK=low` for a gpt-oss arm |
 | Replicates differ at temperature 0 (exit run: qwen3 6/10, medgemma 4/10 substantively identical) | **Server state** (repro test 2026-10-24): on a restarted server, replicates are identical at both parallelism settings. The parallelism setting itself also changes outputs, and outputs appear to depend on earlier requests | `OLLAMA_NUM_PARALLEL=1` by default; Ollama restarted per replicate; model unloaded before every trial (`ATTE_UNLOAD_PER_TRIAL=1`). All recorded in `manifest.txt`. Order independence confirmed 2026-10-25: protocols identical with trials forward or reversed |
+| Every batch manifest says `restart_count=2` though the jobs ran once (final run, 2026-10-25) | Submitted from inside the OnDemand job, whose own `SLURM_RESTART_COUNT` (it had been requeued twice) was passed on by `--export=ALL` | `exit_run_submit.sh` unsets `SLURM_RESTART_COUNT` before submitting. To tell a real restart apart, check that the job ID matches `runs/exit-<label>.jobs` and that start and finish are continuous |
 | `interactive_ollama.sh` refuses: "runs with '…', not '…'" | A server started with other parallelism or flash-attention settings is still running | `source hpc/interactive_ollama.sh stop`, then start again |
 | Port 11434 busy on OnDemand nodes | A personal Ollama 0.13.5 often runs there | Project uses port 11500 interactively and a per-job port in batch |
 | `apptainer pull` → "Disk quota exceeded" | Build files and cache went to `~/data` | `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` on `/local/scratch`, and `apptainer pull --disable-cache` |

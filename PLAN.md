@@ -227,7 +227,9 @@ Changes since the run, all after commit 586e128:
 - Configurable Ollama parallelism, plus a reproducibility test (`hpc/repro_test.sh`).
 - Scoring tools (`eval/phase0_scoring.py`, `eval/score_phase0.py`) and gold templates.
 
-The Phase 0 exit criterion (§9) is met. Phase 1 starts with the synthetic OMOP generator and the statistics port. The Phase 0 benchmark continues alongside it: gold annotation, the reproducibility test, then a final run at one fixed commit.
+The Phase 0 exit criterion (§9) is met.
+
+**Final benchmark run (2026-10-25, commit 9e09bdf, H100 NVL):** 4 arms × 2 replicates × 10 trials, 80/80 protocols, 0 failures, replicates identical in every arm ([eval/results/phase0_exit-H100-final.md](eval/results/phase0_exit-H100-final.md)). Reproducibility came from three settings: OLLAMA_NUM_PARALLEL=1, a fresh server per replicate, and the model unloaded per trial (`eval/SCORING.md` amendments 7–12). What remains for the Phase 0 paper results is the human gold annotation (`eval/gold/`), then scoring parts B and C.
 
 ## 13. Phase 1 status (2026-10-24)
 
