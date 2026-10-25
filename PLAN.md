@@ -228,3 +228,99 @@ Changes since the run, all after commit 586e128:
 - Scoring tools (`eval/phase0_scoring.py`, `eval/score_phase0.py`) and gold templates.
 
 The Phase 0 exit criterion (§9) is met. Phase 1 starts with the synthetic OMOP generator and the statistics port. The Phase 0 benchmark continues alongside it: gold annotation, the reproducibility test, then a final run at one fixed commit.
+
+## 13. Phase 1 status (2026-10-24)
+
+**Synthetic data** (`agentic_tte/synth/`):
+- A data-generating process with planted effects: confounding by SOFA, age and lactate; conditional HR 0.5/1/2/3; effect modification by SOFA; delayed start within a grace period.
+- Ground truth from potential outcomes (marginal HR, risks, risk difference), computable in any analysis population (`Cohort.truth_in`).
+- An OMOP CDM v5.4 writer in DuckDB, with a SQL round trip that matches the generator exactly.
+
+**Statistics** (`agentic_tte/stats/`), ported from EmulatRx `emulation_utils.py`:
+- Propensity scores, stabilized IPTW, caliper matching, SMD.
+- Unpenalized marginal Cox with robust and clustered SEs; weighted KM risk difference; PH test; subgroups with an interaction test.
+- Clone-censor-weight; Schoenfeld sample size; E-values.
+
+The recovery tests pass (`tests/test_stats_recovery.py`); the table is in [eval/results/phase1_recovery.md](eval/results/phase1_recovery.md).
+
+Findings for the paper:
+1. The planted (conditional) HR is not the estimand of IPTW or PSM. The marginal HR is closer to 1 (2.45 for a planted 3.0), and EmulatRx Table 3 compared against the conditional value.
+2. EmulatRx's Cox model used `penalizer=0.1`, which shrinks effects toward 1 (0.611 vs 0.573 on the same weighted data).
+3. Caliper matching changes the estimand to the matched treated.
+4. Clone-censor-weight targets the "start naturally, or at the deadline" grace-period strategy. That differs from "everyone starts at a random time within grace".
+
+Exit criterion (§9), met:
+- planted HRs recovered within 0.15 on the log scale, with the CI covering the truth;
+- CCW removes the planted immortal-time bias (null, no confounding: naive 0.76, CCW 1.01);
+- the subgroup DGP is recovered.
+
+Open:
+- a Monte Carlo study over many seeds, for bias and coverage claims (rows in the table share one seed);
+- bootstrap CIs for CCW and KM risks;
+- a doubly robust estimator (planned in §6, not yet ported);
+- random survival forests (scikit-survival, not yet added).
+
+## 14. Platform decisions (2026-10-24)
+
+**Goal:** a production tool for clinicians and trialists (Replay, Rehearse, Redesign), not a replication of EmulatRx. The first manuscript uses a fully open-weight, automated pipeline.
+
+### Models
+
+- **Open-weight models are the primary pipeline.** The current three are `qwen3:32b`, `gpt-oss:20b` and `alibayram/medgemma:27b`. Adding a model is configuration (an Ollama tag in `ATTE_EXIT_MODELS`), not code.
+- **Proprietary models are optional comparator arms, after the first manuscript.**
+  - GPT and Grok: through the existing OpenAI-compatible backend (`agentic_tte/llm/openai_compat.py`); untested against those services.
+  - Gemini: has an OpenAI-compatible endpoint.
+  - Claude: needs one small backend for the Anthropic Messages API.
+- **Rules for any external (hosted) model:**
+  1. A per-backend `external` flag, enforced in code, refuses any request containing patient-derived content. External models see only registry text, literature, schemas and aggregate counts.
+  2. Dated model versions are pinned and recorded in `manifest.txt`, because hosted models change without notice.
+  3. They are scored with the same pre-registered method (`eval/SCORING.md`) as the open-weight models, and never pooled with them.
+
+### Data sources and the Data Support Gate
+
+- **One input format: OMOP CDM v5.4.** Every source is converted to OMOP first.
+  - Synthetic: built.
+  - MIMIC-IV: the OHDSI MIMIC-IV→OMOP conversion.
+  - Oracle Health (Cerner): an OMOP extract or FHIR R4 → OMOP.
+  - Other EHRs (Epic, PCORnet, i2b2): a conversion each, or FHIR R4 as the common route.
+- **Engines:** DuckDB (synthetic, tests) and Postgres. Other dialects, including Oracle SQL, through SQLGlot.
+- **Data Support Gate (first item of Phase 2).** A per-protocol report, green/amber/red, before any analysis. Red blocks the run; amber means a criterion needs a surrogate or is reported as unmappable.
+  1. Valid OMOP: CDM version, required tables, vocabulary version.
+  2. Protocol-to-data fit: patients with a record for each concept set; time resolution (datetime where criteria use hours); death completeness; observation-period coverage of the follow-up horizon.
+  3. Data quality: completeness and plausibility, in the style of the OHDSI Data Quality Dashboard.
+  4. Governance: data classification, de-identification status, no patient rows to any LLM.
+  5. Feasibility: estimated eligible N and events (also feeds Rehearse).
+
+### Cloud-resident data (Oracle EHR): bring the computation to the data
+
+Oracle Health data cannot leave Oracle's cloud. The platform therefore has two parts:
+- **Control plane** (Hellbender or elsewhere): agents, LLMs, interface, protocol versions. It produces the protocol and the compiled SQL, and never needs patient rows.
+- **Data plane** (inside the data's environment): a small executor, the compiled SQL plus the statistics engine (`agentic_tte/stats/`, plain Python, packaged as a container). It returns **only aggregates**: counts, attrition, effect estimates, survival curves, with small cells suppressed.
+
+Which form the data plane takes depends on MU's Oracle contract:
+- (a) the executor container runs in MU's Oracle cloud tenancy;
+- (b) Oracle-side analytics runs the generated SQL;
+- (c) MU analysts run the scripts and return aggregates.
+
+The same split covers federated multi-site emulation later.
+
+To confirm with MU IT and Oracle: compute allowed in the tenancy, the data format available there (OMOP or FHIR), data-use terms, and the data classification (RCSS).
+
+### Orchestration: free, open source
+
+- **LangGraph**, the open-source library (MIT), as EmulatRx used. It provides the agent graph, persistent and resumable state (SQLite/Postgres checkpointer), and `interrupt()` for clinician approval gates.
+- **Not used:**
+  - LangGraph Platform and LangSmith (paid): our run manifests and logs replace them.
+  - Most of LangChain: `agentic_tte/llm/LLMClient` stays the only model interface, so model swapping, caching and grounding stay ours.
+- **Benchmark batches:** Slurm and the `hpc/` scripts, no Airflow or Prefect.
+- **Testing:** the GitHub Actions free tier (not set up yet). Cost: $0.
+
+### Order to the first manuscript (open-weight, automated)
+
+1. Phase 2: Data Support Gate; OMOP concept mapping from the vocabulary tables; criteria-to-SQL compiler; attrition table.
+2. Wire the agents with LangGraph.
+3. End-to-end Replay on synthetic OMOP, where the truth is known.
+4. Replay on MIMIC-IV, after PhysioNet credentialing and confirming the data classification with RCSS.
+5. The three-model benchmark (`eval/SCORING.md`), with the gold annotation done in parallel.
+
+Proprietary-model arms, the Oracle data plane, and the Rehearse and Redesign interfaces follow the first manuscript.

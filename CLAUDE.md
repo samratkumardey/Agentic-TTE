@@ -33,4 +33,9 @@ The Phase 0 exit criterion is met. The exit run (commit 586e128, H100, interacti
 
 Accuracy endpoints (`eval/SCORING.md` parts B and C) need the human gold annotation (`eval/gold/`), which does not exist yet. Never report an accuracy number without it.
 
-Next on the cluster: `hpc/repro_test.sh` (OLLAMA_NUM_PARALLEL 4 vs 1), then the tagged gpt-oss `low` arm. Next in code: Phase 1, starting with the synthetic OMOP generator.
+Next on the cluster: `hpc/repro_test.sh` (OLLAMA_NUM_PARALLEL 4 vs 1), then the tagged gpt-oss `low` arm.
+
+Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
+- Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.
+- Open: a Monte Carlo over seeds, bootstrap CIs, a doubly robust estimator.
+- This PC's `.venv` sits in OneDrive, which can lock files during `uv add`. If it does, rerun once the lock clears; Hellbender is unaffected.

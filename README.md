@@ -15,11 +15,24 @@ It builds on and extends [EmulatRx](https://github.com/TrialLab/EmulatRx) (Li et
 | EmulatRx cache importer and regression fixture | `agentic_tte/protocol/emulatrx_import.py` |
 | Hellbender Ollama service (Slurm + Apptainer) | `hpc/` |
 
+## Status: Phase 1 (synthetic data and statistics)
+
+| Piece | Where |
+|---|---|
+| Synthetic ICU cohorts with planted effects and potential-outcome truth | `agentic_tte/synth/dgp.py` |
+| OMOP CDM v5.4 tables in DuckDB, with a SQL round trip | `agentic_tte/synth/omop.py` |
+| Propensity scores, IPTW, matching, SMD | `agentic_tte/stats/balance.py` |
+| Weighted Cox, KM risks, PH test, subgroups | `agentic_tte/stats/survival.py` |
+| Clone-censor-weight for grace-period strategies | `agentic_tte/stats/ccw.py` |
+| Schoenfeld sample size, E-values | `agentic_tte/stats/design.py` |
+| Recovery table vs planted truth (cf. EmulatRx Table 3) | `eval/results/phase1_recovery.md` |
+
 ## Quick start (local)
 
 ```bash
 uv sync --extra dev
-uv run pytest
+uv run pytest                 # all tests (~5 min)
+uv run pytest -m "not slow"   # skip the statistical recovery tests
 ```
 
 Draft a protocol with a local Ollama model:
