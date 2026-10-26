@@ -167,6 +167,54 @@ def concepts_apply(
         typer.echo(f"wrote {target}", err=True)
 
 
+@app.command("compile")
+def compile_cmd(
+    protocol: Path,
+    out: Path = typer.Option(..., "--out", "-o", help="Directory for the SQL and the report."),
+    spec: Path = typer.Option(None, help="Compile spec (time zero, anchors). Without one, a "
+                                         "template is written to fill in."),
+    book: Path = typer.Option(None, help="Reviewed concept-set book (approved sets are used)."),
+    db: Path = typer.Option(None, help="OMOP database: check the SQL runs and count eligible."),
+    vocab: Path = typer.Option(None, help="Athena vocabulary download."),
+):
+    """Compile a protocol's criteria and analysis frame to OMOP SQL (no LLM involved)."""
+    from agentic_tte.omop.compiler import CompileSpec, compile_protocol, spec_template
+    from agentic_tte.omop.concept_sets import ConceptSetBook
+    from agentic_tte.omop.gate import suppress
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    out.mkdir(parents=True, exist_ok=True)
+    if spec is None:
+        target = out / "spec.json"
+        target.write_text(json.dumps(spec_template(p), indent=2), encoding="utf-8")
+        typer.echo(f"no spec given: fill in {target} (time zero and anchors as concept sets), "
+                   "then rerun with --spec", err=True)  # fmt: skip
+        raise typer.Exit(1)
+    s = CompileSpec.model_validate_json(spec.read_text(encoding="utf-8"))
+    if book is not None:
+        sets = ConceptSetBook.model_validate_json(book.read_text(encoding="utf-8")).gate_sets()
+        s = s.model_copy(update={"concept_sets": {**sets, **s.concept_sets}})
+    con = _open_db(db, vocab) if db is not None else None
+    if con is not None:
+        tables = {r[0].lower() for r in con.execute(
+            "SELECT table_name FROM information_schema.tables").fetchall()}  # fmt: skip
+        s = s.model_copy(update={"descendants": "concept_ancestor" in tables})
+    cc = compile_protocol(p, s)
+    (out / "cohort.sql").write_text(cc.cohort_sql + "\n", encoding="utf-8")
+    if cc.frame_sql:
+        (out / "frame.sql").write_text(cc.frame_sql + "\n", encoding="utf-8")
+    (out / "compile.md").write_text(cc.to_markdown(), encoding="utf-8")
+    (out / "compile.json").write_text(cc.model_dump_json(indent=2), encoding="utf-8")
+    n = {st: sum(c.status == st for c in cc.criteria)
+         for st in ("compiled", "not_compiled", "not_emulable")}  # fmt: skip
+    typer.echo(f"{n} -> {out}/compile.md", err=True)
+    if con is not None:
+        total, eligible = con.execute(f"SELECT count(*), count(*) FILTER (WHERE eligible) "
+                                      f"FROM ({cc.cohort_sql})").fetchone()  # fmt: skip
+        typer.echo(f"index persons {suppress(total)}, eligible {suppress(eligible)}", err=True)
+
+
 @app.command()
 def gate(
     protocol: Path,

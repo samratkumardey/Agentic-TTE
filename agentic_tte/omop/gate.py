@@ -16,7 +16,7 @@ Checks:
   quality        plausibility (end before start, death before birth, impossible ages, ...)
   concepts       patients with a record for each protocol concept (needs concept IDs)
   governance     data classification and approval; no patient rows to any LLM
-  feasibility    eligible N and events: computed once the cohort is compiled (next step)
+  feasibility    eligible N and events: from the compiled cohort (attrition step, next)
 """
 
 from __future__ import annotations

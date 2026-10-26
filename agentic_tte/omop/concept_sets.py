@@ -1,8 +1,9 @@
 """Concept sets for a protocol, proposed from the vocabulary and approved by a clinician.
 
 Workflow (Informatician + clinician review gate, PLAN.md §3):
-1. ``propose(con, protocol)``: one entry per protocol concept (eligibility and treatment
-   components), with vocabulary candidates (``vocab.search``) and a proposed concept set.
+1. ``propose(con, protocol)``: one entry per protocol concept (eligibility, treatment
+   components, confounders and outcome concepts), with vocabulary candidates
+   (``vocab.search``) and a proposed concept set.
 2. ``review_sheet(book)``: a table the clinician reviews; ``decisions_template(book)``: a JSON
    file they fill in, one decision per entry: approve, replace, reject, unmappable, surrogate.
 3. ``apply_decisions(book, decisions)``: records each decision with reviewer and note.
@@ -32,8 +33,8 @@ Action = Literal["approve", "replace", "reject", "unmappable", "surrogate"]
 
 
 class ConceptSet(BaseModel):
-    key: str  # "I1:septic shock", "T:<arm label>:<component>"
-    scope: Literal["eligibility", "treatment"]
+    key: str  # "I1:septic shock", "T:<arm>:<component>", "C:<confounder>", "O:<outcome>"
+    scope: Literal["eligibility", "treatment", "confounder", "outcome"]
     criterion_text: str
     concept_name: str
     domain: str
@@ -79,6 +80,11 @@ def _entries(protocol: TargetTrialProtocol):
     for arm in protocol.treatment_strategies:
         for comp in arm.components:
             yield f"T:{arm.label}:{comp.concept.name}", "treatment", arm, comp.concept
+    for c in protocol.assignment.confounders:
+        yield f"C:{c.name}", "confounder", None, c
+    for o in protocol.outcomes:
+        if o.concept is not None:
+            yield f"O:{o.name}", "outcome", o, o.concept
 
 
 def propose(con, protocol: TargetTrialProtocol, *, n_candidates: int = 5) -> ConceptSetBook:
@@ -96,7 +102,12 @@ def propose(con, protocol: TargetTrialProtocol, *, n_candidates: int = 5) -> Con
         if key in seen:
             continue
         seen.add(key)
-        text = owner.text if scope == "eligibility" else (owner.description or owner.label)
+        if scope == "eligibility":
+            text = owner.text
+        elif scope == "treatment":
+            text = owner.description or owner.label
+        else:
+            text = owner.name if scope == "outcome" else "confounder (assignment)"
         entry = ConceptSet(key=key, scope=scope, criterion_text=text,
                            concept_name=concept.name, domain=concept.domain)  # fmt: skip
         if scope == "eligibility" and not owner.emulable:
@@ -194,6 +205,8 @@ def apply_to_protocol(protocol: TargetTrialProtocol, book: ConceptSetBook,
     by_key = {s.key: s for s in book.sets}
     eligibility = [c.model_copy(deep=True) for c in protocol.eligibility]
     arms = [a.model_copy(deep=True) for a in protocol.treatment_strategies]
+    assignment = protocol.assignment.model_copy(deep=True)
+    outcomes = [o.model_copy(deep=True) for o in protocol.outcomes]
 
     def update(ref, s: ConceptSet | None) -> None:
         if s is None:
@@ -214,9 +227,16 @@ def apply_to_protocol(protocol: TargetTrialProtocol, book: ConceptSetBook,
     for arm in arms:
         for comp in arm.components:
             update(comp.concept, by_key.get(f"T:{arm.label}:{comp.concept.name}"))
+    for c in assignment.confounders:
+        update(c, by_key.get(f"C:{c.name}"))
+    for o in outcomes:
+        if o.concept is not None:
+            update(o.concept, by_key.get(f"O:{o.name}"))
     reviewers = sorted({s.reviewer for s in book.sets if s.reviewer})
     return new_version(protocol, created_by=created_by,
                        notes=f"concept sets reviewed by {', '.join(reviewers) or 'nobody'}; "
                              f"{json.dumps(book.summary())}",
                        eligibility=[c.model_dump() for c in eligibility],
-                       treatment_strategies=[a.model_dump() for a in arms])  # fmt: skip
+                       treatment_strategies=[a.model_dump() for a in arms],
+                       assignment=assignment.model_dump(),
+                       outcomes=[o.model_dump() for o in outcomes])  # fmt: skip

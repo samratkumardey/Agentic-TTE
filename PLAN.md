@@ -347,8 +347,30 @@ Known limits, to address next:
 - abbreviations ("MAP") rely on `concept_synonym`, or on a curated, reviewer-approved abbreviation list;
 - a real Athena vocabulary still has to be downloaded by the user under their own account and licences.
 
+The concept-set book also holds the confounders (`C:<name>`) and outcome concepts (`O:<name>`), so every concept the SQL uses is reviewed.
+
+**3. Criteria-to-SQL compiler: built** (`agentic_tte/omop/compiler.py`, tests in `tests/test_compiler.py`). It is deterministic; no LLM writes SQL.
+- **Inputs:** the protocol, the reviewed concept sets, and a `CompileSpec`. The spec holds what the protocol names but cannot ground itself: the time-zero event and named anchors ("hospital admission"), each as a concept set. `spec_template` lists what to fill in.
+- **Outputs:**
+  - `cohort_sql`: one row per index person, with `t0`, a boolean column per compiled criterion and `eligible`;
+  - `frame_sql`: the analysis frame for eligible persons (confounders, `treated`, `treat_start`, `time`, `event`, `end_reason`);
+  - a compile report, listing every criterion with how it was compiled, or why it was not.
+- **No look-ahead:** eligibility reads only records at or before time zero. A criterion that needs later records is not compiled, and the report says to redefine time zero.
+- **Time zero:** randomization, enrollment and baseline all mean time zero.
+- **A criterion compiles fully or not at all.** A criterion that is not compiled is left out of `eligible` and listed, or raises in strict mode. Not compiled yet:
+  - values on drugs or conditions (durations, counts);
+  - qualitative results;
+  - value constraints on atoms that mix domains;
+  - cumulative durations;
+  - undefined anchors;
+  - follow-up end events ("discharge");
+  - active comparators.
+- **Recovery:** the compiled frame equals the hand-written `synth.omop.ANALYSIS_SQL` on the synthetic cohort (immediate and delayed treatment), except censoring times. Observation periods are dates, so censoring is resolved to one day; deaths are exact. Eligibility matches the same filter applied to the reference frame.
+- **On NCT04134403 (qwen3 draft):** age compiles; the rest is reported. I1 needs look-ahead, because time zero is shock onset and ICU admission comes after it. I2 puts a lactate value on four concepts. E7 and E8 hold counts and durations. E5 needs a "primary admission" anchor.
+- **CLI:** `agentic-tte compile PROTOCOL -o DIR --spec spec.json [--book reviewed.json] [--db DB]`. With `--db` it checks that the SQL runs and prints suppressed counts only.
+- **Dialect:** DuckDB; Postgres and others go through SQLGlot later.
+
 **Next:**
-3. The criteria-to-SQL compiler.
-4. The attrition table and feasibility (eligible N, events), which close the gate's last check.
+4. The attrition table and feasibility (eligible N, events), built from the compiled criterion columns, which close the gate's last check.
 
 **Gold annotation (decision pending):** LLM pre-annotation is allowed only as a separate, disclosed arm, not as gold (see the discussion of 2026-10-25). The gold standard stays two blinded human annotators plus an adjudicator.

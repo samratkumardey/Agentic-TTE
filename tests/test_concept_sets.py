@@ -169,3 +169,26 @@ def test_reviewed_sets_feed_the_gate():
     rows = {r["concept"]: r["result"] for r in after.check("concepts").values["concepts"]}
     assert rows["septic shock"] == "200 patients"
     assert after.check("vocabulary").values["concept_ancestor"] is True
+
+
+def test_confounders_and_outcome_concepts_are_reviewed_too(vocab):
+    from agentic_tte.protocol import AssignmentProcedure, Outcome
+
+    p = _protocol().model_copy(update={
+        "assignment": AssignmentProcedure(confounders=[
+            ConceptRef(name="serum lactate", domain="Measurement"),
+            ConceptRef(name="age", domain="Demographic")]),
+        "outcomes": [Outcome(name="shock", primary=True,
+                             concept=ConceptRef(name="septic shock", domain="Condition")),
+                     Outcome(name="28-day mortality")]})  # fmt: skip
+    book = propose(vocab, p)
+    st = {s.key: (s.scope, s.status) for s in book.sets}
+    assert st["C:serum lactate"] == ("confounder", "proposed")
+    assert st["C:age"] == ("confounder", "not_needed")
+    assert st["O:shock"] == ("outcome", "proposed")
+    assert not any(k.startswith("O:28") for k in st)  # no concept: death is not a concept set
+    reviewed = apply_decisions(book, {"reviewer": "Dr A", "decisions": {
+        "C:serum lactate": {"action": "approve"}, "O:shock": {"action": "approve"}}})
+    v2 = apply_to_protocol(p, reviewed)
+    assert v2.assignment.confounders[0].status == "mapped"
+    assert v2.outcomes[0].concept.omop_concept_id == 196236
