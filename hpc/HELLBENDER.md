@@ -21,7 +21,8 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 | Home | `/home/$USER` (on `/cluster/pixstor`) | 50 GB | Small config only |
 | Personal Pixstor | `~/data` → `/mnt/pixstor/data/$USER` | 500 GB, **nearly full** | Repo, caches, outputs |
 | Older project area | `/cluster/pixstor/data/$USER/tte-project` | **The same quota as `~/data`**: `/cluster/pixstor/data/$USER` *is* `~/data` (same device and inode, checked 2026-10-26) | Models, container, MIMIC, OMOP |
-| Local scratch | `/local/scratch` | 1.6–3.2 TB per node | Temporary build and job files; not shared between nodes |
+| Local scratch | `/local/scratch` | 1.6–3.2 TB per node | Temporary build and job files; not shared between nodes, not kept: never store models or data here |
+| Lab group storage | `/cluster/pixstor/shyuc-hpc-lab` (checked 2026-10-26) | Not known: `df` shows only the whole filesystem (15 TB, 2.5 TB free); ask RCSS | Writable by the user. Mode `drwxrws---`, group `rss-rde-shyuc-lab-rw`: every lab member can read what is put there. Has `.snapshots`, unlike personal space. Other members keep per-user folders. Suitable for shareable, non-sensitive files (Ollama models, Hugging Face caches); **not for MIMIC-IV or anything derived from it**, unless every group member is PhysioNet-credentialed and RCSS approves the space for that data |
 
 - `df` reports whole-filesystem totals, not your quota, so it cannot tell you whether you are near your limit.
 - Nothing is backed up. Code lives on GitHub; models can be re-pulled; results must be copied off the cluster if they matter.
