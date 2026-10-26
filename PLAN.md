@@ -510,7 +510,11 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
 - **Built:** person, observation_period, visit_occurrence (admissions; ER-and-inpatient when there was an ED stay), visit_detail (ICU stays), death, and the diagnoses, procedures and prescriptions coded through the vocabulary.
   - **Source codes:** ICD9CM, ICD10CM, ICD9Proc, ICD10PCS and NDC codes are matched with the dots removed, then followed through 'Maps to'. Each record goes to the table of its standard concept's domain.
   - **Unmapped records** are kept with concept 0 and their source value.
-- **Not yet:** labevents, chartevents, inputevents and procedureevents. These need reviewed item maps (itemid → LOINC or standard concept), starting from the MIT-LCP `concept_map` files on Hellbender.
+- **chartevents and procedureevents: built (step 2b)** through the MIT-LCP curated maps (`mimic-code/mimic-iv/concepts/concept_map/*_to_omop.csv`, SSSOM, with author and reviewer ORCIDs; `--concept-map`).
+  - **Read where they are:** the maps are not vendored (the guard blocks CSVs in git), and the manifest records the `mimic-code` commit.
+  - **Each curated target is checked** against the loaded vocabulary: accepted if standard and valid, followed through 'Maps to' if no longer standard, rejected if missing. The report lists every rejection, and match predicates are counted (`exactMatch` / `closeMatch`). The map rows used go into OMOP's `source_to_concept_map`.
+  - **Items without a curated map are not converted.** They are counted by item, with labels, in the report.
+- **Not yet:** labevents (158M rows) and inputevents (vasopressors, fluids). There is no curated map for them in `mimic-code`, so they need our own reviewed item maps: proposals from the vocabulary search on the item labels, then approval per item.
 - **Checks:** on the ETL output, the gate's structure, CDM-version and death checks pass, and a compiled cohort and frame run, with exact times.
 - **Options,** all recorded in `cdm_source` and the manifest:
   - `diagnosis_time` (admission by default, a mild look-ahead; or discharge);

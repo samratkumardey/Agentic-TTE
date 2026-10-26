@@ -149,6 +149,8 @@ def etl_mimic(
     threads: int = typer.Option(None),
     memory_limit: str = typer.Option(None, help="DuckDB memory limit, e.g. 100GB."),
     temp_directory: str = typer.Option(None, help="Node-local scratch for spills."),
+    concept_map: Path = typer.Option(None, help="mimic-code mimic-iv/concepts/concept_map: "
+                                                "curated chartevents and procedureevents maps."),
 ):
     """MIMIC-IV -> OMOP CDM 5.4. Writes the CDM, a manifest and a suppressed report next to
     it; only the report and manifest may leave the cluster."""
@@ -166,7 +168,15 @@ def etl_mimic(
     cfg = EtlConfig(source=source, vocab=vocab, out=out, sample_percent=sample_percent,
                     diagnosis_time=diagnosis_time, death_followup_days=death_followup_days,
                     threads=threads, memory_limit=memory_limit,
-                    temp_directory=temp_directory)  # fmt: skip
+                    temp_directory=temp_directory, concept_map=concept_map)  # fmt: skip
+    map_commit = None
+    if concept_map is not None:
+        try:
+            map_commit = subprocess.run(["git", "-C", str(concept_map), "rev-parse", "HEAD"],
+                                        capture_output=True, text=True,
+                                        check=True).stdout.strip()  # fmt: skip
+        except Exception:  # noqa: BLE001 - not a git checkout
+            map_commit = "unknown"
     rep = build(cfg, git_commit=commit)
     stem = out.with_suffix("")
     Path(f"{stem}.report.md").write_text(rep.to_markdown(), encoding="utf-8")
@@ -176,6 +186,8 @@ def etl_mimic(
         "git_commit": commit, "source": str(source),
         "source_sha256sums_digest": sha256sums_digest(source),
         "vocabulary": str(vocab), "vocabulary_version": rep.vocabulary_version,
+        "concept_map": str(concept_map) if concept_map else None,
+        "concept_map_commit": map_commit,
         "duckdb": rep.duckdb_version, "options": cfg.model_dump_json(),
         "started": rep.started_at.isoformat(), "finished": rep.finished_at.isoformat(),
     }  # fmt: skip

@@ -245,3 +245,94 @@ def test_cli_writes_cdm_report_and_manifest(tmp_path):
     assert "<11" in report and "Q999" in report
     assert CliRunner().invoke(app, ["etl", "mimic", "--source", str(src), "--vocab",
                                     str(VOCAB), "--out", str(out)]).exit_code != 0  # fmt: skip
+
+
+SSSOM = "subject_id,subject_label,predicate_id,object_id,object_label,mapping_justification," \
+        "author_id,reviewer_id,confidence,comment"  # fmt: skip
+
+
+def made_up_item_maps(root: Path, mimic: Path) -> Path:
+    """Made-up curated maps in the MIT-LCP SSSOM layout, and made-up ICU events for S1."""
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "chartevents_to_omop.csv").write_text("\n".join([
+        SSSOM,
+        "mimic:220045,Heart Rate,skos:exactMatch,omop:9000100,Heart rate,x,orcid:a,orcid:b,1,",
+        "mimic:220052,Arterial Blood Pressure mean,skos:closeMatch,omop:9000080,Mean blood "
+        "pressure,x,orcid:a,orcid:b,1,",
+        "mimic:220046,Made-up alarm,skos:exactMatch,omop:123,Missing,x,orcid:a,orcid:b,1,",
+        "mimic:220047,Made-up shock flag,skos:closeMatch,omop:9000002,Old code,x,orcid:a,"
+        "orcid:b,1,"]) + "\n", encoding="utf-8")  # fmt: skip
+    (root / "procedureevents_to_omop.csv").write_text("\n".join([
+        SSSOM.replace(",confidence", ""),
+        'mimic:225441,Hemodialysis,skos:closeMatch,omop:9000070,Dialysis procedure,'
+        'HumanCurated,,"orcid:a|orcid:b",']) + "\n", encoding="utf-8")  # fmt: skip
+    ce = ["subject_id", "hadm_id", "stay_id", "caregiver_id", "charttime", "storetime",
+          "itemid", "value", "valuenum", "valueuom", "warning"]
+    base = {"subject_id": S1, "hadm_id": 20000001, "stay_id": 30000001}
+    _write(mimic, "icu", "chartevents", [
+        {**base, "charttime": "2150-03-01 12:30:00", "itemid": 220045, "value": "110",
+         "valuenum": 110, "valueuom": "bpm"},
+        {**base, "charttime": "2150-03-01 12:30:00", "itemid": 220052, "value": "58",
+         "valuenum": 58, "valueuom": "mmHg"},
+        {**base, "charttime": "2150-03-01 13:00:00", "itemid": 220046, "value": "1",
+         "valuenum": 1},
+        {**base, "charttime": "2150-03-01 13:00:00", "itemid": 220047, "value": "Yes"},
+        {**base, "charttime": "2150-03-01 14:00:00", "itemid": 999999, "value": "a"},
+        {**base, "charttime": "2150-03-01 15:00:00", "itemid": 999999, "value": "b"},
+    ], ce)
+    pe = ["subject_id", "hadm_id", "stay_id", "caregiver_id", "starttime", "endtime",
+          "storetime", "itemid", "value", "valueuom", "location", "locationcategory",
+          "orderid", "linkorderid", "ordercategoryname", "ordercategorydescription",
+          "patientweight", "isopenbag", "continueinnextdept", "statusdescription",
+          "originalamount", "originalrate"]
+    _write(mimic, "icu", "procedureevents", [
+        {**base, "starttime": "2150-03-02 08:00:00", "endtime": "2150-03-02 12:00:00",
+         "itemid": 225441, "value": 240, "valueuom": "min"}], pe)
+    _write(mimic, "icu", "d_items", [
+        {"itemid": i, "label": label} for i, label in (
+            (220045, "Heart Rate"), (220052, "Arterial Blood Pressure mean"),
+            (220046, "Made-up alarm"), (220047, "Made-up shock flag"),
+            (999999, "Made-up unmapped item"), (225441, "Hemodialysis"))],
+        ["itemid", "label", "abbreviation", "linksto", "category", "unitname", "param_type",
+         "lownormalvalue", "highnormalvalue"])
+    return root
+
+
+def test_curated_item_maps_are_checked_and_used(tmp_path):
+    src = made_up_mimic(tmp_path / "mimic-iv-3.1")
+    maps = made_up_item_maps(tmp_path / "concept_map", src)
+    out = tmp_path / "c.duckdb"
+    rep = build(EtlConfig(source=src, vocab=VOCAB, out=out, concept_map=maps))
+    con = duckdb.connect(str(out), read_only=True)
+    assert sorted(rows(con, "SELECT measurement_concept_id, measurement_datetime, "
+                            "value_as_number, unit_source_value, measurement_source_value "
+                            "FROM measurement")) == [  # fmt: skip
+        (9000080, datetime(2150, 3, 1, 12, 30), 58.0, "mmHg", "220052"),
+        (9000100, datetime(2150, 3, 1, 12, 30), 110.0, "bpm", "220045")]
+    # The curated target 9000002 is no longer standard: followed through 'Maps to' to a
+    # Condition concept, so the record goes to condition_occurrence.
+    assert (S1, 196236, "220047") in rows(con, "SELECT person_id, condition_concept_id, "
+                                               "condition_source_value FROM condition_occurrence")
+    assert (9000070, datetime(2150, 3, 2, 8)) in rows(
+        con, "SELECT procedure_concept_id, procedure_datetime FROM procedure_occurrence")
+    m = rep.item_maps["chartevents"]
+    assert (m["rows_in_file"], m["accepted"], m["remapped"]) == (4, 2, 1)
+    assert m["rejected"] == [[220046, "Made-up alarm", 123, "not in the vocabulary"]]
+    assert m["predicates"] == {"skos:exactMatch": 2, "skos:closeMatch": 2}
+    ce = rep.mapping["chartevents"]
+    assert (ce["rows"], ce["mapped"]) == (6, 3)
+    assert ce["top_unmapped"] == [["999999 Made-up unmapped item", 2], ["220046 Made-up alarm", 1]]
+    assert rows(con, "SELECT count(*), count(DISTINCT source_vocabulary_id) "
+                     "FROM source_to_concept_map")[0] == (4, 2)  # fmt: skip
+    md = rep.to_markdown()
+    assert "rejected: 220046 Made-up alarm -> 123 (not in the vocabulary)" in md
+    assert "items without a curated map are not converted" in md
+    r = run_gate(con, None, context=DataContext(data_classification="deidentified",
+                                                approved_by_rcss=True))  # fmt: skip
+    assert r.check("time").values["coverage"]["measurement"]["time_of_day"] == 1.0
+
+
+def test_without_a_concept_map_icu_events_are_reported_not_converted(cdm):
+    _, rep = cdm
+    assert "chartevents" not in rep.mapping
+    assert any("no concept_map given" in n for n in rep.notes)
