@@ -267,9 +267,11 @@ def _time(con, tables: set[str], protocol: TargetTrialProtocol | None) -> GateCh
             f"SELECT count(*), count({col}), "
             f"count(*) FILTER (WHERE {col} IS NOT NULL AND CAST({col} AS TIME) <> TIME '00:00:00') "
             f"FROM {table}").fetchone()  # fmt: skip
+        if n == 0:  # an empty table says nothing about time resolution
+            continue
         coverage[table] = {"datetime": with_dt / n if n else 0.0,
                            "time_of_day": with_time / n if n else 0.0}  # fmt: skip
-    worst = min(v["time_of_day"] for v in coverage.values())
+    worst = min((v["time_of_day"] for v in coverage.values()), default=0.0)
     finest = _finest_window_hours(protocol)
     values = {"coverage": coverage, "finest_window_hours": finest}
     summary = ", ".join(f"{t} {100 * v['time_of_day']:.0f}%" for t, v in coverage.items())

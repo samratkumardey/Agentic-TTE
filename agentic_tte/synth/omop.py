@@ -2,7 +2,10 @@
 
 Everything downstream (the Informatician's SQL in Phase 2, the statistics) sees only OMOP, so
 the synthetic data has to be OMOP too. Tables: person, observation_period, visit_occurrence,
-condition_occurrence, measurement, drug_exposure, death, plus a small concept table.
+condition_occurrence, measurement, drug_exposure, procedure_occurrence, observation,
+device_exposure, death, plus a small concept table. A ``Profile`` names what the patients are
+(index event, measurements, treatment) so different trials can be replayed; the default is the
+septic-shock ICU cohort.
 
 Concept IDs: gender uses the standard OMOP concepts (8507 male, 8532 female); septic shock uses
 196236, the concept EmulatRx's Athena lookup returned for NCT03872011. Everything else uses
@@ -12,6 +15,7 @@ vocabulary step maps them to standard concepts. The concept table says which is 
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -32,18 +36,66 @@ NOISE_BASE = LOCAL + 100  # x1 -> LOCAL + 101, ...
 INDEX_START = datetime(2015, 1, 1)
 
 
-def concept_table(n_noise: int) -> pd.DataFrame:
+@dataclass(frozen=True)
+class Profile:
+    """What the synthetic patients are, as OMOP concepts. The data-generating process is the
+    same for every profile (dgp.py: a severity score and a lab drive treatment and death); a
+    profile only names the index event, the two measurements and the treatment, so that a
+    trial's protocol can be replayed on data that looks like its population.
+
+    Concept slots: index visit ``ICU_VISIT``, severity ``SOFA``, lab ``LACTATE``, first
+    treatment concept ``STUDY_DRUG``; further treatment concepts, a non-default index
+    condition and a prior procedure get their own local IDs. With ``standard_local`` the local
+    concepts are standard in their own vocabulary (allowed for site vocabularies), so the
+    vocabulary search can find them; a reviewer still approves every set."""
+
+    name: str = "septic-shock-icu"
+    index_visit: str = "Intensive care unit stay (synthetic)"
+    index_condition: tuple[int, str, str] = (SEPTIC_SHOCK, "Septic shock", "SNOMED")
+    severity: str = "SOFA score (synthetic)"
+    lab: str = "Lactate [mmol/L] (synthetic)"
+    treatment: tuple[str, ...] = ("Study drug (synthetic)",)
+    treatment_domain: str = "Drug"  # or "Procedure"
+    prior_procedure: str | None = None  # recorded before the index event
+    prior_procedure_hours: float = 6.0
+    standard_local: bool = False
+
+
+DEFAULT = Profile()
+TREATMENT_EXTRA = LOCAL + 10  # second, third ... treatment concept
+INDEX_CONDITION_LOCAL = LOCAL + 20
+PRIOR_PROCEDURE = LOCAL + 30
+
+
+def treatment_ids(profile: Profile = DEFAULT) -> list[int]:
+    return [STUDY_DRUG] + [TREATMENT_EXTRA + k for k in range(1, len(profile.treatment))]
+
+
+def index_condition_id(profile: Profile = DEFAULT) -> int:
+    cid = profile.index_condition[0]
+    return cid if cid else INDEX_CONDITION_LOCAL
+
+
+def concept_table(n_noise: int, profile: Profile = DEFAULT) -> pd.DataFrame:
+    std = "S" if profile.standard_local else None
+    tclass = "Ingredient" if profile.treatment_domain == "Drug" else "Procedure"
+    cid, cname, cvocab = profile.index_condition
     rows = [
         (8507, "MALE", "Gender", "Gender", "Gender", "S"),
         (8532, "FEMALE", "Gender", "Gender", "Gender", "S"),
-        (SEPTIC_SHOCK, "Septic shock", "Condition", "SNOMED", "Clinical Finding", "S"),
-        (ICU_VISIT, "Intensive care unit stay (synthetic)", "Visit", "ATTE-SYNTH", "Visit", None),
-        (SOFA, "SOFA score (synthetic)", "Measurement", "ATTE-SYNTH", "Clinical Observation",
-         None),
-        (LACTATE, "Lactate [mmol/L] (synthetic)", "Measurement", "ATTE-SYNTH", "Lab Test", None),
-        (STUDY_DRUG, "Study drug (synthetic)", "Drug", "ATTE-SYNTH", "Ingredient", None),
-    ] + [(NOISE_BASE + k, f"Noise covariate x{k} (synthetic)", "Measurement", "ATTE-SYNTH",
-          "Lab Test", None) for k in range(1, n_noise + 1)]  # fmt: skip
+        (index_condition_id(profile), cname, "Condition", cvocab, "Clinical Finding",
+         "S" if cid else std),
+        (ICU_VISIT, profile.index_visit, "Visit", "ATTE-SYNTH", "Visit", std),
+        (SOFA, profile.severity, "Measurement", "ATTE-SYNTH", "Clinical Observation", std),
+        (LACTATE, profile.lab, "Measurement", "ATTE-SYNTH", "Lab Test", std),
+    ]
+    rows += [(tid, name, profile.treatment_domain, "ATTE-SYNTH", tclass, std)
+             for tid, name in zip(treatment_ids(profile), profile.treatment, strict=True)]
+    if profile.prior_procedure:
+        rows.append((PRIOR_PROCEDURE, profile.prior_procedure, "Procedure", "ATTE-SYNTH",
+                     "Procedure", std))  # fmt: skip
+    rows += [(NOISE_BASE + k, f"Noise covariate x{k} (synthetic)", "Measurement", "ATTE-SYNTH",
+              "Lab Test", None) for k in range(1, n_noise + 1)]  # fmt: skip
     df = pd.DataFrame(rows, columns=["concept_id", "concept_name", "domain_id", "vocabulary_id",
                                      "concept_class_id", "standard_concept"])  # fmt: skip
     df["concept_code"] = df["concept_id"].astype(str)
@@ -51,7 +103,7 @@ def concept_table(n_noise: int) -> pd.DataFrame:
     return df
 
 
-def to_omop(cohort: Cohort) -> dict[str, pd.DataFrame]:
+def to_omop(cohort: Cohort, profile: Profile = DEFAULT) -> dict[str, pd.DataFrame]:
     f = cohort.frame
     s = cohort.scenario
     rng = np.random.default_rng(s.seed + 7)
@@ -92,7 +144,7 @@ def to_omop(cohort: Cohort) -> dict[str, pd.DataFrame]:
     condition = pd.DataFrame({
         "condition_occurrence_id": pid,
         "person_id": pid,
-        "condition_concept_id": SEPTIC_SHOCK,
+        "condition_concept_id": index_condition_id(profile),
         "condition_start_datetime": index,
         "condition_start_date": index.date,
         "condition_type_concept_id": 32817,
@@ -119,17 +171,41 @@ def to_omop(cohort: Cohort) -> dict[str, pd.DataFrame]:
 
     treated = f["treated"].to_numpy() == 1
     start = index[treated] + pd.to_timedelta(f["treat_start"].to_numpy()[treated], unit="D")
+    # One exposure per treatment concept (a combination arm), all starting together.
+    exposures = pd.concat([pd.DataFrame({"person_id": pid[treated], "concept_id": tid,
+                                         "start": start, "end": end[treated]})
+                           for tid in treatment_ids(profile)], ignore_index=True)  # fmt: skip
+    events = _empty_events()
+    rx = exposures if profile.treatment_domain == "Drug" else exposures.iloc[:0]
     drug = pd.DataFrame({
-        "drug_exposure_id": np.arange(1, treated.sum() + 1),
-        "person_id": pid[treated],
-        "drug_concept_id": STUDY_DRUG,
-        "drug_exposure_start_datetime": start,
-        "drug_exposure_start_date": start.date,
-        "drug_exposure_end_datetime": end[treated],
-        "drug_exposure_end_date": end[treated].date,
+        "drug_exposure_id": np.arange(1, len(rx) + 1),
+        "person_id": rx["person_id"].to_numpy(),
+        "drug_concept_id": rx["concept_id"].to_numpy(),
+        "drug_exposure_start_datetime": rx["start"].to_numpy(),
+        "drug_exposure_start_date": pd.to_datetime(rx["start"]).dt.normalize().to_numpy(),
+        "drug_exposure_end_datetime": rx["end"].to_numpy(),
+        "drug_exposure_end_date": pd.to_datetime(rx["end"]).dt.normalize().to_numpy(),
         "drug_type_concept_id": 32817,
-        "visit_occurrence_id": pid[treated],
-    })  # fmt: skip
+        "visit_occurrence_id": rx["person_id"].to_numpy(),
+    }) if len(rx) else events["drug_exposure"]  # fmt: skip
+    procs = []
+    if profile.treatment_domain == "Procedure":
+        procs.append(exposures[["person_id", "concept_id", "start"]])
+    if profile.prior_procedure:
+        procs.append(pd.DataFrame({"person_id": pid, "concept_id": PRIOR_PROCEDURE,
+                                   "start": index - pd.to_timedelta(
+                                       profile.prior_procedure_hours, unit="h")}))  # fmt: skip
+    if procs:
+        pr = pd.concat(procs, ignore_index=True)
+        events["procedure_occurrence"] = pd.DataFrame({
+            "procedure_occurrence_id": np.arange(1, len(pr) + 1),
+            "person_id": pr["person_id"].to_numpy(),
+            "procedure_concept_id": pr["concept_id"].to_numpy(),
+            "procedure_datetime": pr["start"].to_numpy(),
+            "procedure_date": pd.to_datetime(pr["start"]).dt.normalize().to_numpy(),
+            "procedure_type_concept_id": 32817,
+            "visit_occurrence_id": pr["person_id"].to_numpy(),
+        })  # fmt: skip
     dead = f["event"].to_numpy() == 1
     death = pd.DataFrame({
         "person_id": pid[dead],
@@ -144,17 +220,47 @@ def to_omop(cohort: Cohort) -> dict[str, pd.DataFrame]:
         "condition_occurrence": condition,
         "measurement": measurement,
         "drug_exposure": drug,
+        "procedure_occurrence": events["procedure_occurrence"],
+        "observation": events["observation"],
+        "device_exposure": events["device_exposure"],
         "death": death,
-        "concept": concept_table(s.n_noise),
+        "concept": concept_table(s.n_noise, profile),
         # CDM metadata, read by the Data Support Gate.
         "cdm_source": pd.DataFrame([{
-            "cdm_source_name": "Agentic-TTE synthetic ICU cohort",
+            "cdm_source_name": f"Agentic-TTE synthetic cohort ({profile.name})"
+            if profile != DEFAULT else "Agentic-TTE synthetic ICU cohort",
             "cdm_source_abbreviation": "ATTE-SYNTH",
             "cdm_version": "5.4",
             "vocabulary_version": "ATTE-SYNTH local concepts",
             "source_description": f"agentic_tte.synth, seed {s.seed}, n {s.n}",
         }]),  # fmt: skip
     }
+
+
+def _empty_events() -> dict[str, pd.DataFrame]:
+    """Typed empty event tables: a CDM has every table, and compiled SQL may query any."""
+    ts, i8 = "datetime64[ns]", "int64"
+    def t(cols):
+        return pd.DataFrame({c: pd.Series(dtype=d) for c, d in cols})
+    return {
+        "drug_exposure": t([("drug_exposure_id", i8), ("person_id", i8), ("drug_concept_id", i8),
+                            ("drug_exposure_start_datetime", ts),
+                            ("drug_exposure_start_date", ts),
+                            ("drug_exposure_end_datetime", ts), ("drug_exposure_end_date", ts),
+                            ("drug_type_concept_id", i8), ("visit_occurrence_id", i8)]),
+        "procedure_occurrence": t([("procedure_occurrence_id", i8), ("person_id", i8),
+                                   ("procedure_concept_id", i8), ("procedure_datetime", ts),
+                                   ("procedure_date", ts), ("procedure_type_concept_id", i8),
+                                   ("visit_occurrence_id", i8)]),
+        "observation": t([("observation_id", i8), ("person_id", i8),
+                          ("observation_concept_id", i8), ("observation_datetime", ts),
+                          ("observation_date", ts), ("value_as_number", "float64"),
+                          ("observation_type_concept_id", i8)]),
+        "device_exposure": t([("device_exposure_id", i8), ("person_id", i8),
+                              ("device_concept_id", i8), ("device_exposure_start_datetime", ts),
+                              ("device_exposure_start_date", ts),
+                              ("device_type_concept_id", i8)]),
+    }  # fmt: skip
 
 
 def write_duckdb(tables: dict[str, pd.DataFrame], path: str | Path = ":memory:"):

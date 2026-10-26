@@ -64,6 +64,7 @@ class AnalysisResult(BaseModel):
     ph_p: float | None = None
     evalue: dict[str, float] = Field(default_factory=dict)
     horizon_days: float | None = None
+    immortal_time_risk: bool = False
     notes: list[str] = Field(default_factory=list)
 
     @property
@@ -139,6 +140,16 @@ def analyze(frame: pd.DataFrame, protocol: TargetTrialProtocol, *, confounders: 
         if protocol.assignment.method == "overlap_weights":
             res.notes.append("overlap weights are not implemented yet: IPTW used instead")
     res.primary_method = primary
+    if primary != "clone-censor-weight":
+        late = (d.treated == 1) & (d.treat_start.fillna(0) > 1e-6)
+        share = late.sum() / max(n1, 1)
+        if share > 0.05:
+            res.immortal_time_risk = True
+            res.notes.append(
+                f"IMMORTAL-TIME RISK: treatment starts after time zero for {100 * share:.0f}% "
+                "of the treated, and the protocol has no grace period, so the treated were "
+                "classified by future exposure. Set a grace period (design review) to use "
+                "clone-censor-weight; the estimates below are biased toward benefit.")
 
     res.estimates.append(_est(cox_hr(d), "crude"))
     if confounders:

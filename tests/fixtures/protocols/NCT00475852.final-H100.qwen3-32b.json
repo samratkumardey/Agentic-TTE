@@ -1,0 +1,626 @@
+{
+  "schema_version": 2,
+  "protocol_id": "NCT00475852-replay",
+  "version": 1,
+  "parent_version": null,
+  "mode": "replay",
+  "status": "draft",
+  "source": {
+    "registry": "ClinicalTrials.gov",
+    "nct_id": "NCT00475852",
+    "title": "Double-Blind, Placebo-Controlled, Multicenter Acute Study of Clinical Effectiveness of Nesiritide in Subjects With Decompensated Heart Failure (ASCEND-HF)",
+    "phase": [
+      "PHASE3"
+    ],
+    "study_type": "INTERVENTIONAL",
+    "overall_status": "COMPLETED",
+    "allocation": "RANDOMIZED",
+    "intervention_model": "PARALLEL",
+    "masking": "QUADRUPLE",
+    "enrollment": 7141,
+    "enrollment_type": "ACTUAL",
+    "conditions": [
+      "Heart Decompensation"
+    ],
+    "has_results": true,
+    "retrieved_at": "2026-10-24T13:35:00.916058Z",
+    "record_sha256": "a0078f27eecbdea607ba13bbb70096481a46345986824b16ea45c78ce9fa0f9e"
+  },
+  "eligibility": [
+    {
+      "id": "S1",
+      "kind": "inclusion",
+      "text": "minimumAge: 18 Years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": null,
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 18.0,
+            "upper": null,
+            "unit": "years",
+            "text": "18 Years"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_structured",
+      "notes": null
+    },
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Hospitalized for the management of acute decompensated heart failure (ADHF) or diagnosed with ADHF within 48 hours after being hospitalized for another reason",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hospitalization",
+              "domain": "Visit",
+              "source_text": "Hospitalized for the management of acute decompensated heart failure (ADHF)",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "for the management of acute decompensated heart failure (ADHF)"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "acute decompensated heart failure",
+              "domain": "Condition",
+              "source_text": "acute decompensated heart failure (ADHF)",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_after_y",
+            "window": {
+              "amount": 48.0,
+              "unit": "hour"
+            },
+            "anchor": "hospitalization for another reason",
+            "text": "within 48 hours after being hospitalized for another reason"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Diagnosis of ADHF is defined as dyspnea (difficulty breathing) at rest or dyspnea with minimal activity.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "diagnosis of ADHF",
+              "domain": "Condition",
+              "source_text": "Diagnosis of ADHF",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "dyspnea at rest",
+              "domain": "Observation",
+              "source_text": "dyspnea (difficulty breathing) at rest",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "dyspnea with minimal activity",
+              "domain": "Observation",
+              "source_text": "dyspnea with minimal activity",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "At high risk for hypotension (low blood pressure)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "high risk for hypotension",
+              "domain": "Observation",
+              "source_text": "At high risk for hypotension",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "high risk for hypotension"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Acute coronary syndrome as primary diagnosis",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "acute coronary syndrome",
+              "domain": "Condition",
+              "source_text": "Acute coronary syndrome",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "History of cardiac valvular stenosis, restrictive cardiomyopathy, hypertrophic cardiomyopathy, or pericardial tamponade",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "history of cardiac valvular stenosis",
+              "domain": "Condition",
+              "source_text": "history of cardiac valvular stenosis",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "history of restrictive cardiomyopathy",
+              "domain": "Condition",
+              "source_text": "restrictive cardiomyopathy",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "history of hypertrophic cardiomyopathy",
+              "domain": "Condition",
+              "source_text": "hypertrophic cardiomyopathy",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "history of pericardial tamponade",
+              "domain": "Condition",
+              "source_text": "pericardial tamponade",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Previous enrollment in a nesiritide study",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "enrollment in a nesiritide study",
+              "domain": "Observation",
+              "source_text": "enrollment in a nesiritide study",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Persistent, uncontrolled hypertension (SBP [systolic blood pressure] >180 mmHg).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hypertension",
+              "domain": "Condition",
+              "source_text": "Persistent, uncontrolled hypertension",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "systolic blood pressure",
+              "domain": "Measurement",
+              "source_text": "SBP [systolic blood pressure]",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 180.0,
+            "upper": null,
+            "unit": "mmHg",
+            "text": ">180 mmHg"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "001",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Nesiritide 0.01 mcg/kg/min intravenous (IV) infusion (with or without 2 mcg/kg bolus) for 24 to 168 hours (hrs)",
+      "components": [
+        {
+          "concept": {
+            "name": "Nesiritide",
+            "domain": "Drug",
+            "source_text": "Nesiritide",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "0.01 mcg/kg/min",
+          "route": "IV infusion",
+          "frequency": null,
+          "duration": {
+            "amount": 168.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "Nesiritide",
+            "domain": "Drug",
+            "source_text": "Nesiritide",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "2 mcg/kg",
+          "route": "bolus",
+          "frequency": null,
+          "duration": {
+            "amount": 168.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 2.0,
+        "unit": "day"
+      },
+      "grace_period_origin": "agent",
+      "grace_period_evidence": "Inclusion criteria: Diagnosed with ADHF within 48 hours after being hospitalized for another reason"
+    },
+    {
+      "label": "002",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Placebo matching placebo infusion:0.01 mcg/kg/min IV infusion (with or without 2 mcg/kg bolus) for 24 to 168 hrs",
+      "components": [
+        {
+          "concept": {
+            "name": "Placebo",
+            "domain": "Drug",
+            "source_text": "Placebo",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "0.01 mcg/kg/min",
+          "route": "IV infusion",
+          "frequency": null,
+          "duration": {
+            "amount": 168.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "default"
+  },
+  "time_zero": {
+    "anchor_event": "Hospital admission for acute decompensated heart failure (ADHF) or diagnosis of ADHF within 48 hours after hospitalization for another reason",
+    "offset": null,
+    "rationale": "Time zero is defined as the moment when the patient meets the inclusion criteria for ADHF, either through hospital admission for ADHF or diagnosis within 48 hours of admission for another reason. A 2-day grace period is allowed to account for delayed diagnosis after hospitalization.",
+    "origin": "agent",
+    "evidence": "Inclusion criteria: Hospitalized for the management of acute decompensated heart failure (ADHF) or diagnosed with ADHF within 48 hours after being hospitalized for another reason"
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 30.0,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss_to_follow_up",
+      "end_of_data"
+    ],
+    "competing_events": [],
+    "origin": "derived"
+  },
+  "outcomes": [
+    {
+      "name": "Composite of Rehospitalization Due to Heart Failure and All-Cause Mortality",
+      "description": null,
+      "time_frame": "Randomization to Day 30",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Dyspnea Self-Assessment at 6 Hours After Initiation of Study Drug",
+      "description": "Dyspnea symptoms were measured by patient self-assessed Likert scale at 6 hours after study drug initiation.The Likert scale is a 7-point ordinal categorical scale (the 7 categories are markedly better, moderately better, minimally better, unchanged, minimally worse, moderately worse, and markedly worse.)",
+      "time_frame": "6 hours after initiation of study drug",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 6.0,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Dyspnea Self-Assessment at 24 Hours After Initiation of Study Drug",
+      "description": "Dyspnea symptoms were measured by patient self-assessed Likert scale at 24 hours after study drug initiation. The Likert scale is a 7-point ordinal categorical scale (the 7 categories are markedly better, moderately better, minimally better, unchanged, minimally worse, moderately worse, and markedly worse.)",
+      "time_frame": "24 hours after study drug initiation",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 24.0,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Overall Well-Being Self-Assessment at 6 Hours After Initiation of Study Drug",
+      "description": "Overall well-being was measured by patient self-assessed Likert scale at 6 hours after study drug initiation. The Likert scale is a 7-point ordinal categorical scale (the 7 categories are markedly better, moderately better, minimally better, unchanged, minimally worse, moderately worse, and markedly worse.)",
+      "time_frame": "6 hours after study drug initiation",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 6.0,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Overall Well-Being Self-Assessment at 24 Hours After Initiation of Study Drug",
+      "description": "Overall well-being was measured by patient self-assessed Likert scale at 24 hours after study drug initiation. The Likert scale is a 7-point ordinal categorical scale (the 7 categories are markedly better, moderately better, minimally better, unchanged, minimally worse, moderately worse, and markedly worse.)",
+      "time_frame": "24 hours after study drug initiation",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 24.0,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Composite of Persistent or Worsening Heart Failure and All-Cause Mortality",
+      "description": "Clinical manifestations of worsening or persistent decompensated heart failure were defined by at least one of the following: new, persistent or worsening: dyspnea, orthopnea, paroxysmal nocturnal dyspnea, edema, pulmonary basilar rales/crackles, jugular venous distension, renal hypoperfusion with no other apparent cause, or radiologic evidence of worsening heart failure. And was also defined by a new therapy specifically for the treatment of worsening or persistent decompensated heart failure.",
+      "time_frame": "Randomization to hospital discharge (up to Day 30)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Number of Days Alive and Outside the Hospital",
+      "description": null,
+      "time_frame": "Randomization to Day 30",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Composite of Cardiovascular Rehospitalization and Cardiovascular Mortality",
+      "description": null,
+      "time_frame": "Randomization to Day 30",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "default",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "prespecified_subgroups": [],
+    "sensitivity_analyses": [],
+    "origin": "default"
+  },
+  "provenance": {
+    "created_at": "2026-10-25T13:42:26.232750Z",
+    "created_by": "trialist",
+    "llm_model": "qwen3:32b",
+    "llm_model_digest": "030ee887880fc378860c2dd35101da424377520441ae4bfe7be6deff8ade7840",
+    "prompt_version": "trialist-v2",
+    "notes": null
+  }
+}

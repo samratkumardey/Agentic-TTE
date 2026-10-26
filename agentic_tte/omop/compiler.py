@@ -76,7 +76,32 @@ EVENT_TABLE = {
 T0_ALIASES = {"time zero", "time 0", "randomization", "randomisation", "enrollment",
               "enrolment", "baseline", "study entry", "inclusion", "index"}  # fmt: skip
 FEMALE, MALE = 8532, 8507
-_DEATH_WORDS = ("mortality", "death", "survival", "died")
+_DEATH_WORDS = ("mortality", "death", "deaths", "survival", "died", "dying")
+# Words that qualify a mortality outcome without adding another event to it.
+_DEATH_QUALIFIERS = {"in", "hospital", "all", "cause", "day", "days", "month", "months", "year",
+                     "years", "week", "weeks", "rate", "rates", "risk", "incidence", "or",
+                     "and", "at", "of", "the", "by", "to", "within", "from", "overall", "icu",
+                     "time", "any", "total", "crude", "proportion"}  # fmt: skip
+_PLACEBO = ("placebo", "sham", "vehicle", "usual care", "standard care", "standard of care",
+            "no treatment", "no intervention", "best supportive care")  # fmt: skip
+_CHANGE = re.compile(r"\b(increase|increased|rise|rising|elevation|decrease|decreased|drop|fall|"
+                     r"change|from baseline|relative to|fold|doubling)\b", re.I)
+
+
+def _death_only(name: str) -> bool:
+    """True for "28-day mortality", "In-hospital or 28-day mortality rate"; False for
+    composites such as "Rehospitalization for heart failure and all-cause mortality"."""
+    words = _norm(name).split()
+    if not any(w in _DEATH_WORDS for w in words):
+        return False
+    rest = [w for w in words if w not in _DEATH_WORDS and w not in _DEATH_QUALIFIERS
+            and not w.isdigit()]  # fmt: skip
+    return not rest
+
+
+def _is_placebo(name: str) -> bool:
+    n = _norm(name)
+    return any(p in n for p in _PLACEBO)
 
 
 class CompileError(ValueError):
@@ -92,6 +117,15 @@ class EventDef(BaseModel):
     note: str | None = None
 
 
+class OutcomeSpec(BaseModel):
+    """The primary outcome as a reviewer defines it: the first of these events after time
+    zero, and death if ``death`` (a composite such as "rehospitalization or death")."""
+
+    events: list[EventDef] = Field(default_factory=list)
+    death: bool = True
+    note: str | None = None
+
+
 class CompileSpec(BaseModel):
     """What a reviewer supplies besides the protocol and the concept sets."""
 
@@ -102,6 +136,7 @@ class CompileSpec(BaseModel):
     measurement_lookback: Duration = Field(
         default_factory=lambda: Duration(amount=24, unit="hour"))
     strict: bool = False  # raise if a clinical criterion cannot be compiled
+    outcome: OutcomeSpec | None = None  # reviewed outcome definition (composites)
 
 
 class CompiledCriterion(BaseModel):
@@ -272,6 +307,10 @@ def _atom(ctx: _Ctx, crit: Criterion, atom: CriterionAtom,
         raise _Skip("value constraint on concepts of several domains "
                     f"({', '.join(sorted(domains))}): split the atom")
     dom = Domain(next(iter(domains)))
+    if v is not None and dom == Domain.MEASUREMENT and (
+            (v.unit or "").strip().lower() in ("%", "percent") or _CHANGE.search(crit.text)):
+        raise _Skip("the criterion describes a change from a baseline value, not a level; "
+                    "relative changes are not supported yet")  # fmt: skip
     if v is not None and v.comparator == Comparator.PRESENT and dom != Domain.DEMOGRAPHIC:
         raise _Skip(f"qualitative value '{v.text or 'present'}' is not compilable")
     if v is not None and dom not in (Domain.MEASUREMENT, Domain.DEMOGRAPHIC):
@@ -465,11 +504,18 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
         notes.append("frame not compiled: needs exactly one treatment and one comparator arm")
         return None
     arm = arms[0]
-    if comparators[0].components:
+    comp_names = [c.concept.name for c in comparators[0].components]
+    if comp_names and all(_is_placebo(n) for n in comp_names):
+        notes.append(f"comparator components {', '.join(comp_names)}: placebo or usual care has "
+                     "no real-world record, so the comparator is no initiation")
+    elif comp_names:
         notes.append("frame not compiled: active comparators are not supported yet")
         return None
     starts = []
-    for comp in arm.components:
+    components = list({_norm(c.concept.name): c for c in arm.components}.values())
+    if len(components) < len(arm.components):
+        notes.append(f"'{arm.label}' lists the same component more than once; counted once")
+    for comp in components:
         ids = ctx.ids_for(f"T:{arm.label}:{comp.concept.name}", comp.concept)
         if not ids:
             notes.append(f"frame not compiled: treatment '{comp.concept.name}' has no approved "
@@ -490,14 +536,44 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
     notes.append(f"treated: '{arm.label}' initiated after time zero and before follow-up ends; "
                  f"comparator '{comparators[0].label}' is no initiation")
 
-    h = _horizon(p)
-    primary = next((o for o in p.outcomes if o.primary), None)
+    primaries = [o for o in p.outcomes if o.primary]
+    if not primaries:
+        notes.append("frame not compiled: the protocol has no primary outcome")
+        return None
+    try:
+        h = _horizon(p)
+    except CompileError as e:
+        notes.append(f"frame not compiled: {e}")
+        return None
     death = ("(SELECT min(coalesce(d.death_datetime, CAST(d.death_date AS TIMESTAMP) "
              "+ INTERVAL '12 hours')) FROM death d WHERE d.person_id = c.person_id)")
-    if primary is None:
-        raise CompileError("no primary outcome")
+    primary = primaries[0]
+    if len(primaries) > 1:
+        notes.append(f"{len(primaries)} primary outcomes: the first, '{primary.name}', is "
+                     "analysed; " + "; ".join(f"'{o.name}'" for o in primaries[1:])
+                     + " not analysed")  # fmt: skip
     ids = ctx.ids_for(f"O:{primary.name}", primary.concept) if primary.concept else None
-    if ids:
+    if spec.outcome is not None:
+        parts = []
+        for ev in spec.outcome.events:
+            dom = Domain(ev.domain)
+            table, col, _, _ = EVENT_TABLE[dom]
+            x = _time("r", dom)
+            parts.append(f"(SELECT min({x}) FROM {table} r WHERE r.person_id = c.person_id AND "
+                         f"{_in_set(f'r.{col}', ev.concept_ids, spec.descendants)} "
+                         f"AND {x} > c.t0)")  # fmt: skip
+        if spec.outcome.death:
+            parts.append(death)
+        if not parts:
+            raise CompileError("the outcome spec has no events and excludes death")
+        outcome = parts[0] if len(parts) == 1 else f"least({', '.join(parts)})"
+        what = [f"{ev.domain} {{{_ids(ev.concept_ids)}}}" for ev in spec.outcome.events]
+        what += ["death"] if spec.outcome.death else []
+        notes.append(f"outcome '{primary.name}' (reviewed definition): first of "
+                     f"{', '.join(what)} after time zero"
+                     + (f" ({spec.outcome.note})" if spec.outcome.note else "")
+                     + ("" if spec.outcome.death else "; death censors"))  # fmt: skip
+    elif ids:
         dom = Domain(primary.concept.domain)
         table, col, _, _ = EVENT_TABLE[dom]
         x = _time("r", dom)
@@ -505,11 +581,14 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
                    f"{_in_set(f'r.{col}', ids, spec.descendants)} AND {x} > c.t0)")
         notes.append(f"outcome '{primary.name}': first {dom} record after time zero; death "
                      "censors")
-    elif any(w in _norm(f"{primary.name} {primary.description or ''}") for w in _DEATH_WORDS):
+    elif _death_only(primary.name):
         outcome = None
         notes.append(f"outcome '{primary.name}': all-cause death (death table)")
     else:
-        notes.append(f"frame not compiled: outcome '{primary.name}' has no approved concept set")
+        why = "a composite or non-death outcome" if any(
+            w in _norm(primary.name).split() for w in _DEATH_WORDS) else "no approved concept set"
+        notes.append(f"frame not compiled: outcome '{primary.name}' is {why}; define it in the "
+                     "compile spec ('outcome': events and whether death counts)")
         return None
     end_event = primary.end_event or p.follow_up.end_event
     if end_event:

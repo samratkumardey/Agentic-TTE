@@ -1,0 +1,846 @@
+{
+  "schema_version": 2,
+  "protocol_id": "NCT04134403-replay",
+  "version": 1,
+  "parent_version": null,
+  "mode": "replay",
+  "status": "draft",
+  "source": {
+    "registry": "ClinicalTrials.gov",
+    "nct_id": "NCT04134403",
+    "title": "Steroids, Thiamine and Ascorbic Acid Supplementation in Septic Shock (STASIS): A Prospective Crossover Randomized Controlled Study",
+    "phase": [
+      "PHASE3"
+    ],
+    "study_type": "INTERVENTIONAL",
+    "overall_status": "UNKNOWN",
+    "allocation": "RANDOMIZED",
+    "intervention_model": "PARALLEL",
+    "masking": "QUADRUPLE",
+    "enrollment": 80,
+    "enrollment_type": "ESTIMATED",
+    "conditions": [
+      "Septic Shock"
+    ],
+    "has_results": false,
+    "retrieved_at": "2026-10-24T13:35:02.124119Z",
+    "record_sha256": "78333bfa1da1f039c3e140d46cd10ba889ac09f03bbf825833af45de5ce42f83"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Septic shock admitted to the ICU within 24 hours as defined by SEPSIS-3 [definition: SEPSIS-3 defines septic shock as sepsis with the following criteria despite adequate fluid resuscitation: Vasopressor required to maintain MAP ≥ 65 AND Serum lactate level >2.0 mmol/L]",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "septic shock",
+              "domain": "Condition",
+              "source_text": "Septic shock",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 24.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "admitted to the ICU within 24 hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "vasopressor",
+              "domain": "Drug",
+              "source_text": "Vasopressor",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 65.0,
+            "upper": null,
+            "unit": "mmHg",
+            "text": "required to maintain MAP ≥ 65"
+          },
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "serum lactate level",
+              "domain": "Measurement",
+              "source_text": "Serum lactate level",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 2.0,
+            "upper": null,
+            "unit": "mmol/L",
+            "text": ">2.0 mmol/L"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": "unit 'mmHg' not in criterion text"
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Age ≥ 18 years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "Age",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 18.0,
+            "upper": null,
+            "unit": "year",
+            "text": "≥ 18 years"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Non-pregnant",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition",
+              "source_text": "Non-pregnant",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": true
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Ability to consent with medical capacity or legally authorized representative (LAR) consent",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "consent",
+              "domain": "Observation",
+              "source_text": "Ability to consent with medical capacity",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "legally authorized representative consent",
+              "domain": "Observation",
+              "source_text": "legally authorized representative (LAR) consent",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "administrative",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Age < 18 years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "Age",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 18.0,
+            "upper": null,
+            "unit": "year",
+            "text": "< 18 years"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Pregnant defined by negative serum HCG in all females",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition",
+              "source_text": "Pregnant",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "serum HCG",
+              "domain": "Measurement",
+              "source_text": "negative serum HCG",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "negative"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Patients with limitation of care (i.e. DNR)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "limitation of care",
+              "domain": "Observation",
+              "source_text": "limitation of care",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Known G6PD deficiency",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "G6PD deficiency",
+              "domain": "Condition",
+              "source_text": "G6PD deficiency",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Excluding primary admission diagnosis including the following: Acute stroke; Acute coronary syndrome; Active gastrointestinal bleed; Burn; Trauma",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "acute stroke",
+              "domain": "Condition",
+              "source_text": "Acute stroke",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "primary admission",
+            "text": "primary admission diagnosis"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "acute coronary syndrome",
+              "domain": "Condition",
+              "source_text": "Acute coronary syndrome",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "primary admission",
+            "text": "primary admission diagnosis"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "active gastrointestinal bleed",
+              "domain": "Condition",
+              "source_text": "Active gastrointestinal bleed",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "primary admission",
+            "text": "primary admission diagnosis"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "burn",
+              "domain": "Condition",
+              "source_text": "Burn",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "primary admission",
+            "text": "primary admission diagnosis"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "trauma",
+              "domain": "Condition",
+              "source_text": "Trauma",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "primary admission",
+            "text": "primary admission diagnosis"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Prisoners",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "prisoner",
+              "domain": "Demographic",
+              "source_text": "Prisoners",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": ">1 episode of sepsis in hospital admission",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "sepsis",
+              "domain": "Condition",
+              "source_text": "episode of sepsis",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 1.0,
+            "upper": null,
+            "unit": "episode",
+            "text": ">1 episode"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "in hospital admission"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": "x_within_t_before_y without a window read as x_at_time_of_y"
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Vasopressor use prior to randomization for more than 24 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "vasopressor use",
+              "domain": "Drug",
+              "source_text": "Vasopressor use",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 24.0,
+            "upper": null,
+            "unit": "hour",
+            "text": "for more than 24 hours"
+          },
+          "temporal": {
+            "relation": "cumulative_duration",
+            "window": {
+              "amount": 24.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "prior to randomization"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": "duration value read as cumulative_duration"
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Arm 1: Intervention",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Arm will be those that are randomized to receive usual care plus hydrocortisone, thiamine and ascorbic acid.",
+      "components": [
+        {
+          "concept": {
+            "name": "hydrocortisone sodium succinate",
+            "domain": "Drug",
+            "source_text": "hydrocortisone sodium succinate",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "50 mg",
+          "route": null,
+          "frequency": "every 6 hours",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": "ICU discharge",
+          "end_rule": "first"
+        },
+        {
+          "concept": {
+            "name": "thiamine",
+            "domain": "Drug",
+            "source_text": "thiamine",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "200 mg",
+          "route": null,
+          "frequency": "every 12 hours",
+          "duration": {
+            "amount": 4.0,
+            "unit": "day"
+          },
+          "end_event": "ICU discharge",
+          "end_rule": "first"
+        },
+        {
+          "concept": {
+            "name": "ascorbic acid",
+            "domain": "Drug",
+            "source_text": "ascorbic acid",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "1,500 mg",
+          "route": null,
+          "frequency": "every 6 hours",
+          "duration": {
+            "amount": 4.0,
+            "unit": "day"
+          },
+          "end_event": "ICU discharge",
+          "end_rule": "first"
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Arm 2: Usual care",
+      "arm_type": "NO_INTERVENTION",
+      "description": "Arm will be those that are randomized to receive usual care alone.",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "default"
+  },
+  "time_zero": {
+    "anchor_event": "first time vasopressors and lactate > 2 mmol/L coincide during the ICU stay",
+    "offset": null,
+    "rationale": "Time zero is defined as the first moment when both vasopressor use and lactate > 2 mmol/L occur, as these are the defining criteria for septic shock under SEPSIS-3 and the point at which randomization becomes possible. No grace period is specified in the protocol.",
+    "origin": "agent",
+    "evidence": "Patients eligible for inclusion must be admitted with septic shock (as defined by SEPSIS-3) requiring vasopressors to maintain MAP ≥ 65 AND serum lactate level >2 mmol/L after adequate fluid resuscitation (generally recognized at 30 ml/kg crystalloid unless contraindicated as deemed by treating clinician) within the first three hours."
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 28.0,
+      "unit": "day"
+    },
+    "end_event": "hospital discharge",
+    "end_rule": "first",
+    "censoring_events": [
+      "loss_to_follow_up",
+      "end_of_data"
+    ],
+    "competing_events": [],
+    "origin": "derived"
+  },
+  "outcomes": [
+    {
+      "name": "In-hospital or 28-day mortality rate",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care versus standard care in septic shock confers an in-hospital and 28-day mortality benefit",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "Illness Severity (Change in SOFA Score)",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers more rapid improvements in illness severity",
+      "time_frame": "72 hours",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 72.0,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Hospital length-of-stay ICU LOS Duration of intubation",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers improved hospital length-of-stay metrics",
+      "time_frame": "1 year or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 1.0,
+        "unit": "year"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "ICU length-of-stay",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers improved ICU length-of-stay metrics",
+      "time_frame": "90 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "Vasopressor duration (days)",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock confers improvement in vasopressor requirements",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "ICU delerium (CAM-ICU score)",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence or severity of ICU delerium",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "Mechanical ventilation",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence or duration of invasive mechanical ventilation.",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "Cardiac arrest",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence of cardiac arrest or need for cardiopulmonary resuscitation",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "Renal replacement therapy",
+      "description": "o determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the incidence of cardiac arrest or need for renal replacement therapy.",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "C-reactive protein",
+      "description": "To determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the biochemical profiling in septic patients including a more rapid improvement in C-reactive protein",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    },
+    {
+      "name": "Procalcitonin",
+      "description": "o determine if the addition of hydrocortisone, thiamine and ascorbic acid to standard care in septic shock changes the biochemical profiling in septic patients including a more rapid improvement in procalcitonin.",
+      "time_frame": "28 days or discharge (whichever comes first)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": "hospital discharge",
+      "end_rule": "first"
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "registry",
+  "causal_contrast_evidence": "In this case the patient will continue to be analyzed in their assigned arm on an intention to treat basis.",
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "prespecified_subgroups": [],
+    "sensitivity_analyses": [],
+    "origin": "default"
+  },
+  "provenance": {
+    "created_at": "2026-10-25T13:48:22.936613Z",
+    "created_by": "trialist",
+    "llm_model": "qwen3:32b",
+    "llm_model_digest": "030ee887880fc378860c2dd35101da424377520441ae4bfe7be6deff8ade7840",
+    "prompt_version": "trialist-v2",
+    "notes": null
+  }
+}

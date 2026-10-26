@@ -1,0 +1,459 @@
+{
+  "schema_version": 2,
+  "protocol_id": "NCT06091982-replay",
+  "version": 1,
+  "parent_version": null,
+  "mode": "replay",
+  "status": "draft",
+  "source": {
+    "registry": "ClinicalTrials.gov",
+    "nct_id": "NCT06091982",
+    "title": "The Need of Renal Replacement Therapy and In-Hospital Mortality Incidence In Patients With Cardiac Surgery Associated Acute Kidney Injury: Retrospective Study",
+    "phase": [],
+    "study_type": "OBSERVATIONAL",
+    "overall_status": "COMPLETED",
+    "allocation": null,
+    "intervention_model": null,
+    "masking": null,
+    "enrollment": 1113,
+    "enrollment_type": "ACTUAL",
+    "conditions": [
+      "Acute Kidney Injury"
+    ],
+    "has_results": true,
+    "retrieved_at": "2026-10-24T13:35:02.511823Z",
+    "record_sha256": "3e28359af07ba22dc594a7e5023864b23e187247f9baf1cb4c7dc002a9fd73ac"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Patients who are at least 18 years old, underwent cardiac surgery in Harapan Kita National Cardiovascular Center from January 2020 to December 2022.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "at least 18 years old",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 18.0,
+            "upper": null,
+            "unit": "year",
+            "text": "at least 18 years old"
+          },
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "cardiac surgery",
+              "domain": "Procedure",
+              "source_text": "underwent cardiac surgery",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "in Harapan Kita National Cardiovascular Center from January 2020 to December 2022"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Patients with condition was complicated with Acute Kidney Injury (AKI) which was characterised by an increase in serum creatinine > 0.3 mg/dL or > 150% of the preoperative serum creatinine value, which was checked within 12 hours post-operative.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Acute Kidney Injury",
+              "domain": "Condition",
+              "source_text": "Acute Kidney Injury",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "serum creatinine",
+              "domain": "Measurement",
+              "source_text": "serum creatinine",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">",
+            "value": 0.3,
+            "upper": null,
+            "unit": "mg/dL",
+            "text": "> 0.3 mg/dL"
+          },
+          "temporal": {
+            "relation": "x_within_t_after_y",
+            "window": {
+              "amount": 12.0,
+              "unit": "hour"
+            },
+            "anchor": "Procedure",
+            "text": "within 12 hours post-operative"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "serum creatinine",
+              "domain": "Measurement",
+              "source_text": "serum creatinine",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">",
+            "value": 150.0,
+            "upper": null,
+            "unit": "%",
+            "text": "> 150%"
+          },
+          "temporal": {
+            "relation": "x_within_t_after_y",
+            "window": {
+              "amount": 12.0,
+              "unit": "hour"
+            },
+            "anchor": "Procedure",
+            "text": "within 12 hours post-operative"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "All patients' data is recorded in the medical records unit.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "data recorded in medical records unit",
+              "domain": "Observation",
+              "source_text": "data is recorded in the medical records unit",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Patients with previous history of dialysis or renal failure in dialysis.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "dialysis",
+              "domain": "Procedure",
+              "source_text": "dialysis",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "previous history of dialysis"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "renal failure",
+              "domain": "Condition",
+              "source_text": "renal failure",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "dialysis",
+              "domain": "Procedure",
+              "source_text": "dialysis",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Incomplete or loss of patients' data.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "incomplete or loss of data",
+              "domain": "Observation",
+              "source_text": "Incomplete or loss of patients' data",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "AKI-RRT",
+      "arm_type": null,
+      "description": "Post cardiovascular surgery patients with condition of acute kidney injury postoperative; and with an exposure of renal replacement therapy (intermittent haemodialysis or continuous renal replacement therapy) which is indicated postoperatively.",
+      "components": [
+        {
+          "concept": {
+            "name": "intermittent hemodialysis",
+            "domain": "Procedure",
+            "source_text": "intermittent hemodialysis",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "continuous veno-venous hemofiltration",
+            "domain": "Procedure",
+            "source_text": "continuous veno-venous hemofiltration",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "continuous veno-venous hemodialysis",
+            "domain": "Procedure",
+            "source_text": "continuous veno-venous hemodialysis",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "continuous veno-venous hemodiafiltration",
+            "domain": "Procedure",
+            "source_text": "continuous veno-venous hemodiafiltration",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "AKI non RRT",
+      "arm_type": null,
+      "description": "Post cardiovascular surgery patients with condition of acute kidney injury postoperative; but without exposure of renal replacement therapy.",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "default"
+  },
+  "time_zero": {
+    "anchor_event": "First post-operative serum creatinine measurement that meets AKI criteria (increase in serum creatinine > 0.3 mg/dL or > 150% of the preoperative serum creatinine value) within 12 hours post-operative.",
+    "offset": null,
+    "rationale": "Time zero is defined as the first post-operative serum creatinine measurement meeting AKI criteria within 12 hours post-surgery, as this is when AKI is diagnosed and treatment (or lack thereof) can be assigned. This aligns with the eligibility criteria and avoids immortal time bias.",
+    "origin": "agent",
+    "evidence": "Patients with condition was complicated with Acute Kidney Injury (AKI) which was characterised by an increase in serum creatinine > 0.3 mg/dL or > 150% of the preoperative serum creatinine value, which was checked within 12 hours post-operative."
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 3.0,
+      "unit": "month"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss_to_follow_up",
+      "end_of_data"
+    ],
+    "competing_events": [],
+    "origin": "derived"
+  },
+  "outcomes": [
+    {
+      "name": "Mortality",
+      "description": "Number of participants who died of any cause during postoperative care in hospital",
+      "time_frame": "From ICU admission postoperative until the death date during hospital care, assessed up to 3 months",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 3.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "ICU Stay Over 5 Days",
+      "description": "Number of participants which the postoperative ICU length of stay more than 5 days",
+      "time_frame": "Time of ICU length of stay measured with days, up to 4 weeks",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 4.0,
+        "unit": "week"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Mechanical Ventilation > 48 Hours",
+      "description": "Number of participants which the postoperative usage of mechanical ventilation (breathing ventilator) more than 48 hours",
+      "time_frame": "Time of ventilator usage measure with hours, up to 4 weeks",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 4.0,
+        "unit": "week"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "default",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "prespecified_subgroups": [],
+    "sensitivity_analyses": [],
+    "origin": "default"
+  },
+  "provenance": {
+    "created_at": "2026-10-25T13:50:15.998516Z",
+    "created_by": "trialist",
+    "llm_model": "qwen3:32b",
+    "llm_model_digest": "030ee887880fc378860c2dd35101da424377520441ae4bfe7be6deff8ade7840",
+    "prompt_version": "trialist-v2",
+    "notes": null
+  }
+}

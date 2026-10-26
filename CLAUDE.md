@@ -63,7 +63,12 @@ The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its 
 - Keep the state and interrupt payloads plain JSON (`model_dump(mode="json")`).
 - Never put the database connection or patient rows in the state.
 
-Next: Replay three trials from the real Phase 0 drafts (`replay start --protocol`), then the report sign-off gate and batch auto-approve.
+The Phase 2 exit criterion is met on synthetic data (2026-10-26; `eval/results/phase2_replay.md`). Three trials were replayed end to end from the real qwen3:32b Phase 0 drafts, and every primary CI covers the planted marginal truth. The reviews were scripted, not clinical: never describe them as clinician review.
+
+Next:
+- the report sign-off gate and batch auto-approve;
+- abbreviation handling in concept search;
+- then Phase 3 (MIMIC-IV OMOP on Hellbender; confirm the data classification with RCSS first).
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

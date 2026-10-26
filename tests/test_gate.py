@@ -108,7 +108,8 @@ def test_concept_fit():
 
 def test_concept_in_missing_domain_table():
     p = protocol(crit("I1", "inclusion", ConceptRef(name="ventilation", domain="Procedure")))
-    r = run_gate(db(), p, concept_sets={"I1:ventilation": [123]}, context=SYNTH)
+    con = db(drop=lambda t: t.pop("procedure_occurrence"))
+    r = run_gate(con, p, concept_sets={"I1:ventilation": [123]}, context=SYNTH)
     rows = r.check("concepts").values["concepts"]
     assert rows[0]["result"] == "no procedure_occurrence table"
     assert r.check("concepts").status == "red"

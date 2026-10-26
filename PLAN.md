@@ -407,9 +407,33 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
   - **balance:** max SMD 0.72 before weighting, 0.035 after.
 - **Bug found and fixed:** the CLI end-to-end run exposed a clone-censor-weight bug. Starts exactly at time zero were never counted as "at risk" in the first grace interval, so arm-0 weights were 1 and the estimate stayed confounded (0.73 against 0.53). Fixed in `stats/ccw.py`, with a regression test in `test_stats_recovery.py`.
 
-**Not done (Phase 2 exit criterion: Replay of 3 trials on synthetic OMOP):**
-- Replay with real LLM drafts for 3 trials. The Phase 0 benchmark drafts in `runs/exit-H100-final/` can feed `replay start --protocol`, so no new GPU run is needed.
+**6. Phase 2 exit criterion met on synthetic data: Replay of three trials from real LLM drafts** (`eval/replay_phase2.py` → `eval/results/phase2_replay.md`; tests in `tests/test_replay_phase2.py`).
+- **Inputs:** the drafts are the Phase 0 final benchmark outputs (qwen3:32b, H100, replicate 1; replicate 2 has the same content hash), copied to `tests/fixtures/protocols/*.final-H100.qwen3-32b.json`. Each trial has a synthetic OMOP profile (`synth.omop.Profile`): STASIS septic shock with three drugs; ASCEND-HF heart failure with nesiritide; post-cardiac-surgery AKI with RRT as a procedure and a prior surgery record. Each has a planted effect.
+- **Reviews are scripted, not clinical:** a vocabulary match is approved, anything else is unmappable, and a few per-trial decisions are applied, each stated in the script. Every approved match was checked by hand and is correct.
+- **Results:** every primary estimate's 95% CI covers the true marginal HR in the selected population.
+
+  | Trial | Primary | HR | Truth |
+  |---|---|---|---|
+  | NCT04134403 | IPTW (no grace period) | 0.790 | 0.728 |
+  | NCT00475852 | clone-censor-weight, 2-day grace; composite outcome as a reviewed definition | 0.913 | 0.846 |
+  | NCT06091982 | clone-censor-weight, 3-day grace added in design review | 0.865 | 0.811 |
+
+  As drafted, NCT06091982 had no grace period; the Statistician flags the immortal-time risk (all treated start after time zero).
+- **Found in the real drafts, and fixed:**
+  - A composite primary ("rehospitalization ... and all-cause mortality") was silently read as death. Now only pure mortality outcomes default to death. Others need a reviewed `CompileSpec.outcome`: events, plus whether death counts.
+  - A placebo comparator component blocked the frame as an "active comparator". It now means no initiation.
+  - Relative-change criteria ("increase > 0.3 mg/dL", "> 150%") were read as levels. They are now not compiled, with a reason.
+  - Duplicate treatment components are counted once.
+  - Several primary outcomes: the first is analysed and the rest are named.
+  - A missing horizon or primary outcome no longer raises; it is reported.
+  - The gate's time check failed on empty tables; empty tables are now skipped.
+  - The four RRT modalities were drafted as a combination ("all"). A design-review fix (one RRT component) is shown next to the as-drafted run.
+- **Synthetic CDM:** it now includes empty, typed `procedure_occurrence`, `observation` and `device_exposure` tables, as a real CDM does.
+- **Not assessed:** agreement with the trials' published results, because the data are synthetic. That needs MIMIC-IV (Phase 3).
+
+**Not done:**
 - The report sign-off gate, and auto-approve for batch benchmarking (§3 HITL).
+- Abbreviations in concept search ("diagnosis of ADHF" found nothing).
 - The compiler's follow-up end events ("discharge") and duration/count criteria.
 - Complementary suppression.
 - An LLM Supervisor and LLM method choice for the Statistician.
