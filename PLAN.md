@@ -545,6 +545,26 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
   
   Reviewed targets are checked against the vocabulary like curated ones. The report counts overrides and names the reviewers. A reviewed map without `--concept-map` converts only its approved items.
 
+**Search quality, from a pre-check of the first full proposals (2026-10-26).** The defects found:
+
+| MIMIC label | Proposed | Should be |
+|---|---|---|
+| Invasive Ventilation | "Non-invasive ventilation" | Invasive mechanical ventilation |
+| Potassium / Sodium / Chloride / Hematocrit / HCO3 "(serum)" | the specimen "Serum" | the lab test |
+| Creatinine | "Serum creatinine above reference range" | a lab test, not a finding |
+| Neutrophils and other differential counts | cord-blood tests | the blood test |
+| H, L, I (lab indices) | single-letter synonyms | nothing |
+| Potassium Chloride | no match (salt-only query dropped) | potassium chloride |
+| LR, KCL | RxNorm Extension code names | nothing, without an approved expansion |
+
+The fixes (commit 5d7675b):
+- **Queries:** bracketed text is its own query only when it is an expansion or a drug brand. Single letters are dropped, salt-only queries are kept, and short abbreviations get exact matches only.
+- **Ranking**, within a match level:
+  - demote negations the query lacks, findings and cord-blood tests for measurements, and RxNorm Extension;
+  - prefer LOINC for measurements, and the candidate found by the fullest query;
+  - item proposals rank the specimen by category: serum or plasma for chemistry, blood for blood gas and haematology.
+- **Tests:** the decoys are regression tests. Phase 2 results are unchanged. **Proposals made before this must be regenerated.**
+
 **Step 2, part 1: built** (`agentic_tte/etl/mimic_omop.py`, `agentic-tte etl mimic`; tests in `tests/test_etl_mimic.py` on a made-up four-patient dataset written at test time).
 - **Built:** person, observation_period, visit_occurrence (admissions; ER-and-inpatient when there was an ED stay), visit_detail (ICU stays), death, and the diagnoses, procedures and prescriptions coded through the vocabulary.
   - **Source codes:** ICD9CM, ICD10CM, ICD9Proc, ICD10PCS and NDC codes are matched with the dots removed, then followed through 'Maps to'. Each record goes to the table of its standard concept's domain.
