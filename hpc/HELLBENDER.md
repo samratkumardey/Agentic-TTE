@@ -22,7 +22,7 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 | Personal Pixstor | `~/data` → `/mnt/pixstor/data/$USER` | 500 GB, **nearly full** | Repo, caches, outputs |
 | Older project area | `/cluster/pixstor/data/$USER/tte-project` | **The same quota as `~/data`**: `/cluster/pixstor/data/$USER` *is* `~/data` (same device and inode, checked 2026-10-26) | Models, container, MIMIC, OMOP |
 | Local scratch | `/local/scratch` | 1.6–3.2 TB per node | Temporary build and job files; not shared between nodes, not kept: never store models or data here |
-| Lab group storage | `/cluster/pixstor/shyuc-hpc-lab` (checked 2026-10-26) | Not known: `df` shows only the whole filesystem (15 TB, 2.5 TB free); ask RCSS | Writable by the user. Mode `drwxrws---`, group `rss-rde-shyuc-lab-rw`: every lab member can read what is put there. Has `.snapshots`, unlike personal space. Other members keep per-user folders. Suitable for shareable, non-sensitive files (Ollama models, Hugging Face caches); **not for MIMIC-IV or anything derived from it**, unless every group member is PhysioNet-credentialed and RCSS approves the space for that data |
+| Lab group storage | `/cluster/pixstor/shyuc-hpc-lab` (checked 2026-10-26) | Not known: `df` shows only the whole filesystem (15 TB, 2.5 TB free); ask RCSS | Writable by the user. Mode `drwxrws---`, group `rss-rde-shyuc-lab-rw`: every lab member can read what is put there. Has `.snapshots`, unlike personal space. Other members keep per-user folders. The user's folder is `/cluster/pixstor/shyuc-hpc-lab/$USER` (`$ATTE_LAB_DIR`), **mode 700**: only the user can enter it. The user confirmed on 2026-10-26 that the lab holds a PhysioNet licence for MIMIC-IV, so MIMIC-IV, its Postgres build, the OMOP CDM and the vocabulary live there. PhysioNet credentialing is per person: open a subfolder to the group (`chmod`) only for credentialed members |
 
 - `df` reports whole-filesystem totals, not your quota, so it cannot tell you whether you are near your limit.
 - Nothing is backed up. Code lives on GitHub; models can be re-pulled; results must be copied off the cluster if they matter.
@@ -52,6 +52,15 @@ All of this is under `/cluster/pixstor/data/$USER/` (`$P` below). The user confi
 **Athena release v5.0 29-AUG-26** (downloaded 2026-10-26; zip 722 MB, about 4.2 GB unpacked) goes to `$P/tte-project/athena/v5-2026-08-29/` (`ATTE_VOCAB`).
 - **Vocabularies:** ICD9CM, ICD9Proc, ICD10CM, ICD10PCS, ICD10, SNOMED (2026), RxNorm (20260601), RxNorm Extension, NDC (20260823), ATC, HCPCS, CVX, LOINC, UCUM, ICDO3, NUCC, Medicare Specialty, CMS Place of Service, UB04, and the OMOP infrastructure vocabularies.
 - **CPT4** is shipped as `CONCEPT_CPT4.csv` and only joins `CONCEPT.csv` after `./cpt.sh <UMLS API key>` (needs Java and internet). The MIMIC ETL does not need CPT4; do it before an EHR source with CPT procedure codes.
+
+### Moving a folder to the lab space
+
+The procedure is copy, verify, then delete. `hpc/copy_to_lab.sbatch` copies with `rsync -a`, rechecks, and prints `VERIFIED`; it never deletes the source.
+1. Create the user folder once, as `mkdir -p "$ATTE_LAB_DIR" && chmod 700 "$ATTE_LAB_DIR"`. Many source files are world-readable, so privacy comes from this folder's mode.
+2. Run `sbatch -p "$SLURM_CPU_PARTITION" --export=ALL,SRC=<old>,DST=<new> hpc/copy_to_lab.sbatch`, and wait for `VERIFIED` in `logs/copy-<job>.out`.
+3. Remove the old folder and leave a link at its path (`ln -s <new> <old>`), so older projects that use the old path keep working.
+
+Never copy a Postgres data directory while its server runs.
 
 ## Slurm
 

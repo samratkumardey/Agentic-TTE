@@ -24,6 +24,7 @@ Read [PLAN.md](PLAN.md) for the architecture and roadmap, and [hpc/HELLBENDER.md
 - No patient-level data in git (MIMIC-IV DUA, HIPAA). The pre-commit hook enforces this; do not bypass it.
 - Before any phase brings MIMIC-IV or EHR data to Hellbender, remind the user to confirm the data classification level with RCSS.
 - **MIMIC-IV 3.1 is already on Hellbender.** On 2026-10-26 the user confirmed that the data use agreement covers it and that RCSS has no issue with it (locations: hpc/HELLBENDER.md). No need to ask again for MIMIC-IV. Oracle or other EHR data still needs its own confirmation.
+- MIMIC-IV, its Postgres build, the OMOP CDM and the vocabulary move to the user's mode-700 folder in the lab storage (`$ATTE_LAB_DIR`). The user confirmed the lab's PhysioNet licence on 2026-10-26. Keep that folder private, and never widen its permissions on the user's behalf.
 
 ## Current state (2026-10-24)
 

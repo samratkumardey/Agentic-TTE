@@ -44,11 +44,15 @@ export ATTE_MODEL="${ATTE_MODEL:-qwen3:32b}"
 export ATTE_THINK="${ATTE_THINK:-false}"
 
 # --- MIMIC-IV and OMOP (Phase 3; hpc/HELLBENDER.md "Data already on Hellbender") ---------
-# All inside the ~/data quota. Keep the quotes around paths.
-export ATTE_MIMIC_SOURCE="/cluster/pixstor/data/$USER/mimic-source/mimic-iv-3.1"
+# Kept in the user's folder in the lab group storage (moved 2026-10-26; the user confirmed the
+# lab's PhysioNet licence for MIMIC-IV). Outside the personal ~/data quota. The folder is
+# mode 700 (only you can enter it); open subfolders to the group only for credentialed members.
+# Keep the quotes around paths.
+export ATTE_LAB_DIR="/cluster/pixstor/shyuc-hpc-lab/$USER"
+export ATTE_MIMIC_SOURCE="$ATTE_LAB_DIR/mimic-source/mimic-iv-3.1"
 # Athena release v5.0 29-AUG-26 (2026-10-26 download; has ICD9CM, ICD9Proc, NDC). The
 # older S07 copy lacks those three: do not use it for MIMIC.
-export ATTE_VOCAB="/cluster/pixstor/data/$USER/tte-project/athena/v5-2026-08-29"
+export ATTE_VOCAB="$ATTE_LAB_DIR/athena/v5-2026-08-29"
 export ATTE_MIMIC_CONCEPT_MAP="/cluster/pixstor/data/$USER/mimic-code/mimic-iv/concepts/concept_map"
-export ATTE_OMOP_DIR="/cluster/pixstor/data/$USER/tte-project/omop"
+export ATTE_OMOP_DIR="$ATTE_LAB_DIR/omop"
 export ATTE_ITEM_MAPS="${ATTE_ITEM_MAPS:-}"   # reviewed item maps (space-separated paths)
