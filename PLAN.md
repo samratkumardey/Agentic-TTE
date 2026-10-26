@@ -515,6 +515,23 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
 - **Expected:** chartevents at 13% (only the 40 curated items; the rest are mostly nursing documentation).
 - **Before the full run:** a vocabulary with ICD9CM, ICD9Proc and NDC; then rerun the pilot.
 
+**Pilot A (job 19355552, 2026-10-26, commit 0915fae; Athena v5.0 29-AUG-26; data in the lab folder).**
+- **Resources:** 3.4 minutes, 4.1 GB of memory, a 1.1 GB CDM (about 0.9 GB of it vocabulary).
+- **Mapped:**
+
+  | Source | 1% pilot | Pilot A |
+  |---|---|---|
+  | Prescriptions | 0% | **86.0%** |
+  | Diagnoses | 51.3% | **92.7%** |
+  | ICD procedures | 45.9% | **99.9%** |
+  | Procedure events | 95.4% | 95.4% |
+
+  The unmapped prescriptions are rows without an NDC (flushes, "Bag", "Vial", sterile water); the unmapped diagnoses are history, status and place codes (V15.82, Z95.5, Y92.230).
+- **Procedure events:** 6 curated targets rejected (Chest Tube Placed is new in this release). The procedureevents review covers all 6.
+- **Episode domain:** 41 records map to it, and are left out (no table).
+- **Full CDM expected:** about 25–35 GB with labs and drips, in well under an hour.
+- **Next:** Pilot B with the reviewed item maps, then the full run.
+
 **Reviewed overrides for chartevents and procedureevents: built (2026-10-26;** `tests/test_item_overrides.py`).
 - **Proposals:** `etl items propose --kind chartevents|procedureevents --concept-map <maps>` checks each curated target against the loaded vocabulary, as the ETL does.
   - Items whose curated map works are skipped.
