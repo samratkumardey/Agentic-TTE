@@ -34,7 +34,8 @@ echo "[atte] $(date -u +%FT%TZ) copy $SRC -> $DST ($(du -sh "$SRC" | cut -f1))"
 rsync -a --info=stats2 "$SRC/" "$DST/"
 
 # Verify: a second dry run must find nothing left to transfer (same files, sizes and times).
-CHANGES=$(rsync -a --dry-run --itemize-changes "$SRC/" "$DST/" | wc -l)
+# Sockets are left out: they are runtime files (Postgres leaves .s.PGSQL.<port> behind), not data.
+CHANGES=$(rsync -a --no-specials --dry-run --itemize-changes "$SRC/" "$DST/" | wc -l)
 N_SRC=$(find "$SRC" -type f | wc -l)
 N_DST=$(find "$DST" -type f | wc -l)
 echo "[atte] files: source $N_SRC, copy $N_DST; differences on recheck: $CHANGES"
