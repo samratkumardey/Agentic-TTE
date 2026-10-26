@@ -41,7 +41,7 @@ def ids(cands):
 
 def test_load_athena_counts(vocab):
     n = vocab.execute("SELECT count(*) FROM concept").fetchone()[0]
-    assert n == 30
+    assert n == 31
     with pytest.raises(FileNotFoundError):
         load_athena(duckdb.connect(), VOCAB / "missing")
 

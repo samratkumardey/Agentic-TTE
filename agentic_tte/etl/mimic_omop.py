@@ -13,7 +13,8 @@ value, and counted in the report; nothing is dropped silently.
 Built so far: person, observation_period, visit_occurrence (hospital admissions),
 visit_detail (ICU stays), death, and from diagnoses_icd, procedures_icd and prescriptions:
 condition_occurrence, procedure_occurrence, drug_exposure, observation, measurement.
-chartevents and procedureevents are converted through the MIT-LCP curated item maps
+chartevents and procedureevents are converted through the MIT-LCP curated item maps, which
+reviewed item maps of the same kind can override item by item
 (``mimic-code/mimic-iv/concepts/concept_map``, SSSOM files with author and reviewer ORCIDs;
 ``concept_map``), read where they are, never copied into this repository. Each curated target
 is checked against the loaded vocabulary: a standard, valid concept is used; one that is no
@@ -450,11 +451,9 @@ def build(cfg: EtlConfig, *, git_commit: str | None = None) -> EtlReport:
     if n_rx_no_start:
         rep.notes.append(f"prescriptions without a start time left out: {suppress(n_rx_no_start)}")
 
-    if cfg.concept_map is not None:
-        _item_events(con, cfg, rep)
-    else:
-        rep.notes.append("chartevents and procedureevents not converted: no concept_map given")
-    _reviewed_events(con, cfg, rep)
+    reviewed = _load_reviewed(cfg)
+    _item_events(con, cfg, rep, reviewed)
+    _reviewed_events(con, cfg, rep, reviewed)
 
     # Route by the standard concept's domain; unmapped records stay in their home table.
     for domain, (table, select) in _ROUTES.items():
@@ -610,46 +609,84 @@ def _convert_events(con, cfg: EtlConfig, rep: EtlReport, source: str, how: str) 
                      "table)")  # fmt: skip
 
 
-def _item_events(con, cfg: EtlConfig, rep: EtlReport) -> None:
-    for source, file in ITEM_MAPS.items():
-        path = (cfg.concept_map / file).as_posix()
-        _checked_map(con, source, f"""
-            SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
-                   subject_label AS label, predicate_id AS predicate,
-                   TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
-                   coalesce(reviewer_id, '') AS reviewer
-            FROM read_csv('{path}', header = true, all_varchar = true)
-            WHERE object_id LIKE 'omop:%'""")  # fmt: skip
-        _map_report(con, rep, source, file)
-        _convert_events(con, cfg, rep, source, "a curated map")
-
-
-def _reviewed_events(con, cfg: EtlConfig, rep: EtlReport) -> None:
-    """labevents and inputevents through reviewed item maps (agentic_tte.etl.item_maps)."""
+def _load_reviewed(cfg: EtlConfig) -> dict:
+    """Reviewed item maps by kind: {kind: (file name, ItemMap)}; one map per kind."""
     from agentic_tte.etl.item_maps import ItemMap
 
-    seen = set()
+    out: dict = {}
     for path in cfg.item_maps:
         m = ItemMap.model_validate_json(Path(path).read_text(encoding="utf-8"))
-        if m.kind in seen:
+        if m.kind in out:
             raise ValueError(f"two item maps for {m.kind}")
-        seen.add(m.kind)
-        approved = [(e.itemid, e.label, e.concept_id, e.reviewer or "")
-                    for e in m.entries if e.status == "approved" and e.concept_id]  # fmt: skip
-        con.execute(f"CREATE TEMP TABLE raw_{m.kind} (itemid BIGINT, label VARCHAR, "
-                    f"curated_id INTEGER, reviewer VARCHAR)")
-        if approved:
-            con.executemany(f"INSERT INTO raw_{m.kind} VALUES (?, ?, ?, ?)", approved)
-        _checked_map(con, m.kind, f"SELECT itemid, label, 'reviewed' AS predicate, "
-                                  f"curated_id, reviewer FROM raw_{m.kind}")
-        _map_report(con, rep, m.kind, Path(path).name)
-        rep.item_maps[m.kind]["reviewers"] = sorted({a[3] for a in approved if a[3]})
-        rep.item_maps[m.kind]["not_reviewed"] = sum(e.status in ("proposed", "no_match")
-                                                    for e in m.entries)  # fmt: skip
-        _convert_events(con, cfg, rep, m.kind, "an approved item map")
+        out[m.kind] = (Path(path).name, m)
+    return out
+
+
+def _reviewed_rows(con, kind: str, m) -> tuple[list[tuple], list[int]]:
+    """Load a reviewed map's approved rows into ``rev_<kind>``; returns the approved rows and
+    the IDs of every decided item (approved, rejected or unmappable)."""
+    approved = [(e.itemid, e.label, e.concept_id, e.reviewer or "")
+                for e in m.entries if e.status == "approved" and e.concept_id]  # fmt: skip
+    decided = [e.itemid for e in m.entries if e.status in ("approved", "rejected", "unmappable")]
+    con.execute(f"CREATE TEMP TABLE rev_{kind} (itemid BIGINT, label VARCHAR, "
+                f"curated_id INTEGER, reviewer VARCHAR)")
+    if approved:
+        con.executemany(f"INSERT INTO rev_{kind} VALUES (?, ?, ?, ?)", approved)
+    return approved, decided
+
+
+def _item_events(con, cfg: EtlConfig, rep: EtlReport, reviewed: dict) -> None:
+    """chartevents and procedureevents: the curated MIT-LCP maps, with reviewed decisions
+    overriding them item by item (approve/replace: the reviewed concept; reject/unmappable:
+    the curated mapping is turned off; undecided: the curated map stands)."""
+    for source, file in ITEM_MAPS.items():
+        rev = reviewed.get(source)
+        if cfg.concept_map is None and rev is None:
+            rep.notes.append(f"{source} not converted: no concept_map or reviewed map given")
+            continue
+        parts, approved, decided = [], [], []
+        if rev is not None:
+            approved, decided = _reviewed_rows(con, source, rev[1])
+        if cfg.concept_map is not None:
+            path = (cfg.concept_map / file).as_posix()
+            keep = (f"WHERE itemid NOT IN ({', '.join(str(int(i)) for i in decided)})"
+                    if decided else "")  # fmt: skip
+            parts.append(f"""SELECT * FROM (
+                SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
+                       subject_label AS label, predicate_id AS predicate,
+                       TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
+                       coalesce(reviewer_id, '') AS reviewer
+                FROM read_csv('{path}', header = true, all_varchar = true)
+                WHERE object_id LIKE 'omop:%') {keep}""")  # fmt: skip
+        if rev is not None:
+            parts.append(f"SELECT itemid, label, 'reviewed' AS predicate, curated_id, reviewer "
+                         f"FROM rev_{source}")
+        _checked_map(con, source, " UNION ALL ".join(parts))
+        names = " + ".join(x for x in (file if cfg.concept_map else None,
+                                       rev[0] if rev else None) if x)  # fmt: skip
+        _map_report(con, rep, source, names)
+        if rev is not None:
+            rep.item_maps[source]["overrides"] = len(decided)
+            rep.item_maps[source]["reviewers"] = sorted({a[3] for a in approved if a[3]})
+        how = "a curated or reviewed map" if rev is not None else "a curated map"
+        _convert_events(con, cfg, rep, source, how)
+
+
+def _reviewed_events(con, cfg: EtlConfig, rep: EtlReport, reviewed: dict) -> None:
+    """labevents and inputevents through reviewed item maps (agentic_tte.etl.item_maps)."""
     for kind in ("labevents", "inputevents"):
-        if kind not in seen:
+        if kind not in reviewed:
             rep.notes.append(f"{kind} not converted: no reviewed item map given")
+            continue
+        name, m = reviewed[kind]
+        approved, _ = _reviewed_rows(con, kind, m)
+        _checked_map(con, kind, f"SELECT itemid, label, 'reviewed' AS predicate, "
+                                f"curated_id, reviewer FROM rev_{kind}")
+        _map_report(con, rep, kind, name)
+        rep.item_maps[kind]["reviewers"] = sorted({a[3] for a in approved if a[3]})
+        rep.item_maps[kind]["not_reviewed"] = sum(e.status in ("proposed", "no_match")
+                                                  for e in m.entries)  # fmt: skip
+        _convert_events(con, cfg, rep, kind, "an approved item map")
 
 
 def sha256sums_digest(source: Path) -> str | None:

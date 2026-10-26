@@ -1,9 +1,13 @@
-"""Reviewed item maps for MIMIC-IV items without a curated map: labevents and inputevents.
+"""Reviewed item maps for MIMIC-IV items: labevents and inputevents (no curated map), and
+reviewed overrides for chartevents and procedureevents (curated by MIT-LCP).
 
-MIT-LCP's mimic-code has curated maps for chartevents and procedureevents only. For labs
-(d_labitems) and ICU inputs (d_items, linksto = inputevents) this module proposes a standard
-concept per item from the vocabulary search on the item's label, and a person approves each
-one (approve, replace, reject, unmappable), as for protocol concept sets:
+For each item this module proposes a standard concept from the vocabulary search on the item's
+label, and a person decides (approve, replace, reject, unmappable), as for protocol concept
+sets. For chartevents and procedureevents a reviewed decision overrides the curated map for
+that item: it fixes curated targets the vocabulary no longer has as standard (e.g. Invasive
+Ventilation, 225792, in the 2026 vocabulary), adds items the curated map lacks, or turns a
+curated mapping off. ``propose_items`` lists curated items only when their target was
+rejected, with the reason (``curated``).
 
     propose_items(...)   -> ItemMap (proposals, most frequent items first)
     review_sheet(map)    -> markdown for the reviewer
@@ -11,15 +15,17 @@ one (approve, replace, reject, unmappable), as for protocol concept sets:
     apply_decisions(...) -> the reviewed ItemMap the ETL takes (``EtlConfig.item_maps``)
 
 Labs are searched in the Measurement domain, with the specimen ("Blood", "Urine") used to
-rank LOINC candidates; inputs in the Drug domain, preferring the ingredient. Only approved
-items are converted. The files hold item labels and per-item row counts from the credentialed
-data, so they stay where the data are (Hellbender) and never go into git; counts below 11
-are suppressed in them.
+rank LOINC candidates; inputs in the Drug domain, preferring the ingredient; chart items in
+Measurement and Observation; procedure items in Procedure, Observation and Device. Only
+approved items are converted. The files hold item labels and per-item row counts from the
+credentialed data, so they stay where the data are (Hellbender) and never go into git; counts
+below 11 are suppressed in them.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -27,9 +33,12 @@ from pydantic import BaseModel, Field
 from agentic_tte.omop.gate import SMALL_CELL, suppress
 from agentic_tte.omop.vocab import Candidate, norm, search
 
-Kind = Literal["labevents", "inputevents"]
+Kind = Literal["labevents", "inputevents", "chartevents", "procedureevents"]
 Status = Literal["proposed", "no_match", "approved", "rejected", "unmappable"]
-DOMAIN = {"labevents": "Measurement", "inputevents": "Drug"}
+DOMAINS = {"labevents": ("Measurement",), "inputevents": ("Drug",),
+           "chartevents": ("Measurement", "Observation"),
+           "procedureevents": ("Procedure", "Observation", "Device")}  # fmt: skip
+CURATED = ("chartevents", "procedureevents")  # kinds with an MIT-LCP curated map
 
 # Specimen words in MIMIC's d_labitems.fluid, and the words LOINC names use for them.
 _SPECIMEN = {"blood": ("blood", "serum", "plasma"), "urine": ("urine",),
@@ -45,6 +54,7 @@ class ItemEntry(BaseModel):
     category: str | None = None
     unit: str | None = None  # inputs: d_items.unitname
     rows: int | str  # events with this item (suppressed below 11)
+    curated: str | None = None  # the curated map's target and why it was rejected
     candidates: list[Candidate] = Field(default_factory=list)
     concept_id: int | None = None
     status: Status = "proposed"
@@ -89,14 +99,18 @@ def propose_items(con, kind: Kind, items: list[dict], *, total_rows: int,
     category; for inputs, category and unit), most frequent first."""
     entries = []
     for it in sorted(items, key=lambda x: (-x["rows"], x["itemid"])):
-        cands = search(con, it["label"], DOMAIN[kind], limit=n_candidates * 3)
+        cands = []
+        for domain in DOMAINS[kind]:
+            cands += search(con, it["label"], domain, limit=n_candidates * 3)
+        cands.sort(key=lambda c: c.rank)
         if kind == "labevents":
             cands.sort(key=lambda c: (c.rank[0], _specimen_rank(c, it.get("specimen")),
                                       c.rank[1:]))  # fmt: skip
         cands = cands[:n_candidates]
         e = ItemEntry(itemid=it["itemid"], label=it["label"], specimen=it.get("specimen"),
                       category=it.get("category"), unit=it.get("unit"),
-                      rows=suppress(int(it["rows"])), candidates=cands)  # fmt: skip
+                      rows=suppress(int(it["rows"])), candidates=cands,
+                      curated=it.get("curated"))  # fmt: skip
         if cands:
             e.concept_id = cands[0].concept_id
         else:
@@ -129,6 +143,8 @@ def review_sheet(m: ItemMap) -> str:
 
     for e in m.entries:
         ctx = " / ".join(x for x in (e.specimen, e.category, e.unit) if x) or "–"
+        if e.curated:
+            ctx += f" / **curated map rejected: {e.curated}**"
         prop = fmt(e.candidates[0]) if e.candidates else "–"
         alts = "; ".join(fmt(c) for c in e.candidates[1:4]) or "–"
         lines.append(f"| {e.itemid} | {e.label} | {ctx} | {e.rows} | {prop} | {alts} | "
@@ -212,3 +228,41 @@ def item_counts(con, kind: Kind, source_sql: str, dictionary_sql: str,
                   "unit": meta.get(i, (None, None, None))[2]}
                  for i, n in counts if n >= min_rows and i is not None]  # fmt: skip
     return items, total
+
+
+def curated_status(con, concept_map: Path, kind: str) -> dict[int, tuple[str, int, str]]:
+    """The curated map's targets checked against the loaded vocabulary, as the ETL checks them:
+    {itemid: (label, curated concept_id, status)}, status accepted, remapped or a rejection."""
+    from agentic_tte.etl.mimic_omop import ITEM_MAPS, _checked_map
+
+    path = (Path(concept_map) / ITEM_MAPS[kind]).as_posix()
+    _checked_map(con, f"curated_{kind}", f"""
+        SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
+               subject_label AS label, predicate_id AS predicate,
+               TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
+               coalesce(reviewer_id, '') AS reviewer
+        FROM read_csv('{path}', header = true, all_varchar = true)
+        WHERE object_id LIKE 'omop:%'""")  # fmt: skip
+    rows = con.execute(f"SELECT itemid, label, curated_id, status FROM map_curated_{kind}"
+                       ).fetchall()  # fmt: skip
+    con.execute(f"DROP TABLE map_curated_{kind}")
+    return {i: (label, cid, status) for i, label, cid, status in rows}
+
+
+def with_curated(items: list[dict], all_counts: dict[int, int], labels: dict[int, str],
+                 curated: dict[int, tuple[str, int, str]]) -> list[dict]:  # fmt: skip
+    """For chartevents/procedureevents: drop items whose curated map works (nothing to review)
+    and always list items whose curated target was rejected, whatever their count."""
+    out = [it for it in items if curated.get(it["itemid"], ("", 0, "none"))[2]
+           not in ("accepted", "remapped")]  # fmt: skip
+    listed = {it["itemid"] for it in out}
+    for i, (label, cid, status) in curated.items():
+        if status in ("accepted", "remapped"):
+            continue
+        note = f"{cid} ({status})"
+        if i in listed:
+            next(it for it in out if it["itemid"] == i)["curated"] = note
+        elif all_counts.get(i):
+            out.append({"itemid": i, "label": labels.get(i, label), "rows": all_counts[i],
+                        "curated": note})  # fmt: skip
+    return out

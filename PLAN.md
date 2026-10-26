@@ -515,6 +515,19 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
 - **Expected:** chartevents at 13% (only the 40 curated items; the rest are mostly nursing documentation).
 - **Before the full run:** a vocabulary with ICD9CM, ICD9Proc and NDC; then rerun the pilot.
 
+**Reviewed overrides for chartevents and procedureevents: built (2026-10-26;** `tests/test_item_overrides.py`).
+- **Proposals:** `etl items propose --kind chartevents|procedureevents --concept-map <maps>` checks each curated target against the loaded vocabulary, as the ETL does.
+  - Items whose curated map works are skipped.
+  - Items whose curated target was rejected (e.g. Invasive Ventilation, 225792) are always listed, whatever their count, with the reason.
+  - Frequent unmapped items are listed too.
+  - Chart items are searched in Measurement and Observation; procedure items in Procedure, Observation and Device.
+- **In the ETL**, a reviewed map of the same kind overrides the curated map item by item:
+  - approve or replace: the reviewed concept;
+  - reject or unmappable: the curated mapping is turned off;
+  - undecided: the curated map stands.
+  
+  Reviewed targets are checked against the vocabulary like curated ones. The report counts overrides and names the reviewers. A reviewed map without `--concept-map` converts only its approved items.
+
 **Step 2, part 1: built** (`agentic_tte/etl/mimic_omop.py`, `agentic-tte etl mimic`; tests in `tests/test_etl_mimic.py` on a made-up four-patient dataset written at test time).
 - **Built:** person, observation_period, visit_occurrence (admissions; ER-and-inpatient when there was an ED stay), visit_detail (ICU stays), death, and the diagnoses, procedures and prescriptions coded through the vocabulary.
   - **Source codes:** ICD9CM, ICD10CM, ICD9Proc, ICD10PCS and NDC codes are matched with the dots removed, then followed through 'Maps to'. Each record goes to the table of its standard concept's domain.

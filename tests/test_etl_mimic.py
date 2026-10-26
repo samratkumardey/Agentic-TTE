@@ -335,7 +335,7 @@ def test_curated_item_maps_are_checked_and_used(tmp_path):
 def test_without_a_concept_map_icu_events_are_reported_not_converted(cdm):
     _, rep = cdm
     assert "chartevents" not in rep.mapping
-    assert any("no concept_map given" in n for n in rep.notes)
+    assert any("no concept_map or reviewed map given" in n for n in rep.notes)
 
 
 def test_icu_admission_as_time_zero_on_the_etl_output(cdm):

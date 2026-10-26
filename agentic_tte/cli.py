@@ -209,25 +209,36 @@ etl_app.add_typer(items_app, name="items")
 def items_propose(
     source: Path = typer.Option(..., help="MIMIC-IV 3.1 directory (hosp/, icu/)."),
     vocab: Path = typer.Option(..., help="Athena vocabulary download."),
-    kind: str = typer.Option(..., help="labevents or inputevents"),
+    kind: str = typer.Option(..., help="labevents, inputevents, chartevents or "
+                                       "procedureevents"),
     out: Path = typer.Option(..., "--out", "-o", help="Directory for the review files."),
     min_rows: int = typer.Option(11, help="Leave out items with fewer events."),
+    concept_map: Path = typer.Option(None, help="chartevents/procedureevents: the curated "
+                                                "maps, so working ones are skipped and "
+                                                "rejected ones listed."),
 ):
     """Propose a standard concept per item from the vocabulary search on its label. Writes
     map.json, review.md and decisions.json; keep them on the cluster."""
     import duckdb
 
     from agentic_tte.etl.item_maps import (
+        CURATED,
+        curated_status,
         decisions_template,
         item_counts,
         propose_items,
         review_sheet,
+        with_curated,
     )
     from agentic_tte.omop.vocab import load_athena
 
-    if kind not in ("labevents", "inputevents"):
-        typer.echo("kind must be labevents or inputevents", err=True)
+    if kind not in ("labevents", "inputevents", *CURATED):
+        typer.echo("kind must be labevents, inputevents, chartevents or procedureevents",
+                   err=True)  # fmt: skip
         raise typer.Exit(2)
+    if kind in CURATED and concept_map is None:
+        typer.echo("note: without --concept-map every frequent item is listed, including those "
+                   "the curated map already maps", err=True)  # fmt: skip
     module, dictionary = ("hosp", "d_labitems") if kind == "labevents" else ("icu", "d_items")
     for f in (source / module / f"{kind}.csv.gz", source / module / f"{dictionary}.csv.gz"):
         if not f.exists():  # check before the slow vocabulary load
@@ -246,7 +257,12 @@ def items_propose(
         return f"read_csv('{path}', header = true, all_varchar = true)"
 
     events = csv(module, kind)
-    items, total = item_counts(con, kind, events, csv(module, dictionary), min_rows=min_rows)
+    every, total = item_counts(con, kind, events, csv(module, dictionary), min_rows=1)
+    items = [it for it in every if it["rows"] >= min_rows]
+    if kind in CURATED and concept_map is not None:
+        items = with_curated(items, {it["itemid"]: it["rows"] for it in every},
+                             {it["itemid"]: it["label"] for it in every},
+                             curated_status(con, concept_map, kind))  # fmt: skip
     m = propose_items(con, kind, items, total_rows=total)
     out.mkdir(parents=True, exist_ok=True)
     (out / "map.json").write_text(m.model_dump_json(indent=2), encoding="utf-8")
