@@ -504,6 +504,25 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
 
 **Tests on the PC:** a small made-up fixture shaped like the MIMIC tables. No MIMIC rows, demo or full, go into git.
 
+**Route chosen by the user (2026-10-26): the DuckDB ETL from the raw files.**
+
+**Step 2, part 1: built** (`agentic_tte/etl/mimic_omop.py`, `agentic-tte etl mimic`; tests in `tests/test_etl_mimic.py` on a made-up four-patient dataset written at test time).
+- **Built:** person, observation_period, visit_occurrence (admissions; ER-and-inpatient when there was an ED stay), visit_detail (ICU stays), death, and the diagnoses, procedures and prescriptions coded through the vocabulary.
+  - **Source codes:** ICD9CM, ICD10CM, ICD9Proc, ICD10PCS and NDC codes are matched with the dots removed, then followed through 'Maps to'. Each record goes to the table of its standard concept's domain.
+  - **Unmapped records** are kept with concept 0 and their source value.
+- **Not yet:** labevents, chartevents, inputevents and procedureevents. These need reviewed item maps (itemid → LOINC or standard concept), starting from the MIT-LCP `concept_map` files on Hellbender.
+- **Checks:** on the ETL output, the gate's structure, CDM-version and death checks pass, and a compiled cohort and frame run, with exact times.
+- **Options,** all recorded in `cdm_source` and the manifest:
+  - `diagnosis_time` (admission by default, a mild look-ahead; or discharge);
+  - `death_followup_days` (365, for state death records);
+  - `sample_percent` (deterministic `subject_id mod 10000`, for the 1% pilot).
+- **Outputs:** the CDM file plus `<stem>.report.md` and `.report.json` (aggregates, suppressed) and `<stem>.manifest.txt` (job, node, git commit, source SHA256SUMS digest, vocabulary version, DuckDB version, options). Only the report and manifest may leave the cluster.
+- **Known limits:**
+  - Race and ethnicity are concept 0, with the source value kept.
+  - Persons without any admission are left out and counted.
+  - The compiler's Visit domain reads `visit_occurrence` (admissions), so ICU stays in `visit_detail` cannot yet be a time-zero event. Extending `EventDef` to `visit_detail` is needed before an ICU-anchored Replay.
+- **Waiting on Hellbender facts:** the CPU partition (for the batch script) and whether `~/data` is the same directory as `/cluster/pixstor/data/$USER`.
+
 **Open decisions:**
 - The ETL route above, versus loading from the Postgres build.
 - Whether to delete the duplicate 9.9 GB MIMIC zip once the raw copy's checksums pass.

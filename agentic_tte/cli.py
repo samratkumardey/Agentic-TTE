@@ -134,6 +134,56 @@ def _abbreviations(path):
     return lst
 
 
+etl_app = typer.Typer(no_args_is_help=True, help="Convert source data to OMOP CDM 5.4.")
+app.add_typer(etl_app, name="etl")
+
+
+@etl_app.command("mimic")
+def etl_mimic(
+    source: Path = typer.Option(..., help="MIMIC-IV 3.1 directory (hosp/, icu/)."),
+    vocab: Path = typer.Option(..., help="Athena vocabulary download (CSV files)."),
+    out: Path = typer.Option(..., help="DuckDB file to create (never overwritten)."),
+    sample_percent: float = typer.Option(None, help="Pilot: keep this % of subjects."),
+    diagnosis_time: str = typer.Option("admission", help="admission or discharge"),
+    death_followup_days: int = typer.Option(365, help="Observation after the last discharge."),
+    threads: int = typer.Option(None),
+    memory_limit: str = typer.Option(None, help="DuckDB memory limit, e.g. 100GB."),
+    temp_directory: str = typer.Option(None, help="Node-local scratch for spills."),
+):
+    """MIMIC-IV -> OMOP CDM 5.4. Writes the CDM, a manifest and a suppressed report next to
+    it; only the report and manifest may leave the cluster."""
+    import os
+    import platform
+    import subprocess
+
+    from agentic_tte.etl.mimic_omop import EtlConfig, build, sha256sums_digest
+
+    try:
+        commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
+                                text=True, check=True).stdout.strip()  # fmt: skip
+    except Exception:  # noqa: BLE001 - outside a checkout
+        commit = None
+    cfg = EtlConfig(source=source, vocab=vocab, out=out, sample_percent=sample_percent,
+                    diagnosis_time=diagnosis_time, death_followup_days=death_followup_days,
+                    threads=threads, memory_limit=memory_limit,
+                    temp_directory=temp_directory)  # fmt: skip
+    rep = build(cfg, git_commit=commit)
+    stem = out.with_suffix("")
+    Path(f"{stem}.report.md").write_text(rep.to_markdown(), encoding="utf-8")
+    Path(f"{stem}.report.json").write_text(json.dumps(rep.public(), indent=2), "utf-8")
+    manifest = {
+        "job": os.environ.get("SLURM_JOB_ID", "interactive"), "node": platform.node(),
+        "git_commit": commit, "source": str(source),
+        "source_sha256sums_digest": sha256sums_digest(source),
+        "vocabulary": str(vocab), "vocabulary_version": rep.vocabulary_version,
+        "duckdb": rep.duckdb_version, "options": cfg.model_dump_json(),
+        "started": rep.started_at.isoformat(), "finished": rep.finished_at.isoformat(),
+    }  # fmt: skip
+    Path(f"{stem}.manifest.txt").write_text(
+        "\n".join(f"{k}={v}" for k, v in manifest.items()) + "\n", encoding="utf-8")
+    typer.echo(f"wrote {out}; report {stem}.report.md; manifest {stem}.manifest.txt", err=True)
+
+
 abbr_app = typer.Typer(no_args_is_help=True,
                        help="Abbreviation list for concept search; entries need approval.")
 app.add_typer(abbr_app, name="abbreviations")

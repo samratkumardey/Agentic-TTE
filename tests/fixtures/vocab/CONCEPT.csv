@@ -18,3 +18,8 @@ concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concep
 9000083	Ischemic heart disease	Condition	SNOMED	Clinical Finding	S	T083	19700101	20991231	
 9000084	Intermittent hemodialysis	Procedure	SNOMED	Procedure	S	T084	19700101	20991231	
 9000085	MAP kinase activity	Measurement	LOINC	Lab Test	S	T085	19700101	20991231	
+9000003	Septic shock	Condition	ICD9CM	5-dig billing code		785.52	19700101	20991231	
+9000090	hydrocortisone 50 MG/ML Injectable Solution	Drug	NDC	11-digit NDC		00009001101	19700101	20991231	
+9000091	Performance of Urinary Filtration, Intermittent	Procedure	ICD10PCS	ICD10PCS		5A1D70Z	19700101	20991231	
+9000092	Dependence on renal dialysis	Observation	ICD10CM	4-char billing code		Z99.2	19700101	20991231	
+9000093	Dependence on renal dialysis	Observation	SNOMED	Clinical Finding	S	T093	19700101	20991231	
