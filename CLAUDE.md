@@ -23,6 +23,7 @@ Read [PLAN.md](PLAN.md) for the architecture and roadmap, and [hpc/HELLBENDER.md
 
 - No patient-level data in git (MIMIC-IV DUA, HIPAA). The pre-commit hook enforces this; do not bypass it.
 - Before any phase brings MIMIC-IV or EHR data to Hellbender, remind the user to confirm the data classification level with RCSS.
+- **MIMIC-IV 3.1 is already on Hellbender.** On 2026-10-26 the user confirmed that the data use agreement covers it and that RCSS has no issue with it (locations: hpc/HELLBENDER.md). No need to ask again for MIMIC-IV. Oracle or other EHR data still needs its own confirmation.
 
 ## Current state (2026-10-24)
 
@@ -70,7 +71,7 @@ Reports now need sign-off (status `signed_off` or `returned`). Batch benchmarks 
 Concept search expands abbreviations only from the protocol's own text and from reviewer-approved list entries. The shipped seed list (`omop/resources/abbreviations.json`) is unapproved: never mark its entries approved on a person's behalf.
 
 Next:
-- Phase 3: MIMIC-IV OMOP on Hellbender (confirm the data classification with RCSS first).
+- Phase 3: MIMIC-IV to OMOP on Hellbender (plan: PLAN.md §16).
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

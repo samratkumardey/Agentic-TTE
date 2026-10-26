@@ -461,3 +461,49 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
 - An LLM Supervisor and LLM method choice for the Statistician.
 
 **Gold annotation (decision pending):** LLM pre-annotation is allowed only as a separate, disclosed arm, not as gold (see the discussion of 2026-10-25). The gold standard stays two blinded human annotators plus an adjudicator.
+
+## 16. Phase 3 plan: MIMIC-IV in OMOP on Hellbender (draft, 2026-10-26)
+
+**What is already there** (hpc/HELLBENDER.md, "Data already on Hellbender"):
+- MIMIC-IV 3.1 raw (`hosp`, `icu`), and a validated Postgres build of it in the native schema (127 GB).
+- Two Athena vocabularies; the frozen S07 package (2026-09-12, hashed) is the reproducible one.
+
+No OMOP version of MIMIC exists yet. The user confirmed the data use agreement and RCSS on 2026-10-26.
+
+**Route (recommended): our own ETL in DuckDB, from the raw 3.1 files, to OMOP CDM 5.4.**
+- **Why DuckDB:**
+  - It is the engine the compiler and gate already use.
+  - It needs no database server on the cluster.
+  - The input is the checksummed PhysioNet release, so a run is reproducible.
+  - The output is one file.
+- **The Postgres build stays** as the native-schema reference, for comparing against EmulatRx's `mimiciv_derived` SQL.
+- **To check:** the OHDSI MIMIC-IV-to-OMOP ETL, as a cross-check of mapping decisions, not as the primary path.
+
+**Steps:**
+1. **Confirm locations, space and the CPU partition** (read-only commands; see the session of 2026-10-26).
+2. **ETL** (`agentic_tte/etl/mimic_omop.py` plus an `hpc/` batch script on a CPU node).
+   - **Mappings:**
+     - `patients` / `admissions` → person, observation_period and visit_occurrence; `icustays` / `transfers` → visit_detail;
+     - `diagnoses_icd` and `procedures_icd` → condition and procedure, through ICD9/ICD10 'Maps to';
+     - `prescriptions` (NDC → RxNorm) and `inputevents` (vasopressors, fluids) → drug_exposure;
+     - `labevents` (LOINC) and `chartevents` (vitals, scores) → measurement;
+     - deaths from `patients.dod` and `admissions.deathtime`.
+   - **Source codes go to standard concepts only through vocabulary 'Maps to'** or the MIT-LCP `concept_map` files, and every mapping table is reviewed.
+   - **Unmapped records are kept**, with concept 0 and their source value, and reported, never dropped.
+   - **MIMIC's date shifting:** calendar dates are not real, so `anchor_age` gives the age, and only within-patient times are meaningful.
+   - **Output:** `$P/tte-project/omop/mimiciv-3.1-cdm54.duckdb`. It never goes in git or `~/data`. Its size will be measured on a 1% pilot first; 20–40 GB is expected.
+   - **Manifest:** every run writes `manifest.txt` with the source SHA256SUMS hash, the vocabulary hash and the git commit.
+3. **Vocabulary:** load the S07 package with `load_athena`.
+4. **Validation** (aggregates only):
+   - row reconciliation with the source counts (364,627 patients);
+   - mapping coverage per domain;
+   - the Data Support Gate (classification `deidentified`, approved).
+5. **Pre-register the Replay-agreement endpoints** in `eval/SCORING.md` before any MIMIC result is seen: agreement of the HR with each trial's published result, with tolerances and the population.
+6. **First real Replay:** NCT04134403 on MIMIC OMOP from the qwen3:32b draft, with real clinician reviews (not `AutoApprove`). The earlier run in `emulatrx-work/results/runs/NCT04134403_mimiciv_v1/` is the comparison.
+7. **Phase 3 exit criterion:** Replay of the paper's 10 MIMIC trials, plus the Clinician and Auditor agents (§9).
+
+**Tests on the PC:** a small made-up fixture shaped like the MIMIC tables. No MIMIC rows, demo or full, go into git.
+
+**Open decisions:**
+- The ETL route above, versus loading from the Postgres build.
+- Whether to delete the duplicate 9.9 GB MIMIC zip once the raw copy's checksums pass.

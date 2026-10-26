@@ -27,6 +27,23 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 - Nothing is backed up. Code lives on GitHub; models can be re-pulled; results must be copied off the cluster if they matter.
 - Cluster storage is approved only for lower data classification levels. DCL3/DCL4 data (identifiable EHR) needs an arrangement with RCSS before it comes to Hellbender. Phase 0 uses only public ClinicalTrials.gov text.
 
+## Data already on Hellbender (found 2026-10-26)
+
+All of this is under `/cluster/pixstor/data/$USER/` (`$P` below). The user confirmed on 2026-10-26 that the MIMIC-IV data use agreement covers them and that RCSS has no issue with MIMIC-IV on Hellbender.
+
+| What | Path | Size | Notes |
+|---|---|---|---|
+| MIMIC-IV 3.1, raw (`hosp`, `icu` only: no `ed` or `note`) | `$P/mimic-source/mimic-iv-3.1/` | hosp 5.9 GB, icu 4.1 GB | PhysioNet release, with `SHA256SUMS.txt`. The build logs list it as `/home/$USER/data/mimic-source/...` |
+| MIMIC-IV 3.1, zipped | `$P/emulatrx-work/EmulatRx/mimic-iv-3.1.zip` | 9.9 GB | The same release again |
+| MIMIC-IV 3.1 in Postgres (native schemas `mimiciv_hosp`, `mimiciv_icu`) | `$P/mimic-postgres/` (data directory), env `$P/conda_envs/mimic-pg`, build code `$P/mimic-code` (MIT-LCP) | 127 GB | Built and validated: row counts match the source for all 28 tables (`$P/mimic-validate.log`). It served on `127.0.0.1:5433` on node g030 when built; it is not a running service. A derived-concepts build was attempted (`$P/mimic-concepts-build.log`); not yet checked |
+| Athena vocabulary, unpacked | `$P/tte-project/athena_vocab/` | 1.5 GB | CONCEPT, CONCEPT_RELATIONSHIP, CONCEPT_ANCESTOR, CONCEPT_SYNONYM, DOMAIN, VOCABULARY, RELATIONSHIP, CONCEPT_CLASS, DRUG_STRENGTH, CONCEPT_CPT4 (2026-07-07). Version not recorded |
+| Athena vocabulary, frozen package | `$P/ct_tte_fm/data/external/ct_tte_sources/S07_athena_omop/raw/` (zip), manifest `$P/ct_tte_fm/data/manifests/sources/S07/` | 263 MB zipped | Frozen 2026-09-12, SHA256 `ffab28df4048…`: RxNorm 20260105, LOINC 2.80, SNOMED 2025 (Int/US/UK), ICD10CM FY2026, ICD10PCS 2026, CPT4 2025; 2,191,251 concepts, 1,028,153 standard. The reproducible choice |
+| EmulatRx working copy | `$P/emulatrx-work/EmulatRx/` | – | `trials/NCT00475852` (24 KB), `results/runs/NCT04134403_mimiciv_v1/` (an earlier run's JSON reports). Patient-level CSVs there never go into git |
+
+Not yet known:
+- **Whether `~/data` and `$P` are the same directory.** The build logs name `/home/$USER/data/mimic-source`, but the files were found under `$P`. If they are the same directory, the 127 GB Postgres build counts against the nearly full `~/data` quota.
+- **What is inside `~/data`:** the 2026-10-26 search passed `~/data` (a symlink) to `find` without `-H`, so its contents were not searched.
+
 ## Slurm
 
 - Account `general`, QOS `normal`.
