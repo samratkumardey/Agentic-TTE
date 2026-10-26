@@ -118,7 +118,9 @@ def review_sheet(m: ItemMap) -> str:
     lines = [f"# Item map for review: {m.kind}", "",
              f"Vocabulary {m.vocabulary or 'unknown'}. {len(m.entries)} items, covering "
              f"{share:.1f}% of {m.kind} rows, most frequent first. Only approved items are "
-             "converted. Fill in the decisions file.", "",
+             "converted. In the decisions file, give each item you review an explicit action "
+             "(approve, replace, reject, unmappable); nothing is pre-filled, and items left "
+             "blank are not converted. Proposals come from a word search: check each one.", "",
              "| Item | Label | Specimen / category | Rows | Proposed | Alternatives | Status |",
              "|---|---|---|---|---|---|---|"]  # fmt: skip
 
@@ -134,10 +136,20 @@ def review_sheet(m: ItemMap) -> str:
     return "\n".join(lines) + "\n"
 
 
+ACTIONS_HELP = ("Fill in 'action' for each item you decide: approve (the proposed concept), "
+                "replace (with 'concept_id'), reject (the proposal is wrong), unmappable (no "
+                "standard equivalent). Items left blank stay undecided and are not converted.")
+
+
 def decisions_template(m: ItemMap) -> dict:
-    return {"reviewer": "", "decisions": {
-        str(e.itemid): {"action": "approve" if e.status == "proposed" else "unmappable",
-                        "concept_id": e.concept_id, "note": ""}
+    """A decisions file with NOTHING pre-filled: every item needs an explicit decision.
+    (Pre-filling "approve" let a whole file of proposals be approved unread; the first real
+    proposals mapped "NaCl 0.9%" to linaclotide.) The proposal is shown for reference."""
+    return {"reviewer": "", "_actions": ACTIONS_HELP, "decisions": {
+        str(e.itemid): {"label": e.label, "action": "",
+                        "proposed_concept_id": e.concept_id,
+                        "proposed_name": e.candidates[0].concept_name if e.candidates else None,
+                        "concept_id": None, "note": ""}
         for e in m.entries if e.status in ("proposed", "no_match")}}  # fmt: skip
 
 
@@ -147,7 +159,8 @@ class DecisionError(ValueError):
 
 def apply_decisions(m: ItemMap, decisions: dict) -> ItemMap:
     """approve (the proposal, or the concept_id given), replace (needs concept_id), reject
-    (the proposal is wrong), unmappable (no standard equivalent). Returns a new map."""
+    (the proposal is wrong), unmappable (no standard equivalent). A blank action leaves the
+    item undecided (not converted). Returns a new map."""
     reviewer = (decisions.get("reviewer") or "").strip()
     if not reviewer:
         raise DecisionError("decisions need a reviewer")
@@ -158,7 +171,9 @@ def apply_decisions(m: ItemMap, decisions: dict) -> ItemMap:
         e = by_id.get(int(key))
         if e is None:
             raise DecisionError(f"unknown item {key}")
-        action, cid = d.get("action"), d.get("concept_id")
+        action, cid = (d.get("action") or "").strip(), d.get("concept_id")
+        if not action:
+            continue  # undecided: stays proposed / no_match, not converted
         if action == "approve":
             if not (cid or e.concept_id):
                 raise DecisionError(f"{key}: nothing to approve")

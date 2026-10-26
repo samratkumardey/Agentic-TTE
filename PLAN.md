@@ -525,6 +525,7 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
   - **Labs join on the patient,** so outpatient labs are kept with no visit. Input amounts go to `quantity` and `dose_unit_source_value`.
   - **The review files stay on Hellbender:** they hold item labels and per-item counts from the credentialed data, with counts below 11 suppressed.
   - **The reviews are the user's or a clinician's to do;** nothing is approved automatically.
+  - **Nothing is pre-filled** (user's decision, 2026-10-26). The decisions file shows each proposal for reference, but every `action` starts blank. Items left blank stay undecided and are not converted, so signing the generated file unread approves nothing. Concept-set decision files for protocols still pre-fill `approve`: `AutoApprove` relies on it, and the lists are short.
   - **First real proposals (inputevents, 2026-10-26)** exposed a search bug: all-words matching used substrings.
     - **The damage:**
       - "NaCl 0.9%" (1.6M rows) was proposed as linaclotide 0.29 MG;

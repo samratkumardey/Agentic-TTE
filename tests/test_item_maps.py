@@ -98,8 +98,12 @@ def test_proposals_from_labels_most_frequent_first(setup):
     sheet = review_sheet(m)
     assert "covering 100.0% of labevents rows" in sheet and "| 50813 | Lactate |" in sheet
     tmpl = decisions_template(m)
-    assert tmpl["decisions"][str(LACTATE)]["action"] == "approve"
-    assert tmpl["decisions"][str(MADE_UP)]["action"] == "unmappable"
+    # Nothing pre-filled: every item needs an explicit decision. The proposal is shown only.
+    assert {d["action"] for d in tmpl["decisions"].values()} == {""}
+    lac_d = tmpl["decisions"][str(LACTATE)]
+    assert lac_d["proposed_concept_id"] in (9000030, 9000031) and lac_d["concept_id"] is None
+    assert lac_d["label"] == "Lactate" and "_actions" in tmpl
+    assert tmpl["decisions"][str(MADE_UP)]["proposed_concept_id"] is None
     small = item_counts(con, "labevents", _csv(mimic, "hosp", "labevents"),
                         _csv(mimic, "hosp", "d_labitems"))[0]  # fmt: skip
     assert [i["itemid"] for i in small] == [LACTATE]  # default: at least 11 events
@@ -118,6 +122,26 @@ def test_decisions_are_validated(setup):
     with pytest.raises(DecisionError, match="nothing to approve"):
         apply_decisions(m, {"reviewer": "Dr A",
                             "decisions": {str(MADE_UP): {"action": "approve"}}})
+    with pytest.raises(DecisionError, match="unknown action"):
+        apply_decisions(m, {"reviewer": "Dr A",
+                            "decisions": {str(LACTATE): {"action": "aprove"}}})
+
+
+def test_signing_the_template_unread_approves_nothing(setup):
+    """The failure the blank template prevents: a reviewer adds a name and applies the file
+    as generated. Every item stays undecided and nothing is converted."""
+    mimic, con = setup
+    m = _labs(mimic, con)
+    tmpl = decisions_template(m)
+    tmpl["reviewer"] = "Dr A"
+    out = apply_decisions(m, tmpl)
+    assert out.approved() == {} and not out.fully_reviewed
+    assert {e.status for e in out.entries} == {"proposed", "no_match"}
+    assert all(e.reviewer is None for e in out.entries)  # nobody is recorded as deciding
+    tmpl["decisions"][str(LACTATE)]["action"] = "approve"  # one explicit decision
+    out = apply_decisions(m, tmpl)
+    assert out.approved() == {LACTATE: m.entries[0].concept_id}
+    assert out.entries[0].reviewer == "Dr A" and out.entries[1].status == "no_match"
 
 
 def test_reviewed_maps_drive_the_etl(setup, tmp_path):
@@ -188,10 +212,19 @@ def test_cli_propose_apply_and_etl(setup, tmp_path):
     r = run(app, ["etl", "items", "apply", str(rev / "map.json"), str(rev / "decisions.json"),
                   "-o", str(rev / "reviewed.json")])  # fmt: skip
     assert r.exit_code == 0, r.output
+    assert "3 items undecided (not converted)" in r.output  # signed, but nothing decided
+    d["decisions"][str(LACTATE)].update(action="replace", concept_id=9000030)
+    (rev / "decisions.json").write_text(json.dumps(d), encoding="utf-8")
+    r = run(app, ["etl", "items", "apply", str(rev / "map.json"), str(rev / "decisions.json"),
+                  "-o", str(rev / "reviewed.json")])  # fmt: skip
+    assert r.exit_code == 0 and "2 items undecided" in r.output, r.output
     r = run(app, ["etl", "mimic", "--source", str(mimic), "--vocab", str(VOCAB), "--out",
                   str(tmp_path / "c.duckdb"), "--item-map", str(rev / "reviewed.json")])
     assert r.exit_code == 0, r.output
     assert "item_maps=" in (tmp_path / "c.manifest.txt").read_text(encoding="utf-8")
+    cdm = duckdb.connect(str(tmp_path / "c.duckdb"), read_only=True)
+    assert cdm.execute("SELECT count(*) FROM measurement WHERE measurement_concept_id = "
+                       "9000030").fetchone()[0] == 13  # only the decided item  # fmt: skip
 
 
 def test_cli_explains_an_unset_path(setup, tmp_path):

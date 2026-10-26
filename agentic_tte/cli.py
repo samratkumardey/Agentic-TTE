@@ -272,7 +272,8 @@ def items_apply(
         typer.echo(str(e), err=True)
         raise typer.Exit(2) from e
     out.write_text(reviewed.model_dump_json(indent=2), encoding="utf-8")
-    typer.echo(f"{reviewed.summary()}; fully reviewed: {reviewed.fully_reviewed} -> {out}",
+    undecided = sum(e.status in ("proposed", "no_match") for e in reviewed.entries)
+    typer.echo(f"{reviewed.summary()}; {undecided} items undecided (not converted) -> {out}",
                err=True)
 
 
