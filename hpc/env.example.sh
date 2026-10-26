@@ -3,7 +3,8 @@
 
 # --- Storage -------------------------------------------------------------------------------
 # Repo checkout:      ~/data/Agentic-TTE        (~/data -> /mnt/pixstor/data/$USER, 500 GB quota)
-# Shared model store: /cluster/pixstor/data/$USER/tte-project   (separate filesystem and quota)
+# Shared model store: /cluster/pixstor/data/$USER/tte-project   (the SAME directory tree and
+#                     quota as ~/data: /cluster/pixstor/data/$USER is ~/data; 2026-10-26)
 # Never put large files in $HOME (50 GB quota). Nothing on Hellbender is backed up.
 export ATTE_PROJECT_DIR="$HOME/data/Agentic-TTE/.hpc-data"      # caches; git-ignored
 export ATTE_SHARED_DIR="/cluster/pixstor/data/$USER/tte-project" # models + container
@@ -26,6 +27,7 @@ export APPTAINER_CACHEDIR="/local/scratch/$USER/apptainer-cache"
 export SLURM_ACCOUNT="general"
 export SLURM_GPU_PARTITION="gpu"            # 3 nodes x 2 H100, not preemptible, long queue
 export SLURM_GPU_GRES="gpu:H100:1"
+export SLURM_CPU_PARTITION="general"        # CPU jobs (MIMIC ETL): 56 nodes, not preemptible
 # Fallback with short waits (preemptible):  -p gpu_requeue --gres=gpu:A100:1  (or gpu:H100:1)
 
 # --- Ollama --------------------------------------------------------------------------------
@@ -40,3 +42,11 @@ export ATTE_MODEL="${ATTE_MODEL:-qwen3:32b}"
 # Qwen3 reasons by default, which multiplies tokens per call: "false" for Replay, "true" to
 # compare. Use "none" (model default) for models without an on/off switch: gpt-oss, medgemma.
 export ATTE_THINK="${ATTE_THINK:-false}"
+
+# --- MIMIC-IV and OMOP (Phase 3; hpc/HELLBENDER.md "Data already on Hellbender") ---------
+# All inside the ~/data quota. The vocabulary folder name has a space: keep the quotes.
+export ATTE_MIMIC_SOURCE="/cluster/pixstor/data/$USER/mimic-source/mimic-iv-3.1"
+export ATTE_VOCAB="/cluster/pixstor/data/$USER/tte-project/athena/S07/Athena Verison"
+export ATTE_MIMIC_CONCEPT_MAP="/cluster/pixstor/data/$USER/mimic-code/mimic-iv/concepts/concept_map"
+export ATTE_OMOP_DIR="/cluster/pixstor/data/$USER/tte-project/omop"
+export ATTE_ITEM_MAPS="${ATTE_ITEM_MAPS:-}"   # reviewed item maps (space-separated paths)

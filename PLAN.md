@@ -535,7 +535,7 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
   - Race and ethnicity are concept 0, with the source value kept.
   - Persons without any admission are left out and counted.
   - The compiler's Visit domain reads `visit_occurrence` (admissions), so ICU stays in `visit_detail` cannot yet be a time-zero event. Extending `EventDef` to `visit_detail` is needed before an ICU-anchored Replay.
-- **Waiting on Hellbender facts:** the CPU partition (for the batch script) and whether `~/data` is the same directory as `/cluster/pixstor/data/$USER`.
+- **Batch script:** `hpc/etl_mimic.sbatch` (partition `general`, 16 CPUs, 96 GB, scratch on `/local/scratch`). The 1% pilot is the default, and `ATTE_ETL_SAMPLE=full` runs the whole release. It was dry-run on this PC against the made-up data. `~/data` and `/cluster/pixstor/data/$USER` are one directory and one 500 GB quota (2026-10-26), so the full CDM must fit there.
 
 **Open decisions:**
 - The ETL route above, versus loading from the Postgres build.

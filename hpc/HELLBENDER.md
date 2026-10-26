@@ -1,4 +1,4 @@
-# Hellbender facts (confirmed 2026-10-24)
+# Hellbender facts (confirmed 2026-10-24; storage and CPU partitions 2026-10-26)
 
 The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's Hellbender cluster. Everything here was checked on the cluster, not assumed. Update this file whenever something on the cluster changes, and keep `hpc/env.example.sh` in line with it.
 
@@ -20,7 +20,7 @@ The source of truth for paths, quotas, Slurm settings and known pitfalls on MU's
 |---|---|---|---|
 | Home | `/home/$USER` (on `/cluster/pixstor`) | 50 GB | Small config only |
 | Personal Pixstor | `~/data` → `/mnt/pixstor/data/$USER` | 500 GB, **nearly full** | Repo, caches, outputs |
-| Older project area | `/cluster/pixstor/data/$USER/tte-project` | Separate filesystem from `~/data` | Models, container |
+| Older project area | `/cluster/pixstor/data/$USER/tte-project` | **The same quota as `~/data`**: `/cluster/pixstor/data/$USER` *is* `~/data` (same device and inode, checked 2026-10-26) | Models, container, MIMIC, OMOP |
 | Local scratch | `/local/scratch` | 1.6–3.2 TB per node | Temporary build and job files; not shared between nodes |
 
 - `df` reports whole-filesystem totals, not your quota, so it cannot tell you whether you are near your limit.
@@ -40,9 +40,11 @@ All of this is under `/cluster/pixstor/data/$USER/` (`$P` below). The user confi
 | Athena vocabulary, frozen package | `$P/ct_tte_fm/data/external/ct_tte_sources/S07_athena_omop/raw/` (zip), manifest `$P/ct_tte_fm/data/manifests/sources/S07/` | 263 MB zipped | Frozen 2026-09-12, SHA256 `ffab28df4048…`: RxNorm 20260105, LOINC 2.80, SNOMED 2025 (Int/US/UK), ICD10CM FY2026, ICD10PCS 2026, CPT4 2025; 2,191,251 concepts, 1,028,153 standard. The reproducible choice |
 | EmulatRx working copy | `$P/emulatrx-work/EmulatRx/` | – | `trials/NCT00475852` (24 KB), `results/runs/NCT04134403_mimiciv_v1/` (an earlier run's JSON reports). Patient-level CSVs there never go into git |
 
-Not yet known:
-- **Whether `~/data` and `$P` are the same directory.** The build logs name `/home/$USER/data/mimic-source`, but the files were found under `$P`. If they are the same directory, the 127 GB Postgres build counts against the nearly full `~/data` quota.
-- **What is inside `~/data`:** the 2026-10-26 search passed `~/data` (a symlink) to `find` without `-H`, so its contents were not searched.
+**`$P` is `~/data`** (checked 2026-10-26: `~/data` → `/mnt/pixstor/data/$USER`, and `~/data/mimic-source` and `$P/mimic-source` have the same device and inode). So everything above counts against the one nearly full 500 GB quota, including the Ollama models and any new OMOP database. The 2026-10-26 search of `$P` therefore covered `~/data` too. Candidates to free space, both the user's call:
+- the duplicate 9.9 GB zip, once the raw copy passes its checksums;
+- the 127 GB Postgres build, if the native-schema comparison is not needed.
+
+**Athena S07, unpacked** (2026-10-26) to `$P/tte-project/athena/S07/Athena Verison/`. The zip's folder name has a space and a typo; quote the path.
 
 ## Slurm
 
@@ -54,6 +56,16 @@ Not yet known:
 |---|---|---|---|
 | `gpu` | 3 nodes × 2 H100 (64 CPU, ~490 GB RAM); nodes g032–g034 report **H100 NVL, 95830 MiB** (2026-10-25) | 2 days, not preemptible | Final benchmark runs. Queue waits can be many hours. OnDemand g020 is a different type (H100 80GB HBM3), so never pool runs from both |
 | `gpu_requeue` | H100 (×8, ×4, ×2 nodes), A100 ×4 on 15 nodes, H200, L40S | 2 days, **preemptible** | Development and fast turnaround; `--gres=gpu:A100:1` usually starts quickly |
+
+CPU partitions (`sinfo -s`, 2026-10-26). Per-node cores and memory are not recorded yet: check with `sinfo -p general -N -o "%N %c %m"`.
+
+| Partition | Nodes | Limits | When to use |
+|---|---|---|---|
+| `general` | 56 CPU nodes (`c001–c049`, …) | 2 days, not preemptible | The MIMIC-to-OMOP ETL (`hpc/etl_mimic.sbatch`) |
+| `requeue` (the default) | 258 CPU and GPU nodes | 2 days, preemptible | Short CPU jobs that may restart |
+| `interactive` | 10 CPU nodes | 4 hours | Interactive work, item-map proposals |
+| `logical_cpu`, `logical_cpu2` | 4 nodes, 1 node | 2 days | Not used by this project |
+| `rss-class` | 26 nodes | 8 hours | Class use; not this project |
 
 Jobs request 8 CPUs and 64 GB RAM, which fits every GPU node. The model lives in GPU memory, not system RAM.
 
