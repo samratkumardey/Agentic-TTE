@@ -46,6 +46,8 @@ All of this is under `/cluster/pixstor/data/$USER/` (`$P` below). The user confi
 
 **Athena S07, unpacked** (2026-10-26) to `$P/tte-project/athena/S07/Athena Verison/`. The zip's folder name has a space and a typo; quote the path.
 
+**Both Athena copies are incomplete for MIMIC-IV** (checked 2026-10-26 against `VOCABULARY.csv`). S07 and `tte-project/athena_vocab` each hold only ICD10CM, ICD10PCS, LOINC, RxNorm and SNOMED. **ICD9CM, ICD9Proc and NDC are missing.** In the 1% ETL pilot, this left every ICD-9 diagnosis and procedure (about half of MIMIC-IV's coding) and every prescription (NDC) unmapped. A new Athena download with those vocabularies is needed before the full ETL.
+
 ## Slurm
 
 - Account `general`, QOS `normal`.
