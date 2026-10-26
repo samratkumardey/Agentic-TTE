@@ -126,8 +126,10 @@ class CompiledCohort(BaseModel):
     frame_columns: list[str] = Field(default_factory=list)
     frame_notes: list[str] = Field(default_factory=list)
     assumptions: list[str] = Field(default_factory=list)
+    ctes: str  # idx, base, flags, cohort: shared by both queries and the attrition counts
     cohort_sql: str
     frame_sql: str | None = None
+    horizon_days: float | None = None
 
     @property
     def not_compiled(self) -> list[CompiledCriterion]:
@@ -442,6 +444,10 @@ cohort AS (
 )"""
 
 
+def _days_of(d: Duration) -> float:
+    return d.amount * _SECONDS[d.unit] / 86400
+
+
 def _horizon(protocol: TargetTrialProtocol) -> Duration:
     primary = next((o for o in protocol.outcomes if o.primary), None)
     h = (primary.horizon if primary else None) or protocol.follow_up.horizon
@@ -621,7 +627,8 @@ def compile_protocol(protocol: TargetTrialProtocol, spec: CompileSpec) -> Compil
     return CompiledCohort(
         protocol_id=protocol.protocol_id, protocol_version=protocol.version,
         protocol_hash=protocol.content_hash(), spec=spec, criteria=criteria,
-        cohort_sql=cohort_sql, assumptions=assumptions, frame_notes=notes,
+        ctes=ctes, cohort_sql=cohort_sql, assumptions=assumptions, frame_notes=notes,
+        horizon_days=_days_of(_horizon(protocol)) if frame else None,
         frame_sql=f"WITH {ctes}{frame[0]}" if frame else None,
         frame_columns=frame[1] if frame else [])  # fmt: skip
 

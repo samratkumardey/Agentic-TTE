@@ -370,7 +370,26 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
 - **CLI:** `agentic-tte compile PROTOCOL -o DIR --spec spec.json [--book reviewed.json] [--db DB]`. With `--db` it checks that the SQL runs and prints suppressed counts only.
 - **Dialect:** DuckDB; Postgres and others go through SQLGlot later.
 
-**Next:**
-4. The attrition table and feasibility (eligible N, events), built from the compiled criterion columns, which close the gate's last check.
+**4. Attrition and feasibility: built** (`agentic_tte/omop/attrition.py`, tests in `tests/test_attrition.py`). This closes the gate's last check.
+- **`attrition(con, compiled)`** runs SQL aggregates on the data side.
+  - The flow: persons → index event → in an observation period and alive at time zero → each compiled criterion in protocol order. Each step shows the number remaining and removed, plus the number meeting that criterion on its own, which shows which criterion is binding.
+  - Criteria that were not applied are listed with their reasons.
+  - For the frame: patients, events and person-days per arm, end-of-follow-up reasons, and the pooled Kaplan-Meier risk at the horizon.
+- **`feasibility(report, protocol, design_hr=)`** is the gate's feasibility check.
+  - Red: no eligible patients, an empty arm, or no events.
+  - Amber:
+    - fewer than 11 eligible patients, or fewer than 11 events in an arm;
+    - fewer events than Schoenfeld requires for the design HR (at the observed treated share);
+    - fewer than 10 events per confounder;
+    - criteria not applied;
+    - the frame not compiled.
+  - The trial's registered enrollment is shown for comparison.
+- **Small cells:** counts below 11 are suppressed in `public()`, the markdown and the gate check. Raw counts stay in the report object on the data side. Complementary suppression is not done yet.
+- **CLI:** `agentic-tte compile ... --db` writes `attrition.md` and `attrition.json` (suppressed). `agentic-tte gate ... --compiled compile.json [--design-hr 0.7]` runs the feasibility check. It refuses a compile from another protocol version (content hash).
+
+**Next (Phase 2):**
+- wire Trialist → concept review → compile → gate → statistics as a LangGraph Replay on synthetic data;
+- add the outcome end events ("discharge") and duration/count criteria to the compiler;
+- add complementary suppression.
 
 **Gold annotation (decision pending):** LLM pre-annotation is allowed only as a separate, disclosed arm, not as gold (see the discussion of 2026-10-25). The gold standard stays two blinded human annotators plus an adjudicator.

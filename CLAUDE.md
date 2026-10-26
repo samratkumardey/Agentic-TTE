@@ -46,18 +46,20 @@ Order independence was confirmed on 2026-10-25 (forward vs reverse, 6/6 identica
 
 This is the run that accuracy (parts B and C) will be scored on, once the gold annotation exists. No further GPU runs are needed for Phase 0.
 
-Phase 2 (PLAN.md §15) has three parts built:
+Phase 2 (PLAN.md §15) has four parts built:
 - the Data Support Gate (`agentic_tte/omop/gate.py`);
 - OMOP concept mapping with clinician review (`agentic_tte/omop/vocab.py`, `concept_sets.py`);
-- the criteria-to-SQL compiler (`agentic_tte/omop/compiler.py`).
+- the criteria-to-SQL compiler (`agentic_tte/omop/compiler.py`);
+- attrition and feasibility (`agentic_tte/omop/attrition.py`), the gate's last check.
 
 Rules for that code:
 - Concept IDs come only from vocabulary tables, and only reviewer-approved sets are used.
 - The compiler never looks past time zero for eligibility.
 - Criteria it cannot compile are reported, never dropped silently.
 - Its frame must keep reproducing `synth.omop.ANALYSIS_SQL`.
+- Counts that leave the data side go through `suppress` (`AttritionReport.public()`).
 
-Next: the attrition table and feasibility.
+Next: a LangGraph Replay on synthetic data, end to end (Trialist → concept review → compile → gate → statistics).
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

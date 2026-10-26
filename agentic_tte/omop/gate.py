@@ -16,7 +16,7 @@ Checks:
   quality        plausibility (end before start, death before birth, impossible ages, ...)
   concepts       patients with a record for each protocol concept (needs concept IDs)
   governance     data classification and approval; no patient rows to any LLM
-  feasibility    eligible N and events: from the compiled cohort (attrition step, next)
+  feasibility    eligible N, events per arm, power: from the compiled cohort's attrition
 """
 
 from __future__ import annotations
@@ -477,12 +477,14 @@ def _governance(ctx: DataContext) -> GateCheck:
 
 def run_gate(con, protocol: TargetTrialProtocol | None = None, *,
              concept_sets: dict[str, list[int]] | None = None,
-             context: DataContext | None = None) -> GateReport:  # fmt: skip
+             context: DataContext | None = None, attrition=None,
+             design_hr: float | None = None) -> GateReport:  # fmt: skip
     """Run every check on an open DuckDB connection to an OMOP CDM database.
 
     ``concept_sets`` maps ``concept_key(criterion, concept_name)`` to OMOP concept IDs, as the
     Phase 2 vocabulary step produces them; concepts already carrying ``omop_concept_id`` in the
-    protocol are used as they are."""
+    protocol are used as they are. ``attrition`` (an ``AttritionReport`` from the compiled
+    cohort) runs the feasibility check, with power for ``design_hr`` when given."""
     context = context or DataContext()
     tables = _tables(con)
     report = GateReport(protocol_id=protocol.protocol_id if protocol else None, context=context)
@@ -510,7 +512,12 @@ def run_gate(con, protocol: TargetTrialProtocol | None = None, *,
             _quality(con, tables),
             _concepts(con, tables, protocol, concept_sets),
         ]
-    report.checks.append(GateCheck(
-        id="feasibility", title="Feasibility", status=GateStatus.NOT_RUN,
-        detail="eligible N and events are computed after the cohort is compiled (Phase 2)"))
+    if attrition is not None:
+        from agentic_tte.omop.attrition import feasibility
+
+        report.checks.append(feasibility(attrition, protocol, design_hr=design_hr))
+    else:
+        report.checks.append(GateCheck(
+            id="feasibility", title="Feasibility", status=GateStatus.NOT_RUN,
+            detail="needs the compiled cohort's attrition (agentic-tte compile --db)"))
     return report

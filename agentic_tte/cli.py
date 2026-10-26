@@ -210,9 +210,14 @@ def compile_cmd(
          for st in ("compiled", "not_compiled", "not_emulable")}  # fmt: skip
     typer.echo(f"{n} -> {out}/compile.md", err=True)
     if con is not None:
-        total, eligible = con.execute(f"SELECT count(*), count(*) FILTER (WHERE eligible) "
-                                      f"FROM ({cc.cohort_sql})").fetchone()  # fmt: skip
-        typer.echo(f"index persons {suppress(total)}, eligible {suppress(eligible)}", err=True)
+        from agentic_tte.omop.attrition import attrition
+
+        rep = attrition(con, cc)
+        (out / "attrition.md").write_text(rep.to_markdown(), encoding="utf-8")
+        (out / "attrition.json").write_text(json.dumps(rep.public(), indent=2),
+                                            encoding="utf-8")  # fmt: skip
+        typer.echo(f"index persons {suppress(rep.steps[1].remaining)}, eligible "
+                   f"{suppress(rep.eligible)} -> {out}/attrition.md", err=True)
 
 
 @app.command()
@@ -223,9 +228,14 @@ def gate(
     classification: str = typer.Option(..., help="synthetic, deidentified, limited, identified"),
     approved: bool = typer.Option(False, help="Storage/compute approved for this classification."),
     vocab: Path = typer.Option(None, help="Athena vocabulary download."),
+    compiled: Path = typer.Option(None, help="compile.json from `agentic-tte compile`: runs "
+                                             "the feasibility check."),
+    design_hr: float = typer.Option(None, help="Hazard ratio to power the feasibility check."),
 ):
     """Run the Data Support Gate and print its report. Exits 1 if the run is blocked."""
     from agentic_tte.omop import DataContext, run_gate
+    from agentic_tte.omop.attrition import attrition
+    from agentic_tte.omop.compiler import CompiledCohort
     from agentic_tte.omop.concept_sets import ConceptSetBook
     from agentic_tte.protocol import TargetTrialProtocol
 
@@ -233,7 +243,15 @@ def gate(
     sets = None
     if book is not None:
         sets = ConceptSetBook.model_validate_json(book.read_text(encoding="utf-8")).gate_sets()
-    report = run_gate(_open_db(db, vocab), p, concept_sets=sets,
+    con = _open_db(db, vocab)
+    rep = None
+    if compiled is not None:
+        cc = CompiledCohort.model_validate_json(compiled.read_text(encoding="utf-8"))
+        if cc.protocol_hash != p.content_hash():
+            typer.echo("compile.json was compiled from a different protocol version", err=True)
+            raise typer.Exit(2)
+        rep = attrition(con, cc)
+    report = run_gate(con, p, concept_sets=sets, attrition=rep, design_hr=design_hr,
                       context=DataContext(data_classification=classification,
                                           approved_by_rcss=approved))  # fmt: skip
     typer.echo(report.to_markdown())
