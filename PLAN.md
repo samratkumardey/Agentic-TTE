@@ -443,8 +443,19 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
 - **CLI:** `replay start --auto policy.json` saves the policy with the run, and `replay resume` uses it. The sign-off review writes `report_draft.md` and `signoff.json`.
 - **Three-trial harness:** `eval/replay_phase2.py` now runs on `AutoApprove`, with the same estimates as before; its reports are labelled auto-approved.
 
-**Not done:**
-- Abbreviations in concept search ("diagnosis of ADHF" found nothing).
+**8. Abbreviations in concept search: built** (`agentic_tte/omop/abbreviations.py`; tests in `tests/test_abbreviations.py`).
+- **Two sources, and only these:**
+  - **The protocol's own registry text.** Definitions such as "acute decompensated heart failure (ADHF)", or the reverse, are found with the Schwartz–Hearst algorithm. Titles are skipped, because their acronym is the trial's name.
+  - **A curated list:** only entries with a named approver are used.
+- **The shipped seed list** (`agentic_tte/omop/resources/abbreviations.json`, 40 critical-care abbreviations, drafted by the developers) is entirely unapproved. `agentic-tte abbreviations init FILE` copies it, `show` lists it, and `approve FILE --reviewer NAME [--only A,B]` records approval. Pass the list to `concepts propose` or `replay start` with `--abbreviations FILE`.
+- **Search rules:**
+  - An abbreviation is expanded only where it is written in capitals as a word, so "map" is left alone.
+  - A domain on an entry disambiguates: IHD is intermittent hemodialysis for procedures and ischemic heart disease for conditions.
+  - The protocol's definition wins over the list's.
+  - Every candidate found through an expansion records it ("ADHF = acute decompensated heart failure (protocol text: I1)"), and the review sheet shows it in bold, with the abbreviations used listed below it.
+  - A direct match outranks an abbreviation match at the same match level, while an exact match through an expansion ("MAP" → Mean blood pressure) outranks a direct word match ("MAP kinase activity").
+- **Three-trial Replay:** NCT00475852's "diagnosis of ADHF" now maps to the heart-failure concept through the protocol's own definition. The estimates are unchanged: I2 still has an unmappable dyspnea atom.
+- **Packaging:** the seed list lives under `resources/` because the `.gitignore` patient-data rule ignores every `data/` folder. That rule stays.
 - The compiler's follow-up end events ("discharge") and duration/count criteria.
 - Complementary suppression.
 - An LLM Supervisor and LLM method choice for the Statistician.

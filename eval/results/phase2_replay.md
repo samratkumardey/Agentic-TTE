@@ -42,7 +42,7 @@ Design review: confounders named.
 
 - Status **auto_approved**; gate vocabulary amber, concepts amber, feasibility amber.
 - Criteria: 2 compiled, 5 not compiled, 1 not emulable. Eligible 4000 of 4000.
-  - I2 not compiled: atom 1: 'diagnosis of ADHF': unmappable; atom 2: no concept left to compile
+  - I2 not compiled: atom 2: no concept left to compile
   - E1 not compiled: qualitative value 'high risk for hypotension' is not compilable
   - E2 not compiled: 'acute coronary syndrome': unmappable
   - E3 not compiled: atom 1: 'history of cardiac valvular stenosis': unmappable; atom 2: 'history of restrictive cardiomyopathy': unmappable; atom 3: 'history of hypertrophic cardiomyopathy': unmappable; atom 4: 'history of pericardial tamponade': unmappable

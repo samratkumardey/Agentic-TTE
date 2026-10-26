@@ -67,9 +67,10 @@ The Phase 2 exit criterion is met on synthetic data (2026-10-26; `eval/results/p
 
 Reports now need sign-off (status `signed_off` or `returned`). Batch benchmarks use `AutoApprove`: their reports are labelled auto-approved, with status `auto_approved`. Never present an auto-approved run as reviewed or signed off.
 
+Concept search expands abbreviations only from the protocol's own text and from reviewer-approved list entries. The shipped seed list (`omop/resources/abbreviations.json`) is unapproved: never mark its entries approved on a person's behalf.
+
 Next:
-- abbreviation handling in concept search;
-- then Phase 3 (MIMIC-IV OMOP on Hellbender; confirm the data classification with RCSS first).
+- Phase 3: MIMIC-IV OMOP on Hellbender (confirm the data classification with RCSS first).
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

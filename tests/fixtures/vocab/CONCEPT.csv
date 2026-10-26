@@ -12,3 +12,9 @@ concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concep
 9000050	Pregnancy	Condition	SNOMED	Clinical Finding	S	T050	19700101	20991231	
 9000060	Norepinephrine	Drug	RxNorm	Ingredient	S	T060	19700101	20991231	
 9000070	Dialysis procedure	Procedure	SNOMED	Procedure	S	T070	19700101	20991231	
+9000080	Mean blood pressure	Measurement	LOINC	Clinical Observation	S	T080	19700101	20991231	
+9000081	Acute kidney injury	Condition	SNOMED	Clinical Finding	S	T081	19700101	20991231	
+9000082	Acute decompensated heart failure	Condition	SNOMED	Clinical Finding	S	T082	19700101	20991231	
+9000083	Ischemic heart disease	Condition	SNOMED	Clinical Finding	S	T083	19700101	20991231	
+9000084	Intermittent hemodialysis	Procedure	SNOMED	Procedure	S	T084	19700101	20991231	
+9000085	MAP kinase activity	Measurement	LOINC	Lab Test	S	T085	19700101	20991231	

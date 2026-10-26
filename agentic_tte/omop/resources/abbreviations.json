@@ -1,0 +1,325 @@
+{
+  "description": "SEED abbreviation list drafted by the developers (not clinically reviewed). Every entry is unapproved: copy it with `agentic-tte abbreviations init FILE`, review the expansions, and approve with `agentic-tte abbreviations approve FILE --reviewer NAME`. Only approved entries are used in concept search. Domains disambiguate abbreviations with more than one meaning (IHD).",
+  "entries": [
+    {
+      "abbr": "ACS",
+      "expansions": [
+        "acute coronary syndrome"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "ADHF",
+      "expansions": [
+        "acute decompensated heart failure"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "AF",
+      "expansions": [
+        "atrial fibrillation"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "AKI",
+      "expansions": [
+        "acute kidney injury"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "ARDS",
+      "expansions": [
+        "acute respiratory distress syndrome"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "BNP",
+      "expansions": [
+        "natriuretic peptide B",
+        "brain natriuretic peptide"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "CABG",
+      "expansions": [
+        "coronary artery bypass graft"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "CHF",
+      "expansions": [
+        "congestive heart failure"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "CKD",
+      "expansions": [
+        "chronic kidney disease"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "COPD",
+      "expansions": [
+        "chronic obstructive pulmonary disease"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "CRRT",
+      "expansions": [
+        "continuous renal replacement therapy"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "CVVH",
+      "expansions": [
+        "continuous venovenous hemofiltration"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "CVVHD",
+      "expansions": [
+        "continuous venovenous hemodialysis"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "CVVHDF",
+      "expansions": [
+        "continuous venovenous hemodiafiltration"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "DBP",
+      "expansions": [
+        "diastolic blood pressure"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "DNR",
+      "expansions": [
+        "do not resuscitate"
+      ],
+      "source": "list",
+      "domain": "Observation"
+    },
+    {
+      "abbr": "DVT",
+      "expansions": [
+        "deep vein thrombosis"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "ECMO",
+      "expansions": [
+        "extracorporeal membrane oxygenation"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "eGFR",
+      "expansions": [
+        "estimated glomerular filtration rate"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "ESRD",
+      "expansions": [
+        "end stage renal disease"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "G6PD",
+      "expansions": [
+        "glucose-6-phosphate dehydrogenase"
+      ],
+      "source": "list"
+    },
+    {
+      "abbr": "GCS",
+      "expansions": [
+        "Glasgow coma scale"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "GI",
+      "expansions": [
+        "gastrointestinal"
+      ],
+      "source": "list"
+    },
+    {
+      "abbr": "HCG",
+      "expansions": [
+        "choriogonadotropin",
+        "human chorionic gonadotropin"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "HF",
+      "expansions": [
+        "heart failure"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "HR",
+      "expansions": [
+        "heart rate"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "IABP",
+      "expansions": [
+        "intra-aortic balloon pump"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "IHD",
+      "expansions": [
+        "intermittent hemodialysis"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "IHD",
+      "expansions": [
+        "ischemic heart disease"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "INR",
+      "expansions": [
+        "international normalized ratio"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "LVEF",
+      "expansions": [
+        "left ventricular ejection fraction"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "MAP",
+      "expansions": [
+        "mean arterial pressure",
+        "mean blood pressure"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "MI",
+      "expansions": [
+        "myocardial infarction"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "NT-proBNP",
+      "expansions": [
+        "natriuretic peptide.B prohormone N-terminal"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "NYHA",
+      "expansions": [
+        "New York Heart Association"
+      ],
+      "source": "list"
+    },
+    {
+      "abbr": "PE",
+      "expansions": [
+        "pulmonary embolism"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    },
+    {
+      "abbr": "RRT",
+      "expansions": [
+        "renal replacement therapy"
+      ],
+      "source": "list",
+      "domain": "Procedure"
+    },
+    {
+      "abbr": "SBP",
+      "expansions": [
+        "systolic blood pressure"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "SOFA",
+      "expansions": [
+        "sequential organ failure assessment"
+      ],
+      "source": "list",
+      "domain": "Measurement"
+    },
+    {
+      "abbr": "UTI",
+      "expansions": [
+        "urinary tract infection"
+      ],
+      "source": "list",
+      "domain": "Condition"
+    }
+  ]
+}

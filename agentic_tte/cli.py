@@ -122,12 +122,77 @@ def _open_db(db: Path, vocab: Path | None):
     return con
 
 
+def _abbreviations(path):
+    from agentic_tte.omop.abbreviations import AbbreviationList
+
+    if path is None:
+        return None
+    lst = AbbreviationList.load(path)
+    n, k = len(lst.entries), len(lst.approved())
+    typer.echo(f"abbreviations: {k} of {n} entries approved in {path}"
+               + ("; unapproved entries are not used" if k < n else ""), err=True)
+    return lst
+
+
+abbr_app = typer.Typer(no_args_is_help=True,
+                       help="Abbreviation list for concept search; entries need approval.")
+app.add_typer(abbr_app, name="abbreviations")
+
+
+@abbr_app.command("init")
+def abbreviations_init(out: Path):
+    """Copy the seed list (all entries unapproved) to a file you own and review."""
+    from agentic_tte.omop.abbreviations import AbbreviationList
+
+    if out.exists():
+        typer.echo(f"{out} exists; not overwritten", err=True)
+        raise typer.Exit(2)
+    AbbreviationList.seed().save(out)
+    typer.echo(f"wrote {out}: review each expansion, then `agentic-tte abbreviations approve "
+               f"{out} --reviewer NAME`", err=True)  # fmt: skip
+
+
+@abbr_app.command("show")
+def abbreviations_show(path: Path = typer.Argument(None, help="List file; default: the seed.")):
+    """Print the list with each entry's approval."""
+    from agentic_tte.omop.abbreviations import AbbreviationList
+
+    lst = AbbreviationList.load(path) if path else AbbreviationList.seed()
+    typer.echo("| Abbreviation | Expansions | Domain | Approved by |")
+    typer.echo("|---|---|---|---|")
+    for e in lst.entries:
+        typer.echo(f"| {e.abbr} | {' / '.join(e.expansions)} | {e.domain or 'any'} | "
+                   f"{e.approved_by or 'NOT APPROVED'} |")
+
+
+@abbr_app.command("approve")
+def abbreviations_approve(
+    path: Path,
+    reviewer: str = typer.Option(..., help="Who reviewed the expansions."),
+    only: str = typer.Option(None, help="Comma-separated abbreviations; default: all."),
+):
+    """Record a reviewer's approval in the list file."""
+    from agentic_tte.omop.abbreviations import AbbreviationList
+
+    lst = AbbreviationList.load(path)
+    try:
+        n = lst.approve(reviewer, {a.strip() for a in only.split(",")} if only else None)
+    except ValueError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from e
+    lst.save(path)
+    typer.echo(f"{n} entries approved by {reviewer}; {len(lst.approved())} of "
+               f"{len(lst.entries)} approved in {path}", err=True)
+
+
 @concepts_app.command("propose")
 def concepts_propose(
     protocol: Path,
     db: Path = typer.Option(..., help="OMOP CDM database (DuckDB file)."),
     out: Path = typer.Option(..., "--out", "-o", help="Directory for the review files."),
     vocab: Path = typer.Option(None, help="Athena vocabulary download to search instead."),
+    abbreviations: Path = typer.Option(None, help="Abbreviation list; only its approved "
+                                                  "entries are expanded."),
 ):
     """Propose concept sets for a protocol. Writes book.json, review.md (for the clinician)
     and decisions.json (to fill in)."""
@@ -135,7 +200,7 @@ def concepts_propose(
     from agentic_tte.protocol import TargetTrialProtocol
 
     p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
-    book = propose(_open_db(db, vocab), p)
+    book = propose(_open_db(db, vocab), p, abbreviations=_abbreviations(abbreviations))
     out.mkdir(parents=True, exist_ok=True)
     (out / "book.json").write_text(book.model_dump_json(indent=2), encoding="utf-8")
     (out / "review.md").write_text(review_sheet(book), encoding="utf-8")
@@ -239,8 +304,8 @@ def _replay_graph(run: dict, llm=None):
     ctx = DataContext(data_classification=run["classification"], approved_by_rcss=run["approved"])
     auto = AutoApprove.model_validate(run["auto"]) if run.get("auto") else None
     graph = build_replay(con, llm=llm, ctgov=_ctgov() if llm else None, context=ctx,
-                         design_hr=run.get("design_hr"), checkpointer=saver,
-                         auto=auto)  # fmt: skip
+                         design_hr=run.get("design_hr"), checkpointer=saver, auto=auto,
+                         abbreviations=_abbreviations(run.get("abbreviations")))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -294,6 +359,8 @@ def replay_start(
     auto: Path = typer.Option(None, help="Auto-approve policy (JSON) for benchmarking: its "
                                          "stages are answered without a person, and the "
                                          "report says so."),
+    abbreviations: Path = typer.Option(None, help="Abbreviation list; only its approved "
+                                                  "entries are expanded in concept search."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -312,7 +379,8 @@ def replay_start(
         raise typer.Exit(2)
     run = {"out": str(out), "db": str(db), "vocab": str(vocab) if vocab else None,
            "classification": classification, "approved": approved, "design_hr": design_hr,
-           "auto": policy.model_dump(mode="json") if policy else None}
+           "auto": policy.model_dump(mode="json") if policy else None,
+           "abbreviations": str(abbreviations) if abbreviations else None}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}

@@ -6,6 +6,9 @@ the protocol concept's domain. Non-standard concepts (e.g. ICD-10-CM codes) are 
 ``concept_relationship`` 'Maps to' to their standard concept. Every candidate records how it was
 found, so a reviewer can judge it.
 
+Abbreviations ("ADHF", "MAP") are expanded only from the protocol's own definitions and a
+reviewer-approved list (abbreviations.py); a candidate found that way says so.
+
 Vocabulary tables: ``concept`` (required), ``concept_synonym``, ``concept_relationship``,
 ``concept_ancestor`` (optional, used when present). ``load_athena`` reads a vocabulary download
 from athena.ohdsi.org, which each user downloads under their own account and licences.
@@ -44,11 +47,14 @@ class Candidate(BaseModel):
     matched_text: str  # the query variant that matched
     via: int | None = None  # non-standard source concept mapped through 'Maps to'
     via_name: str | None = None
+    abbreviation: str | None = None  # "ADHF = acute decompensated heart failure (source)"
     score: float  # 1.0 exact; lower for looser matches
 
     @property
     def rank(self) -> tuple:
-        return (MATCH_RANK[self.match], self.via is not None, -self.score, self.concept_id)
+        # A direct match outranks one found through an abbreviation at the same match level.
+        return (MATCH_RANK[self.match], self.abbreviation is not None, self.via is not None,
+                -self.score, self.concept_id)
 
 
 def norm(s: str) -> str:
@@ -57,7 +63,8 @@ def norm(s: str) -> str:
 
 # Words that rarely appear in standard concept names: dropped as an extra query variant.
 _GENERIC = {"level", "levels", "value", "values", "test", "result", "results", "concentration",
-            "use", "therapy", "treatment", "history", "of", "known", "patient", "patients"}
+            "use", "therapy", "treatment", "history", "of", "known", "patient", "patients",
+            "diagnosis", "diagnosed"}
 # Salt and form words: "hydrocortisone sodium succinate" should find the ingredient.
 _SALTS = {"sodium", "succinate", "hydrochloride", "hcl", "phosphate", "sulfate", "sulphate",
           "acetate", "chloride", "potassium", "citrate", "tartrate", "maleate", "mesylate",
@@ -93,8 +100,13 @@ def _norm_sql(col: str) -> str:
     return f"trim(regexp_replace(lower({col}), '[^a-z0-9]+', ' ', 'g'))"
 
 
-def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
-    """Candidate standard concepts for a protocol concept, best first."""
+def search(con, name: str, domain: str, *, limit: int = 10,
+           abbreviations: list | None = None) -> list[Candidate]:  # fmt: skip
+    """Candidate standard concepts for a protocol concept, best first. ``abbreviations``
+    (usable ``abbreviations.Abbreviation`` entries) add the name with each abbreviation it
+    contains expanded; such candidates say which expansion found them."""
+    from agentic_tte.omop.abbreviations import expansions_for
+
     omop_domain = OMOP_DOMAIN.get(Domain(domain))
     if omop_domain is None:
         return []
@@ -111,18 +123,26 @@ def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
     cls_t = "t.concept_class_id" if "concept_class_id" in cols else "NULL"
     found: dict[int, Candidate] = {}
 
-    def add(rows, match: str, text: str) -> None:
+    def add(rows, match: str, text: str, abbr: str | None) -> None:
         for cid, cname, vocab, dom, cls, std, via, via_name in rows:
             score = 1.0 if match.startswith("exact") else round(
                 min(0.9, len(text) / max(len(norm(cname)), 1)), 3)  # fmt: skip
             cand = Candidate(concept_id=cid, concept_name=cname, vocabulary_id=vocab,
                              domain_id=dom, concept_class_id=cls, standard=std == "S",
                              match=match, matched_text=text, via=via, via_name=via_name,
-                             score=score)  # fmt: skip
+                             abbreviation=abbr, score=score)  # fmt: skip
             if cid not in found or cand.rank < found[cid].rank:
                 found[cid] = cand
 
-    for text in query_variants(name, domain):
+    queries = [(v, None) for v in query_variants(name, domain)]
+    seen = {v for v, _ in queries}
+    for entry, exp, expanded in expansions_for(name, domain, abbreviations or []):
+        label = f"{entry.abbr} = {exp} ({entry.source})"
+        for v in query_variants(expanded, domain):
+            if v not in seen:
+                seen.add(v)
+                queries.append((v, label))
+    for text, abbr in queries:
         words = text.split()
         exact_name = f"{_norm_sql('c.concept_name')} = ?"
         like_all = " AND ".join([f"{_norm_sql('c.concept_name')} LIKE ?"] * len(words))
@@ -140,7 +160,7 @@ def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
                 FROM concept c
                 WHERE c.standard_concept = 'S' AND c.domain_id = ? AND {valid} AND ({where})
                 LIMIT {limit * 3}""", [omop_domain, *params]).fetchall()  # fmt: skip
-            add(rows, match, text)
+            add(rows, match, text, abbr)
             if has_rel:
                 # Non-standard source concepts, followed to their standard target.
                 rows = con.execute(f"""
@@ -153,7 +173,7 @@ def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
                     WHERE (c.standard_concept IS NULL OR c.standard_concept <> 'S')
                       AND t.domain_id = ? AND {valid} AND ({where})
                     LIMIT {limit * 3}""", [omop_domain, *params]).fetchall()  # fmt: skip
-                add(rows, match, text)
+                add(rows, match, text, abbr)
     ranked = sorted(found.values(), key=lambda c: c.rank)
     # Drugs: prefer the ingredient, which covers every product through concept_ancestor.
     if omop_domain == "Drug":

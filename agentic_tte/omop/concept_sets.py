@@ -22,6 +22,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from agentic_tte.omop.abbreviations import AbbreviationList, merged, summary
 from agentic_tte.omop.gate import concept_key
 from agentic_tte.omop.vocab import Candidate, search
 from agentic_tte.protocol.models import Domain, MappingStatus, TargetTrialProtocol
@@ -53,6 +54,7 @@ class ConceptSetBook(BaseModel):
     vocabulary: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     sets: list[ConceptSet] = Field(default_factory=list)
+    abbreviations: list[dict] = Field(default_factory=list)  # expansions the search could use
 
     def get(self, key: str) -> ConceptSet:
         return next(s for s in self.sets if s.key == key)
@@ -87,16 +89,20 @@ def _entries(protocol: TargetTrialProtocol):
             yield f"O:{o.name}", "outcome", o, o.concept
 
 
-def propose(con, protocol: TargetTrialProtocol, *, n_candidates: int = 5) -> ConceptSetBook:
+def propose(con, protocol: TargetTrialProtocol, *, n_candidates: int = 5,
+            abbreviations: AbbreviationList | None = None) -> ConceptSetBook:  # fmt: skip
     """Candidates and a proposed set for every protocol concept. The proposal is the best
-    candidate; it is only a suggestion until a reviewer approves it."""
+    candidate; it is only a suggestion until a reviewer approves it. Abbreviations are
+    expanded from the protocol's own definitions and the approved entries of
+    ``abbreviations``."""
+    abbrs = merged(protocol, abbreviations)
     vocab = None
     try:
         vocab = con.execute("SELECT vocabulary_version FROM cdm_source LIMIT 1").fetchone()[0]
     except Exception:  # noqa: BLE001 - cdm_source is optional
         pass
     book = ConceptSetBook(protocol_id=protocol.protocol_id, protocol_version=protocol.version,
-                          vocabulary=vocab)  # fmt: skip
+                          vocabulary=vocab, abbreviations=summary(abbrs))  # fmt: skip
     seen = set()
     for key, scope, owner, concept in _entries(protocol):
         if key in seen:
@@ -115,7 +121,8 @@ def propose(con, protocol: TargetTrialProtocol, *, n_candidates: int = 5) -> Con
         elif concept.domain == Domain.DEMOGRAPHIC:
             entry.status, entry.note = "not_needed", "demographic: read from the person table"
         else:
-            entry.candidates = search(con, concept.name, concept.domain, limit=n_candidates)
+            entry.candidates = search(con, concept.name, concept.domain, limit=n_candidates,
+                                      abbreviations=abbrs)  # fmt: skip
             if entry.candidates:
                 entry.concept_ids = [entry.candidates[0].concept_id]
                 entry.status = "proposed"
@@ -135,12 +142,20 @@ def review_sheet(book: ConceptSetBook) -> str:
     for s in book.sets:
         def fmt(c: Candidate) -> str:
             via = f" via {c.via_name} ({c.via})" if c.via else ""
-            return f"{c.concept_id} {c.concept_name} [{c.vocabulary_id}, {c.match}{via}]"
+            abbr = f"; **abbreviation {c.abbreviation}**" if c.abbreviation else ""
+            return f"{c.concept_id} {c.concept_name} [{c.vocabulary_id}, {c.match}{via}{abbr}]"
 
         proposed = fmt(s.candidates[0]) if s.candidates else "–"
         alts = "; ".join(fmt(c) for c in s.candidates[1:4]) or "–"
         lines.append(f"| `{s.key}` | {s.criterion_text[:80]} | {s.concept_name} ({s.domain}) | "
                      f"{proposed} | {alts} | {s.status} |")  # fmt: skip
+    if book.abbreviations:
+        lines += ["", "Abbreviations the search expanded (protocol definitions, then approved "
+                  "list entries):", ""]
+        lines += [f"- {a['abbr']} = {' / '.join(a['expansions'])} ({a['source']}"
+                  + (f"; approved by {a['approved_by']}" if a.get("approved_by")
+                     and not a["source"].startswith("protocol") else "") + ")"
+                  for a in book.abbreviations]  # fmt: skip
     return "\n".join(lines) + "\n"
 
 

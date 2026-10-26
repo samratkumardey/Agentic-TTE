@@ -135,10 +135,11 @@ def _record(stage: str, answer: dict, auto: bool, decision: str) -> dict:
 
 def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = None,
                  design_hr: float | None = None, checkpointer=None,
-                 auto: AutoApprove | None = None):  # fmt: skip
+                 auto: AutoApprove | None = None, abbreviations=None):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
-    ``auto`` covering every stage, the run needs none."""
+    ``auto`` covering every stage, the run needs none. ``abbreviations``: an
+    ``AbbreviationList`` whose approved entries the concept search may expand."""
     context = context or DataContext()
 
     def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
@@ -183,7 +184,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         return {**_version(v, f"design review {what}"), **rec}
 
     def propose_concepts(state: ReplayState) -> dict:
-        book = propose(con, _p(state))
+        book = propose(con, _p(state), abbreviations=abbreviations)
         return {"book": book.model_dump(mode="json"), "log": [f"concepts proposed: "
                                                               f"{book.summary()}"]}  # fmt: skip
 
