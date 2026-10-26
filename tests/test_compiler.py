@@ -81,9 +81,15 @@ def _db():
                            "death_datetime": T0 + 5 * D}])
     ancestor = pd.DataFrame({"ancestor_concept_id": [100, 100],
                              "descendant_concept_id": [100, 101]})
+    # ICU stays (32037) live in visit_detail: p1 enters the ICU 2 hours after T0, p4 an hour
+    # before it.
+    detail = pd.DataFrame([{"visit_detail_id": 1, "person_id": p, "visit_detail_concept_id": 32037,
+                            "visit_detail_start_datetime": t, "visit_detail_start_date": t.date()}
+                           for p, t in ((1, T0 + 2 * H), (4, T0 - H))])  # fmt: skip
     return so.write_duckdb({"person": person, "observation_period": op, "visit_occurrence": visit,
-                            "condition_occurrence": condition, "measurement": measurement,
-                            "drug_exposure": drug, "death": death, "concept_ancestor": ancestor})
+                            "visit_detail": detail, "condition_occurrence": condition,
+                            "measurement": measurement, "drug_exposure": drug, "death": death,
+                            "concept_ancestor": ancestor})  # fmt: skip
 
 
 SPEC = CompileSpec(time_zero=EventDef(domain="Visit", concept_ids=[10]),
@@ -344,3 +350,22 @@ def test_cli_compile(tmp_path):
     assert r.exit_code == 0, r.output
     assert "eligible 150" in r.output
     assert (out / "frame.sql").exists() and "Compiled cohort" in (out / "compile.md").read_text()
+
+
+def test_icu_stays_in_visit_detail_are_visit_events():
+    """ICU admission (32037) is recorded in visit_detail, not visit_occurrence; it must work as
+    time zero and as a criterion like any Visit concept."""
+    icu = EventDef(domain="Visit", concept_ids=[32037])
+    p = TargetTrialProtocol(protocol_id="T", eligibility=[
+        crit("A", "inclusion", atom(ref("shock", "Condition", 100)))])
+    cc = compile_protocol(p, SPEC.model_copy(update={"time_zero": icu}))
+    df = _db().execute(cc.cohort_sql).df().set_index("person_id")
+    assert sorted(df.index) == [1, 4]  # only patients with an ICU stay
+    assert df.loc[1, "t0"] == T0 + 2 * H  # time zero is the ICU admission
+    # p4's shock record (T0 - 1 h) precedes its ICU admission (T0 - 1 h): recorded at or before.
+    assert met(df, "c_a") == [1, 4]
+    # As a criterion: "ICU admission at or before the index visit".
+    cc = compile_protocol(TargetTrialProtocol(protocol_id="T", eligibility=[
+        crit("B", "inclusion", atom(ref("ICU stay", "Visit", 32037)))]), SPEC)
+    df = _db().execute(cc.cohort_sql).df().set_index("person_id")
+    assert met(df, "c_b") == [4]  # p1's ICU stay comes after time zero (no look-ahead)

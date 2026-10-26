@@ -336,3 +336,21 @@ def test_without_a_concept_map_icu_events_are_reported_not_converted(cdm):
     _, rep = cdm
     assert "chartevents" not in rep.mapping
     assert any("no concept_map given" in n for n in rep.notes)
+
+
+def test_icu_admission_as_time_zero_on_the_etl_output(cdm):
+    """The first MIMIC Replays anchor at ICU admission, which the ETL writes to visit_detail."""
+    con, _ = cdm
+    p = TargetTrialProtocol(protocol_id="T", eligibility=[Criterion(
+        id="I1", kind="inclusion", text="ICU stay", atoms=[CriterionAtom(concepts=[ConceptRef(
+            name="ICU admission", domain="Visit", omop_concept_id=32037)])])])  # fmt: skip
+    cc = compile_protocol(p, CompileSpec(time_zero=EventDef(domain="Visit",
+                                                            concept_ids=[32037])))
+    cohort = con.execute(cc.cohort_sql).df().set_index("person_id")
+    assert sorted(cohort.index) == [S1, S4]
+    assert cohort.loc[S1, "t0"] == datetime(2150, 3, 1, 12)  # ICU intime, not admission
+    assert cohort.eligible.all()
+    r = run_gate(con, p, context=DataContext(data_classification="deidentified",
+                                             approved_by_rcss=True))  # fmt: skip
+    row = r.check("concepts").values["concepts"][0]
+    assert row["result"] == "<11 patients"  # counted in visit_detail, not "0 patients"

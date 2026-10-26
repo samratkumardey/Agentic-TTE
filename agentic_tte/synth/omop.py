@@ -2,7 +2,7 @@
 
 Everything downstream (the Informatician's SQL in Phase 2, the statistics) sees only OMOP, so
 the synthetic data has to be OMOP too. Tables: person, observation_period, visit_occurrence,
-condition_occurrence, measurement, drug_exposure, procedure_occurrence, observation,
+visit_detail, condition_occurrence, measurement, drug_exposure, procedure_occurrence, observation,
 device_exposure, death, plus a small concept table. A ``Profile`` names what the patients are
 (index event, measurements, treatment) so different trials can be replayed; the default is the
 septic-shock ICU cohort.
@@ -217,6 +217,7 @@ def to_omop(cohort: Cohort, profile: Profile = DEFAULT) -> dict[str, pd.DataFram
         "person": person,
         "observation_period": observation_period,
         "visit_occurrence": visit,
+        "visit_detail": events["visit_detail"],  # no stays within the index visit
         "condition_occurrence": condition,
         "measurement": measurement,
         "drug_exposure": drug,
@@ -256,6 +257,11 @@ def _empty_events() -> dict[str, pd.DataFrame]:
                           ("observation_concept_id", i8), ("observation_datetime", ts),
                           ("observation_date", ts), ("value_as_number", "float64"),
                           ("observation_type_concept_id", i8)]),
+        "visit_detail": t([("visit_detail_id", i8), ("person_id", i8),
+                           ("visit_detail_concept_id", i8), ("visit_detail_start_date", ts),
+                           ("visit_detail_start_datetime", ts), ("visit_detail_end_date", ts),
+                           ("visit_detail_end_datetime", ts), ("visit_detail_type_concept_id", i8),
+                           ("visit_occurrence_id", i8)]),
         "device_exposure": t([("device_exposure_id", i8), ("person_id", i8),
                               ("device_concept_id", i8), ("device_exposure_start_datetime", ts),
                               ("device_exposure_start_date", ts),

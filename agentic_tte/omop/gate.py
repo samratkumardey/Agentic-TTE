@@ -112,6 +112,8 @@ REQUIRED_TABLES = {
     "observation_period": ["person_id", "observation_period_start_date",
                            "observation_period_end_date"],
     "visit_occurrence": ["person_id", "visit_concept_id", "visit_start_date"],
+    # ICU and ward stays; the compiler reads Visit concepts from both visit tables.
+    "visit_detail": ["person_id", "visit_detail_concept_id", "visit_detail_start_date"],
     "condition_occurrence": ["person_id", "condition_concept_id", "condition_start_date"],
     "drug_exposure": ["person_id", "drug_concept_id", "drug_exposure_start_date"],
     "measurement": ["person_id", "measurement_concept_id", "measurement_date"],
@@ -384,7 +386,12 @@ def _patients_with(con, tables: set[str], domain: str, ids: list[int]) -> int | 
                  f"WHERE ancestor_concept_id IN ({id_list})) OR {col} IN ({id_list})")
     else:
         where = f"{col} IN ({id_list})"
-    return int(_scalar(con, f"SELECT count(DISTINCT person_id) FROM {table} WHERE {where}"))
+    source = table
+    if Domain(domain) == Domain.VISIT and "visit_detail" in tables:
+        # ICU stays live in visit_detail (32037 Intensive Care), admissions in visit_occurrence.
+        source = ("(SELECT person_id, visit_concept_id FROM visit_occurrence UNION ALL "
+                  "SELECT person_id, visit_detail_concept_id FROM visit_detail)")
+    return int(_scalar(con, f"SELECT count(DISTINCT person_id) FROM {source} v WHERE {where}"))
 
 
 def _concepts(con, tables: set[str], protocol: TargetTrialProtocol | None,

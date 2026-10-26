@@ -55,6 +55,14 @@ from agentic_tte.protocol.models import (
 _SECONDS = {"minute": 60, "hour": 3600, "day": 86400, "week": 7 * 86400,
             "month": 30.44 * 86400, "year": 365.25 * 86400}  # fmt: skip
 
+# Visits: hospital admissions (visit_occurrence) and the stays within them (visit_detail: ICU,
+# wards) are one Visit domain, so "ICU admission" (32037, recorded in visit_detail) can be time
+# zero, an anchor or a criterion. The union keeps visit_occurrence's column names.
+VISITS = ("(SELECT person_id, visit_concept_id, visit_start_datetime, visit_start_date "
+          "FROM visit_occurrence UNION ALL "
+          "SELECT person_id, visit_detail_concept_id, visit_detail_start_datetime, "
+          "visit_detail_start_date FROM visit_detail)")  # fmt: skip
+
 # table, concept column, datetime column, date column
 EVENT_TABLE = {
     Domain.CONDITION: ("condition_occurrence", "condition_concept_id",
@@ -69,8 +77,7 @@ EVENT_TABLE = {
                          "observation_datetime", "observation_date"),
     Domain.DEVICE: ("device_exposure", "device_concept_id",
                     "device_exposure_start_datetime", "device_exposure_start_date"),
-    Domain.VISIT: ("visit_occurrence", "visit_concept_id",
-                   "visit_start_datetime", "visit_start_date"),
+    Domain.VISIT: (VISITS, "visit_concept_id", "visit_start_datetime", "visit_start_date"),
 }  # fmt: skip
 
 T0_ALIASES = {"time zero", "time 0", "randomization", "randomisation", "enrollment",
