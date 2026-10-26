@@ -506,6 +506,15 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
 
 **Route chosen by the user (2026-10-26): the DuckDB ETL from the raw files.**
 
+**1% pilot (job 19333614, 2026-10-26, commit f516a8a, `general` c150).**
+- **Resources:** 3.5 minutes, 3.1 GB of memory, a 520 MB CDM, mostly the vocabulary. Persons 2,337 (1,409 without an admission were left out), deaths 374, ICU stays 969. The pilot reads the full source files and samples after reading, so the full run mostly adds write time; the full CDM is expected at 15–30 GB with labs and drips.
+- **Problems found:**
+  - **Prescriptions: 0% mapped.** The S07 package appears to have no NDC vocabulary.
+  - **Diagnoses: 51% mapped; ICD procedures: 46%.** Every top unmapped code is ICD-9 (4019, 25000, 4280; 3893, 9671), so ICD9CM and ICD9Proc appear missing too.
+  - **Five curated procedure maps were rejected,** their targets non-standard with no 'Maps to'. They include Invasive Ventilation (225792), which needs a reviewed override. Reviewed maps for chart and procedure items are not supported yet.
+- **Expected:** chartevents at 13% (only the 40 curated items; the rest are mostly nursing documentation).
+- **Before the full run:** a vocabulary with ICD9CM, ICD9Proc and NDC; then rerun the pilot.
+
 **Step 2, part 1: built** (`agentic_tte/etl/mimic_omop.py`, `agentic-tte etl mimic`; tests in `tests/test_etl_mimic.py` on a made-up four-patient dataset written at test time).
 - **Built:** person, observation_period, visit_occurrence (admissions; ER-and-inpatient when there was an ED stay), visit_detail (ICU stays), death, and the diagnoses, procedures and prescriptions coded through the vocabulary.
   - **Source codes:** ICD9CM, ICD10CM, ICD9Proc, ICD10PCS and NDC codes are matched with the dots removed, then followed through 'Maps to'. Each record goes to the table of its standard concept's domain.
