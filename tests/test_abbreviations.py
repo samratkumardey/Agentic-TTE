@@ -75,12 +75,14 @@ def test_search_expands_only_what_it_may(vocab):
 
 def test_expansion_outranks_a_word_match_and_case_matters(vocab):
     lst = [approved("MAP", ["mean arterial pressure", "mean blood pressure"], "Measurement")]
-    assert [x.concept_id for x in search(vocab, "MAP", "Measurement")] == [9000085]  # decoy
+    # A 3-letter abbreviation gets exact matches only, so the decoy "MAP kinase activity" is
+    # not proposed for it; only an approved expansion finds the concept.
+    assert search(vocab, "MAP", "Measurement") == []
     c = search(vocab, "MAP", "Measurement", abbreviations=lst)
     assert c[0].concept_id == 9000080 and c[0].match == "exact_name"  # Mean blood pressure
     assert c[0].abbreviation.startswith("MAP = mean blood pressure")
-    assert 9000085 in [x.concept_id for x in c]  # the reviewer still sees the word match
-    assert search(vocab, "map", "Measurement", abbreviations=lst)[0].abbreviation is None
+    assert 9000085 not in [x.concept_id for x in c]
+    assert search(vocab, "map", "Measurement", abbreviations=lst) == []  # lowercase: no expansion
 
 
 def test_domain_disambiguates(vocab):
@@ -124,7 +126,7 @@ def test_propose_records_and_shows_abbreviations(vocab):
     ])  # fmt: skip
     plain = propose(vocab, p)
     assert plain.get("I1:diagnosis of ADHF").status == "proposed"  # protocol text defines it
-    assert plain.get("I2:MAP").candidates[0].concept_id == 9000085  # decoy: no list given
+    assert plain.get("I2:MAP").status == "no_match"  # no list given: the decoy is not proposed
     lst = AbbreviationList(entries=[approved("MAP", ["mean blood pressure"], "Measurement")])
     book = propose(vocab, p, abbreviations=lst)
     assert book.get("I2:MAP").concept_ids == [9000080]

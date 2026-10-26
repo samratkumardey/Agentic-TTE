@@ -49,12 +49,15 @@ class Candidate(BaseModel):
     via_name: str | None = None
     abbreviation: str | None = None  # "ADHF = acute decompensated heart failure (source)"
     score: float  # 1.0 exact; lower for looser matches
+    penalty: int = 0  # signs of a different concept than asked for (see search)
 
     @property
     def rank(self) -> tuple:
-        # A direct match outranks one found through an abbreviation at the same match level.
-        return (MATCH_RANK[self.match], self.abbreviation is not None, self.via is not None,
-                -self.score, self.concept_id)
+        # Within a match level: fewer signs of a different concept, then a direct match over
+        # one through an abbreviation, then the candidate found by the fullest query
+        # ("pain level" over "pain"), then the closest in length.
+        return (MATCH_RANK[self.match], self.penalty, self.abbreviation is not None,
+                self.via is not None, -len(self.matched_text), -self.score, self.concept_id)
 
 
 def norm(s: str) -> str:
@@ -70,6 +73,8 @@ _SALTS = {"sodium", "succinate", "hydrochloride", "hcl", "phosphate", "sulfate",
           "acetate", "chloride", "potassium", "citrate", "tartrate", "maleate", "mesylate",
           "calcium", "besylate", "bitartrate", "fumarate", "bromide", "injection", "infusion",
           "intravenous", "iv", "oral", "tablet", "tablets"}  # fmt: skip
+# Words that turn a concept into its opposite or absence.
+_NEGATIONS = {"non", "not", "no", "without", "absent", "absence", "negative", "free"}
 # Words in ICU drug and fluid labels that name an administration, not a substance
 # (MIMIC-IV inputevents: "KCL (Bolus)", "Replete with Fiber (Full)", "Fentanyl (Concentrate)").
 _DRUG_NOISE = {"solution", "bolus", "full", "concentrate", "prophylaxis", "premix", "piggyback",
@@ -86,7 +91,11 @@ def query_variants(name: str, domain: str | None = None) -> list[str]:
     first."""
     drug = domain == Domain.DRUG
     out = [name]
-    inner = re.findall(r"\(([^)]+)\)", name)
+    # Bracketed text is a query of its own only when it can name the concept: an expansion
+    # ("type 2 diabetes mellitus") or, for drugs, a brand ("Zosyn"). "(serum)" alone proposed
+    # the concept "Serum" for MIMIC's Potassium (serum); "(s)" matched every synonym "S".
+    inner = [i for i in re.findall(r"\(([^)]+)\)", name)
+             if len(norm(i).split()) >= 2 or (drug and len(norm(i)) >= 4)]  # fmt: skip
     outer = re.sub(r"\([^)]*\)", " ", name)
     out += inner + [outer]
     drop = _GENERIC | (_SALTS | _DRUG_NOISE if drug else set())
@@ -97,8 +106,12 @@ def query_variants(name: str, domain: str | None = None) -> list[str]:
     seen, variants = set(), []
     for v in map(norm, out):
         words = v.split()
-        if drug and all(w in drop or w.isdigit() for w in words):
-            continue  # nothing left that names a substance
+        # Nothing left that names a substance ("(Full)", "Solution"). Salt words do name one:
+        # "Potassium Chloride" is a query.
+        if drug and all(w in _DRUG_NOISE or w.isdigit() for w in words):
+            continue
+        if len(v) < 2:
+            continue  # single letters: MIMIC's lab indices "H", "L", "I"
         if v and v not in seen:
             seen.add(v)
             variants.append(v)
@@ -160,6 +173,26 @@ def search(con, name: str, domain: str, *, limit: int = 10,
     found: dict[int, Candidate] = {}
     _search_index(con, has_syn)
 
+    asked = set(norm(name).split())
+
+    def penalty(cname: str, vocab: str, cls: str | None) -> int:
+        """Signs that a candidate is a different concept than the one asked for, found in the
+        first MIMIC-IV item proposals (2026-10-26)."""
+        words = set(norm(cname).split())
+        p = 0
+        if (words & _NEGATIONS) - asked:  # "Non-invasive ventilation" for Invasive Ventilation
+            p += 2
+        if omop_domain == "Measurement":
+            if cls == "Clinical Finding" or {"reference", "finding", "detected"} & words - asked:
+                p += 2  # a finding ("above reference range"), not the measurement
+            if "cord" in words - asked:
+                p += 1  # newborn cord-blood tests
+            if vocab != "LOINC":
+                p += 1  # LOINC is OMOP's standard vocabulary for lab tests and vital signs
+        if omop_domain == "Drug" and vocab == "RxNorm Extension":
+            p += 1  # prefer RxNorm; Extension names include codes such as "LR-90"
+        return p
+
     def add(rows, match: str, text: str, abbr: str | None) -> None:
         for cid, cname, vocab, dom, cls, std, via, via_name in rows:
             score = 1.0 if match.startswith("exact") else round(
@@ -167,7 +200,8 @@ def search(con, name: str, domain: str, *, limit: int = 10,
             cand = Candidate(concept_id=cid, concept_name=cname, vocabulary_id=vocab,
                              domain_id=dom, concept_class_id=cls, standard=std == "S",
                              match=match, matched_text=text, via=via, via_name=via_name,
-                             abbreviation=abbr, score=score)  # fmt: skip
+                             abbreviation=abbr, score=score,
+                             penalty=penalty(cname, vocab, cls))  # fmt: skip
             if cid not in found or cand.rank < found[cid].rank:
                 found[cid] = cand
 
@@ -186,7 +220,11 @@ def search(con, name: str, domain: str, *, limit: int = 10,
         # "buckminsterfullerene" (found in the MIMIC-IV inputevents proposals, 2026-10-26).
         like_all = " AND ".join(["n.padded LIKE ?"] * len(words))
         likes = [f"% {w} %" for w in words]
-        conds = [("exact_name", exact_name, [f" {text} "]), ("all_words", like_all, likes)]
+        conds = [("exact_name", exact_name, [f" {text} "])]
+        # A short abbreviation ("LR", "KCL", "GT") gets exact matches only: as a word it found
+        # RxNorm Extension code names ("LR-90", "KCL-1999000269").
+        if not (len(words) == 1 and len(text) <= 3):
+            conds.append(("all_words", like_all, likes))
         if has_syn:
             conds.insert(1, ("exact_synonym", "c.concept_id IN (SELECT concept_id FROM "
                                               "atte_snorm WHERE name = ?)", [text]))

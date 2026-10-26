@@ -94,7 +94,8 @@ def test_proposals_from_labels_most_frequent_first(setup):
     assert lac.rows == 13 and lac.specimen == "Blood" and lac.status == "proposed"
     assert {c.concept_id for c in lac.candidates} == {9000030, 9000031}  # Blood, Serum/Plasma
     assert m.entries[1].rows == "<11"  # suppressed in the file too
-    assert m.entries[1].status == m.entries[2].status == "no_match"  # not in this vocabulary
+    assert m.entries[1].status == "proposed"  # creatinine is in the fixture vocabulary
+    assert m.entries[2].status == "no_match"  # the made-up assay is not
     sheet = review_sheet(m)
     assert "covering 100.0% of labevents rows" in sheet and "| 50813 | Lactate |" in sheet
     tmpl = decisions_template(m)
@@ -141,7 +142,7 @@ def test_signing_the_template_unread_approves_nothing(setup):
     tmpl["decisions"][str(LACTATE)]["action"] = "approve"  # one explicit decision
     out = apply_decisions(m, tmpl)
     assert out.approved() == {LACTATE: m.entries[0].concept_id}
-    assert out.entries[0].reviewer == "Dr A" and out.entries[1].status == "no_match"
+    assert out.entries[0].reviewer == "Dr A" and out.entries[1].status == "proposed"
 
 
 def test_reviewed_maps_drive_the_etl(setup, tmp_path):
@@ -237,3 +238,16 @@ def test_cli_explains_an_unset_path(setup, tmp_path):
     r = run(app, ["etl", "items", "propose", "--source", str(mimic), "--vocab", "",
                   "--kind", "inputevents", "-o", str(tmp_path / "x")])  # fmt: skip
     assert r.exit_code == 2 and "source hpc/env.sh" in r.output
+
+
+def test_specimen_follows_the_lab_category(setup):
+    """MIMIC labels chemistry specimens "Blood", but they are serum or plasma; blood gas is
+    whole blood."""
+    mimic, con = setup
+    m = propose_items(con, "labevents", [
+        {"itemid": 1, "label": "Creatinine", "specimen": "Blood", "category": "Chemistry",
+         "rows": 50},
+        {"itemid": 2, "label": "Lactate", "specimen": "Blood", "category": "Blood Gas",
+         "rows": 40}], total_rows=90)  # fmt: skip
+    assert m.entries[0].concept_id == 9000135  # Creatinine in Serum or Plasma
+    assert m.entries[1].concept_id == 9000030  # Lactate in Blood

@@ -41,7 +41,7 @@ def ids(cands):
 
 def test_load_athena_counts(vocab):
     n = vocab.execute("SELECT count(*) FROM concept").fetchone()[0]
-    assert n == 31
+    assert n == 42
     with pytest.raises(FileNotFoundError):
         load_athena(duckdb.connect(), VOCAB / "missing")
 
@@ -213,3 +213,28 @@ def test_whole_word_search_on_real_icu_drug_labels(vocab, label, expected):
         return
     assert got[0] == expected[0]  # the proposal; a whole-word decoy may still be an alternative
     assert got[0] not in {9000110, 9000111, 9000113, 9000114}
+
+
+@pytest.mark.parametrize("label,domain,first,not_first", [
+    ("Potassium (serum)", "Measurement", 9000131, 9000130),  # not the specimen "Serum"
+    ("Invasive Ventilation", "Procedure", 9000133, 9000132),  # not "Non-invasive"
+    ("Creatinine", "Measurement", 9000140, 9000134),  # a LOINC lab test, not a finding
+    ("Neutrophils", "Measurement", 9000139, 9000138),  # not cord blood
+    ("Potassium Chloride", "Drug", 9000137, None),  # salt words alone are a query
+])  # fmt: skip
+def test_ranking_on_real_mimic_labels(vocab, label, domain, first, not_first):
+    """Regression for the first full MIMIC-IV item proposals (2026-10-26): Invasive Ventilation
+    was proposed as Non-invasive ventilation, Potassium (serum) as "Serum", Creatinine as a
+    finding, neutrophils as a cord-blood test, and Potassium Chloride found nothing."""
+    got = [c.concept_id for c in search(vocab, label, domain)]
+    assert got[0] == first, got
+    if not_first is not None:
+        assert got.index(not_first) > 0 if not_first in got else True
+
+
+@pytest.mark.parametrize("label", ["LR", "H", "O2 Delivery Device(s)"])
+def test_short_labels_do_not_match_junk(vocab, label):
+    got = [c.concept_id for c in search(vocab, label, "Drug" if label == "LR" else "Measurement")]
+    assert 9000136 not in got  # "LR" is not "LR-90"
+    if label == "H":
+        assert got == []

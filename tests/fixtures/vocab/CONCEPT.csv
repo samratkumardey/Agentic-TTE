@@ -30,3 +30,14 @@ concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concep
 9000113	albumin,chromated Cr-51 serum	Drug	RxNorm	Ingredient	S	T113	19700101	20991231	
 9000114	elranatamab	Drug	RxNorm	Ingredient	S	T114	19700101	20991231	
 9000120	Artificial respiration	Procedure	SNOMED	Procedure	S	T120	19700101	20991231	
+9000130	Serum	Measurement	SNOMED	Specimen	S	T130	19700101	20991231	
+9000131	Potassium [Moles/volume] in Serum or Plasma	Measurement	LOINC	Lab Test	S	T131	19700101	20991231	
+9000132	Non-invasive ventilation	Procedure	SNOMED	Procedure	S	T132	19700101	20991231	
+9000133	Invasive mechanical ventilation	Procedure	SNOMED	Procedure	S	T133	19700101	20991231	
+9000134	Serum creatinine above reference range	Measurement	SNOMED	Clinical Finding	S	T134	19700101	20991231	
+9000135	Creatinine [Mass/volume] in Serum or Plasma	Measurement	LOINC	Lab Test	S	T135	19700101	20991231	
+9000136	LR-90	Drug	RxNorm Extension	Ingredient	S	T136	19700101	20991231	
+9000137	potassium chloride	Drug	RxNorm	Ingredient	S	T137	19700101	20991231	
+9000138	Neutrophils [#/volume] in Cord blood	Measurement	LOINC	Lab Test	S	T138	19700101	20991231	
+9000139	Neutrophils [#/volume] in Blood	Measurement	LOINC	Lab Test	S	T139	19700101	20991231	
+9000140	Creatinine [Mass/volume] in Blood	Measurement	LOINC	Lab Test	S	T140	19700101	20991231	

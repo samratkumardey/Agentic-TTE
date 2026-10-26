@@ -86,11 +86,19 @@ class ItemMap(BaseModel):
         return all(e.status not in ("proposed", "no_match") for e in self.entries)
 
 
-def _specimen_rank(c: Candidate, specimen: str | None) -> int:
+def _specimen_rank(c: Candidate, specimen: str | None, category: str | None = None) -> int:
+    """0: the specimen the lab's category implies; 1: another word for the same specimen;
+    2: none. MIMIC calls chemistry specimens "Blood", but they are serum or plasma; blood gas
+    and haematology are whole blood."""
     if not specimen:
         return 0
+    name = norm(c.concept_name)
     words = _SPECIMEN.get(norm(specimen), (norm(specimen),))
-    return 0 if any(w in norm(c.concept_name) for w in words) else 1
+    if norm(specimen) == "blood":
+        best = ("serum", "plasma") if "chem" in norm(category or "") else ("blood",)
+        if any(w in name.split() for w in best):
+            return 0
+    return 1 if any(w in name for w in words) else 2
 
 
 def propose_items(con, kind: Kind, items: list[dict], *, total_rows: int,
@@ -104,8 +112,9 @@ def propose_items(con, kind: Kind, items: list[dict], *, total_rows: int,
             cands += search(con, it["label"], domain, limit=n_candidates * 3)
         cands.sort(key=lambda c: c.rank)
         if kind == "labevents":
-            cands.sort(key=lambda c: (c.rank[0], _specimen_rank(c, it.get("specimen")),
-                                      c.rank[1:]))  # fmt: skip
+            cands.sort(key=lambda c: (c.rank[0], c.rank[1],
+                                      _specimen_rank(c, it.get("specimen"), it.get("category")),
+                                      c.rank[2:]))  # fmt: skip
         cands = cands[:n_candidates]
         e = ItemEntry(itemid=it["itemid"], label=it["label"], specimen=it.get("specimen"),
                       category=it.get("category"), unit=it.get("unit"),
