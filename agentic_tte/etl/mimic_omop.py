@@ -20,8 +20,9 @@ is checked against the loaded vocabulary: a standard, valid concept is used; one
 longer standard is followed through 'Maps to'; one that is missing is rejected. All are
 reported, and the map rows used go into ``source_to_concept_map``. Chart and procedure items
 without a curated map are not converted, and are counted by item in the report.
-Not yet: labevents and inputevents (no curated map: they need our own reviewed item maps),
-and the ED and note modules (not in this copy of the release).
+labevents and inputevents have no curated map: they are converted through reviewed item
+maps (``item_maps``; agentic_tte/etl/item_maps.py), approved per item. Not converted: the ED
+and note modules (not in this copy of the release).
 
 MIMIC specifics, stated in ``cdm_source`` and the report:
 - Dates are shifted per patient: only within-patient times mean anything. Age comes from
@@ -104,7 +105,8 @@ CDM = {
     "drug_exposure": "drug_exposure_id BIGINT, person_id BIGINT, drug_concept_id INTEGER, "
                      "drug_exposure_start_date DATE, drug_exposure_start_datetime TIMESTAMP, "
                      "drug_exposure_end_date DATE, drug_exposure_end_datetime TIMESTAMP, "
-                     "drug_type_concept_id INTEGER, route_source_value VARCHAR, "
+                     "drug_type_concept_id INTEGER, quantity DOUBLE, "
+                     "dose_unit_source_value VARCHAR, route_source_value VARCHAR, "
                      "visit_occurrence_id BIGINT, drug_source_value VARCHAR, "
                      "drug_source_concept_id INTEGER",
     "measurement": "measurement_id BIGINT, person_id BIGINT, measurement_concept_id INTEGER, "
@@ -158,7 +160,8 @@ _ROUTES = {
         event_datetime AS drug_exposure_start_datetime,
         coalesce(end_date, event_date) AS drug_exposure_end_date,
         coalesce(end_datetime, event_datetime) AS drug_exposure_end_datetime,
-        type_concept_id AS drug_type_concept_id, route_source_value, visit_occurrence_id,
+        type_concept_id AS drug_type_concept_id, value_as_number AS quantity,
+        unit_source_value AS dose_unit_source_value, route_source_value, visit_occurrence_id,
         source_value AS drug_source_value, source_concept_id AS drug_source_concept_id"""),
     "Measurement": ("measurement", """
         person_id, concept_id AS measurement_concept_id, event_date AS measurement_date,
@@ -194,6 +197,7 @@ class EtlConfig(BaseModel):
     memory_limit: str | None = None  # e.g. "100GB"
     temp_directory: str | None = None  # node-local scratch for spills
     concept_map: Path | None = None  # mimic-code mimic-iv/concepts/concept_map (SSSOM)
+    item_maps: list[Path] = Field(default_factory=list)  # reviewed maps (labs, inputs)
 
 
 class EtlReport(BaseModel):
@@ -450,6 +454,7 @@ def build(cfg: EtlConfig, *, git_commit: str | None = None) -> EtlReport:
         _item_events(con, cfg, rep)
     else:
         rep.notes.append("chartevents and procedureevents not converted: no concept_map given")
+    _reviewed_events(con, cfg, rep)
 
     # Route by the standard concept's domain; unmapped records stay in their home table.
     for domain, (table, select) in _ROUTES.items():
@@ -484,8 +489,7 @@ def build(cfg: EtlConfig, *, git_commit: str | None = None) -> EtlReport:
         "https://physionet.org/content/mimiciv/3.1/",
         f"agentic_tte.etl.mimic_omop {git_commit or 'unknown commit'}",
         datetime.now(UTC).date(), rep.vocabulary_version or "unknown"])  # fmt: skip
-    rep.notes += [desc, "not yet converted: labevents and inputevents (no curated item map; "
-                        "they need reviewed item maps)"]  # fmt: skip
+    rep.notes.append(desc)
     for table in CDM:
         rep.cdm_rows[table] = con.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
     con.execute("CHECKPOINT")
@@ -501,89 +505,151 @@ ITEM_MAPS = {
 }
 
 
-def _item_events(con, cfg: EtlConfig, rep: EtlReport) -> None:
-    for t in ("chartevents", "procedureevents", "d_items"):
-        if not (cfg.source / "icu" / f"{t}.csv.gz").exists():
-            raise FileNotFoundError(cfg.source / "icu" / f"{t}.csv.gz")
-    d_items = _src(cfg, "icu", "d_items")
-    for source, (file, home, start, end) in ITEM_MAPS.items():
-        path = (cfg.concept_map / file).as_posix()
-        # A curated target is used if standard and valid, followed through 'Maps to' if it is
-        # no longer standard, and rejected if the vocabulary does not have it.
-        con.execute(f"""CREATE TEMP TABLE map_{source} AS
-            WITH raw AS (
-                SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
-                       subject_label AS label, predicate_id AS predicate,
-                       TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
-                       coalesce(reviewer_id, '') AS reviewer
-                FROM read_csv('{path}', header = true, all_varchar = true)
-                WHERE object_id LIKE 'omop:%'),
-            checked AS (
-                SELECT raw.*, c.concept_id AS found, c.standard_concept AS std,
-                       c.invalid_reason AS inv,
-                       (SELECT min(r.concept_id_2) FROM concept_relationship r
-                        JOIN concept t ON t.concept_id = r.concept_id_2
-                             AND t.standard_concept = 'S'
-                        WHERE r.concept_id_1 = raw.curated_id AND r.relationship_id = 'Maps to'
-                          AND (r.invalid_reason IS NULL OR r.invalid_reason = '')) AS successor
-                FROM raw LEFT JOIN concept c ON c.concept_id = raw.curated_id)
-            SELECT itemid, label, predicate, curated_id, reviewer,
-                   CASE WHEN found IS NULL THEN NULL
-                        WHEN std = 'S' AND coalesce(inv, '') = '' THEN curated_id
-                        ELSE successor END AS concept_id,
-                   CASE WHEN found IS NULL THEN 'not in the vocabulary'
-                        WHEN std = 'S' AND coalesce(inv, '') = '' THEN 'accepted'
-                        WHEN successor IS NOT NULL THEN 'remapped'
-                        ELSE 'not standard and no Maps to' END AS status
-            FROM checked""")  # fmt: skip
-        stats = dict(con.execute(f"SELECT status, count(*) FROM map_{source} GROUP BY 1")
-                     .fetchall())  # fmt: skip
-        rejected = con.execute(f"""SELECT itemid, label, curated_id, status FROM map_{source}
-            WHERE concept_id IS NULL ORDER BY itemid""").fetchall()  # fmt: skip
-        preds = dict(con.execute(f"SELECT predicate, count(*) FROM map_{source} GROUP BY 1"
-                                 ).fetchall())  # fmt: skip
-        rep.item_maps[source] = {
-            "file": file, "rows_in_file": sum(stats.values()),
-            "accepted": stats.get("accepted", 0), "remapped": stats.get("remapped", 0),
-            "rejected": [list(r) for r in rejected], "predicates": preds}  # fmt: skip
-        con.execute(f"""INSERT INTO source_to_concept_map
-            SELECT CAST(m.itemid AS VARCHAR), 0, 'MIMIC-IV {source}', m.label, m.concept_id,
-                   c.vocabulary_id, DATE '1970-01-01', DATE '2099-12-31', NULL
-            FROM map_{source} m JOIN concept c ON c.concept_id = m.concept_id""")  # fmt: skip
+def _checked_map(con, name: str, raw_select: str) -> None:
+    """``map_<name>`` from rows (itemid, label, predicate, curated_id, reviewer): a target is
+    used if standard and valid, followed through 'Maps to' if it is no longer standard, and
+    rejected if the vocabulary does not have it."""
+    con.execute(f"""CREATE TEMP TABLE map_{name} AS
+        WITH raw AS ({raw_select}),
+        checked AS (
+            SELECT raw.*, c.concept_id AS found, c.standard_concept AS std,
+                   c.invalid_reason AS inv,
+                   (SELECT min(r.concept_id_2) FROM concept_relationship r
+                    JOIN concept t ON t.concept_id = r.concept_id_2 AND t.standard_concept = 'S'
+                    WHERE r.concept_id_1 = raw.curated_id AND r.relationship_id = 'Maps to'
+                      AND (r.invalid_reason IS NULL OR r.invalid_reason = '')) AS successor
+            FROM raw LEFT JOIN concept c ON c.concept_id = raw.curated_id)
+        SELECT itemid, label, predicate, curated_id, reviewer,
+               CASE WHEN found IS NULL THEN NULL
+                    WHEN std = 'S' AND coalesce(inv, '') = '' THEN curated_id
+                    ELSE successor END AS concept_id,
+               CASE WHEN found IS NULL THEN 'not in the vocabulary'
+                    WHEN std = 'S' AND coalesce(inv, '') = '' THEN 'accepted'
+                    WHEN successor IS NOT NULL THEN 'remapped'
+                    ELSE 'not standard and no Maps to' END AS status
+        FROM checked""")  # fmt: skip
 
-        ev = _src(cfg, "icu", source)
-        t_end = f"CAST(nullif(e.{end}, '') AS TIMESTAMP)" if end else "NULL"
-        value = ("TRY_CAST(e.valuenum AS DOUBLE), e.valueuom, e.value" if source == "chartevents"
-                 else "NULL, NULL, NULL")  # fmt: skip
-        con.execute(f"""INSERT INTO stg
-            SELECT '{source}', '{home}', a.subject_id, a.hadm_id,
-                   CAST(CAST(e.{start} AS TIMESTAMP) AS DATE), CAST(e.{start} AS TIMESTAMP),
-                   CAST({t_end} AS DATE), {t_end}, m.concept_id, c.domain_id,
-                   e.itemid, 0, {EHR}, NULL, NULL, NULL, {value}
-            FROM {ev} e
-            JOIN adm a ON a.hadm_id = TRY_CAST(e.hadm_id AS BIGINT)
-            JOIN map_{source} m ON m.itemid = TRY_CAST(e.itemid AS BIGINT)
-                 AND m.concept_id IS NOT NULL
-            JOIN concept c ON c.concept_id = m.concept_id
-            WHERE nullif(e.{start}, '') IS NOT NULL""")  # fmt: skip
-        converted = con.execute(f"SELECT count(*) FROM stg WHERE origin = '{source}'"
-                                ).fetchone()[0]  # fmt: skip
-        top = con.execute(f"""
-            SELECT TRY_CAST(e.itemid AS BIGINT) AS itemid, count(*) AS n FROM {ev} e
-            JOIN adm a ON a.hadm_id = TRY_CAST(e.hadm_id AS BIGINT)
-            WHERE TRY_CAST(e.itemid AS BIGINT) NOT IN
-                  (SELECT itemid FROM map_{source} WHERE concept_id IS NOT NULL)
-            GROUP BY 1 ORDER BY n DESC, 1""").fetchall()  # fmt: skip
-        labels = dict(con.execute(f"SELECT TRY_CAST(itemid AS BIGINT), label FROM {d_items}"
-                                  ).fetchall())  # fmt: skip
-        unconverted = sum(n for _, n in top)
-        rep.mapping[source] = {
-            "rows": converted + unconverted, "mapped": converted,
-            "top_unmapped": [[f"{i} {labels.get(i, '?')}", n] for i, n in top[:20]]}
-        rep.source_rows[source] = converted + unconverted
-        rep.notes.append(f"{source}: items without a curated map are not converted "
-                         f"({suppress(unconverted)} rows, {len(top)} items; see the mapping "
-                         "table)")  # fmt: skip
+
+def _map_report(con, rep: EtlReport, name: str, file: str) -> None:
+    stats = dict(con.execute(f"SELECT status, count(*) FROM map_{name} GROUP BY 1").fetchall())
+    rejected = con.execute(f"""SELECT itemid, label, curated_id, status FROM map_{name}
+        WHERE concept_id IS NULL ORDER BY itemid""").fetchall()  # fmt: skip
+    preds = dict(con.execute(f"SELECT predicate, count(*) FROM map_{name} GROUP BY 1"
+                             ).fetchall())  # fmt: skip
+    rep.item_maps[name] = {
+        "file": file, "rows_in_file": sum(stats.values()),
+        "accepted": stats.get("accepted", 0), "remapped": stats.get("remapped", 0),
+        "rejected": [list(r) for r in rejected], "predicates": preds}  # fmt: skip
+    con.execute(f"""INSERT INTO source_to_concept_map
+        SELECT CAST(m.itemid AS VARCHAR), 0, 'MIMIC-IV {name}', m.label, m.concept_id,
+               c.vocabulary_id, DATE '1970-01-01', DATE '2099-12-31', NULL
+        FROM map_{name} m JOIN concept c ON c.concept_id = m.concept_id""")  # fmt: skip
+
+
+# Event sources: module, home domain, start and end time, value columns (number, unit, raw),
+# how rows join the admitted cohort, and the item dictionary for labels.
+EVENTS = {
+    "chartevents": ("icu", "Measurement", "charttime", None,
+                    "TRY_CAST(e.valuenum AS DOUBLE), e.valueuom, e.value", "hadm", "d_items"),
+    "procedureevents": ("icu", "Procedure", "starttime", "endtime", "NULL, NULL, NULL", "hadm",
+                        "d_items"),
+    # Labs join on the patient: outpatient labs (no admission) are kept, with no visit.
+    "labevents": ("hosp", "Measurement", "charttime", None,
+                  "TRY_CAST(e.valuenum AS DOUBLE), e.valueuom, e.value", "subject",
+                  "d_labitems"),
+    "inputevents": ("icu", "Drug", "starttime", "endtime",
+                    "TRY_CAST(e.amount AS DOUBLE), e.amountuom, e.amount", "hadm", "d_items"),
+}  # fmt: skip
+
+# Curated MIT-LCP maps (SSSOM) for the sources that have one.
+ITEM_MAPS = {"chartevents": "chartevents_to_omop.csv",
+             "procedureevents": "procedureevents_to_omop.csv"}
+
+
+def _convert_events(con, cfg: EtlConfig, rep: EtlReport, source: str, how: str) -> None:
+    module, home, start, end, value, join, dictionary = EVENTS[source]
+    for t in (source, dictionary):
+        mod = "hosp" if t == "d_labitems" else module
+        if not (cfg.source / mod / f"{t}.csv.gz").exists():
+            raise FileNotFoundError(cfg.source / mod / f"{t}.csv.gz")
+    ev = _src(cfg, module, source)
+    if join == "hadm":
+        link = "JOIN adm a ON a.hadm_id = TRY_CAST(e.hadm_id AS BIGINT)"
+        person, visit = "a.subject_id", "a.hadm_id"
+    else:
+        link = ("JOIN (SELECT DISTINCT subject_id FROM adm) a "
+                "ON a.subject_id = TRY_CAST(e.subject_id AS BIGINT)")  # fmt: skip
+        person, visit = "a.subject_id", "TRY_CAST(nullif(e.hadm_id, '') AS BIGINT)"
+    t_end = f"CAST(nullif(e.{end}, '') AS TIMESTAMP)" if end else "NULL"
+    con.execute(f"""INSERT INTO stg
+        SELECT '{source}', '{home}', {person}, {visit},
+               CAST(CAST(e.{start} AS TIMESTAMP) AS DATE), CAST(e.{start} AS TIMESTAMP),
+               CAST({t_end} AS DATE), {t_end}, m.concept_id, c.domain_id,
+               e.itemid, 0, {EHR}, NULL, NULL, NULL, {value}
+        FROM {ev} e {link}
+        JOIN map_{source} m ON m.itemid = TRY_CAST(e.itemid AS BIGINT)
+             AND m.concept_id IS NOT NULL
+        JOIN concept c ON c.concept_id = m.concept_id
+        WHERE nullif(e.{start}, '') IS NOT NULL""")  # fmt: skip
+    converted = con.execute(f"SELECT count(*) FROM stg WHERE origin = '{source}'").fetchone()[0]
+    top = con.execute(f"""
+        SELECT TRY_CAST(e.itemid AS BIGINT) AS itemid, count(*) AS n FROM {ev} e {link}
+        WHERE TRY_CAST(e.itemid AS BIGINT) NOT IN
+              (SELECT itemid FROM map_{source} WHERE concept_id IS NOT NULL)
+        GROUP BY 1 ORDER BY n DESC, 1""").fetchall()  # fmt: skip
+    dict_mod = "hosp" if dictionary == "d_labitems" else module
+    labels = dict(con.execute(f"SELECT TRY_CAST(itemid AS BIGINT), label "
+                              f"FROM {_src(cfg, dict_mod, dictionary)}").fetchall())
+    unconverted = sum(n for _, n in top)
+    rep.mapping[source] = {
+        "rows": converted + unconverted, "mapped": converted,
+        "top_unmapped": [[f"{i} {labels.get(i, '?')}", n] for i, n in top[:20]]}
+    rep.source_rows[source] = converted + unconverted
+    rep.notes.append(f"{source}: items without {how} are not converted "
+                     f"({suppress(unconverted)} rows, {len(top)} items; see the mapping "
+                     "table)")  # fmt: skip
+
+
+def _item_events(con, cfg: EtlConfig, rep: EtlReport) -> None:
+    for source, file in ITEM_MAPS.items():
+        path = (cfg.concept_map / file).as_posix()
+        _checked_map(con, source, f"""
+            SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
+                   subject_label AS label, predicate_id AS predicate,
+                   TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
+                   coalesce(reviewer_id, '') AS reviewer
+            FROM read_csv('{path}', header = true, all_varchar = true)
+            WHERE object_id LIKE 'omop:%'""")  # fmt: skip
+        _map_report(con, rep, source, file)
+        _convert_events(con, cfg, rep, source, "a curated map")
+
+
+def _reviewed_events(con, cfg: EtlConfig, rep: EtlReport) -> None:
+    """labevents and inputevents through reviewed item maps (agentic_tte.etl.item_maps)."""
+    from agentic_tte.etl.item_maps import ItemMap
+
+    seen = set()
+    for path in cfg.item_maps:
+        m = ItemMap.model_validate_json(Path(path).read_text(encoding="utf-8"))
+        if m.kind in seen:
+            raise ValueError(f"two item maps for {m.kind}")
+        seen.add(m.kind)
+        approved = [(e.itemid, e.label, e.concept_id, e.reviewer or "")
+                    for e in m.entries if e.status == "approved" and e.concept_id]  # fmt: skip
+        con.execute(f"CREATE TEMP TABLE raw_{m.kind} (itemid BIGINT, label VARCHAR, "
+                    f"curated_id INTEGER, reviewer VARCHAR)")
+        if approved:
+            con.executemany(f"INSERT INTO raw_{m.kind} VALUES (?, ?, ?, ?)", approved)
+        _checked_map(con, m.kind, f"SELECT itemid, label, 'reviewed' AS predicate, "
+                                  f"curated_id, reviewer FROM raw_{m.kind}")
+        _map_report(con, rep, m.kind, Path(path).name)
+        rep.item_maps[m.kind]["reviewers"] = sorted({a[3] for a in approved if a[3]})
+        rep.item_maps[m.kind]["not_reviewed"] = sum(e.status in ("proposed", "no_match")
+                                                    for e in m.entries)  # fmt: skip
+        _convert_events(con, cfg, rep, m.kind, "an approved item map")
+    for kind in ("labevents", "inputevents"):
+        if kind not in seen:
+            rep.notes.append(f"{kind} not converted: no reviewed item map given")
 
 
 def sha256sums_digest(source: Path) -> str | None:

@@ -514,7 +514,17 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
   - **Read where they are:** the maps are not vendored (the guard blocks CSVs in git), and the manifest records the `mimic-code` commit.
   - **Each curated target is checked** against the loaded vocabulary: accepted if standard and valid, followed through 'Maps to' if no longer standard, rejected if missing. The report lists every rejection, and match predicates are counted (`exactMatch` / `closeMatch`). The map rows used go into OMOP's `source_to_concept_map`.
   - **Items without a curated map are not converted.** They are counted by item, with labels, in the report.
-- **Not yet:** labevents (158M rows) and inputevents (vasopressors, fluids). There is no curated map for them in `mimic-code`, so they need our own reviewed item maps: proposals from the vocabulary search on the item labels, then approval per item.
+- **labevents and inputevents: built (step 2c), through reviewed item maps** (`agentic_tte/etl/item_maps.py`; tests in `tests/test_item_maps.py`).
+  1. `agentic-tte etl items propose --kind labevents|inputevents` counts events per item (one scan) and proposes a standard concept from the vocabulary search on each item's label:
+     - labs are searched in the Measurement domain, with the specimen ranking the LOINC candidates;
+     - inputs in the Drug domain, preferring the ingredient.
+     It writes `map.json`, `review.md` (most frequent first, with coverage) and `decisions.json`. Items with fewer than 11 events are left out by default.
+  2. A person decides each item (approve, replace, reject, unmappable); a reviewer is required.
+  3. `etl items apply` writes the reviewed map, and `etl mimic --item-map ...` uses it.
+  - **Reviewed targets are checked against the vocabulary again,** like curated ones, and approved maps go into `source_to_concept_map` with the reviewers listed in the report.
+  - **Labs join on the patient,** so outpatient labs are kept with no visit. Input amounts go to `quantity` and `dose_unit_source_value`.
+  - **The review files stay on Hellbender:** they hold item labels and per-item counts from the credentialed data, with counts below 11 suppressed.
+  - **The reviews are the user's or a clinician's to do;** nothing is approved automatically.
 - **Checks:** on the ETL output, the gate's structure, CDM-version and death checks pass, and a compiled cohort and frame run, with exact times.
 - **Options,** all recorded in `cdm_source` and the manifest:
   - `diagnosis_time` (admission by default, a mild look-ahead; or discharge);

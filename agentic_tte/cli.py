@@ -151,6 +151,8 @@ def etl_mimic(
     temp_directory: str = typer.Option(None, help="Node-local scratch for spills."),
     concept_map: Path = typer.Option(None, help="mimic-code mimic-iv/concepts/concept_map: "
                                                 "curated chartevents and procedureevents maps."),
+    item_map: list[Path] = typer.Option(None, help="Reviewed item map (labevents or "
+                                                   "inputevents); repeat for each."),
 ):
     """MIMIC-IV -> OMOP CDM 5.4. Writes the CDM, a manifest and a suppressed report next to
     it; only the report and manifest may leave the cluster."""
@@ -168,7 +170,8 @@ def etl_mimic(
     cfg = EtlConfig(source=source, vocab=vocab, out=out, sample_percent=sample_percent,
                     diagnosis_time=diagnosis_time, death_followup_days=death_followup_days,
                     threads=threads, memory_limit=memory_limit,
-                    temp_directory=temp_directory, concept_map=concept_map)  # fmt: skip
+                    temp_directory=temp_directory, concept_map=concept_map,
+                    item_maps=item_map or [])  # fmt: skip
     map_commit = None
     if concept_map is not None:
         try:
@@ -188,12 +191,80 @@ def etl_mimic(
         "vocabulary": str(vocab), "vocabulary_version": rep.vocabulary_version,
         "concept_map": str(concept_map) if concept_map else None,
         "concept_map_commit": map_commit,
+        "item_maps": ",".join(str(x) for x in item_map or []) or None,
         "duckdb": rep.duckdb_version, "options": cfg.model_dump_json(),
         "started": rep.started_at.isoformat(), "finished": rep.finished_at.isoformat(),
     }  # fmt: skip
     Path(f"{stem}.manifest.txt").write_text(
         "\n".join(f"{k}={v}" for k, v in manifest.items()) + "\n", encoding="utf-8")
     typer.echo(f"wrote {out}; report {stem}.report.md; manifest {stem}.manifest.txt", err=True)
+
+
+items_app = typer.Typer(no_args_is_help=True,
+                        help="Reviewed item maps for labevents and inputevents.")
+etl_app.add_typer(items_app, name="items")
+
+
+@items_app.command("propose")
+def items_propose(
+    source: Path = typer.Option(..., help="MIMIC-IV 3.1 directory (hosp/, icu/)."),
+    vocab: Path = typer.Option(..., help="Athena vocabulary download."),
+    kind: str = typer.Option(..., help="labevents or inputevents"),
+    out: Path = typer.Option(..., "--out", "-o", help="Directory for the review files."),
+    min_rows: int = typer.Option(11, help="Leave out items with fewer events."),
+):
+    """Propose a standard concept per item from the vocabulary search on its label. Writes
+    map.json, review.md and decisions.json; keep them on the cluster."""
+    import duckdb
+
+    from agentic_tte.etl.item_maps import (
+        decisions_template,
+        item_counts,
+        propose_items,
+        review_sheet,
+    )
+    from agentic_tte.omop.vocab import load_athena
+
+    if kind not in ("labevents", "inputevents"):
+        typer.echo("kind must be labevents or inputevents", err=True)
+        raise typer.Exit(2)
+    con = duckdb.connect()
+    load_athena(con, vocab)
+    module, dictionary = ("hosp", "d_labitems") if kind == "labevents" else ("icu", "d_items")
+
+    def csv(module_, table):
+        path = (source / module_ / f"{table}.csv.gz").as_posix()
+        return f"read_csv('{path}', header = true, all_varchar = true)"
+
+    events = csv(module, kind)
+    items, total = item_counts(con, kind, events, csv(module, dictionary), min_rows=min_rows)
+    m = propose_items(con, kind, items, total_rows=total)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "map.json").write_text(m.model_dump_json(indent=2), encoding="utf-8")
+    (out / "review.md").write_text(review_sheet(m), encoding="utf-8")
+    (out / "decisions.json").write_text(json.dumps(decisions_template(m), indent=2), "utf-8")
+    typer.echo(f"{len(m.entries)} items ({m.summary()}) -> {out}/review.md; fill in "
+               f"{out}/decisions.json, then `agentic-tte etl items apply`", err=True)
+
+
+@items_app.command("apply")
+def items_apply(
+    map_file: Path,
+    decisions: Path,
+    out: Path = typer.Option(..., "--out", "-o", help="Reviewed item map (JSON)."),
+):
+    """Apply a reviewer's decisions to an item map."""
+    from agentic_tte.etl.item_maps import DecisionError, ItemMap, apply_decisions
+
+    m = ItemMap.model_validate_json(map_file.read_text(encoding="utf-8"))
+    try:
+        reviewed = apply_decisions(m, json.loads(decisions.read_text(encoding="utf-8")))
+    except DecisionError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from e
+    out.write_text(reviewed.model_dump_json(indent=2), encoding="utf-8")
+    typer.echo(f"{reviewed.summary()}; fully reviewed: {reviewed.fully_reviewed} -> {out}",
+               err=True)
 
 
 abbr_app = typer.Typer(no_args_is_help=True,
