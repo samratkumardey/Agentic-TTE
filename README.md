@@ -27,6 +27,17 @@ It builds on and extends [EmulatRx](https://github.com/TrialLab/EmulatRx) (Li et
 | Schoenfeld sample size, E-values | `agentic_tte/stats/design.py` |
 | Recovery table vs planted truth (cf. EmulatRx Table 3) | `eval/results/phase1_recovery.md` |
 
+## Status: Phase 2 (OMOP cohorts and the Replay workflow)
+
+| Piece | Where |
+|---|---|
+| Data Support Gate: can this OMOP database support this protocol? | `agentic_tte/omop/gate.py` |
+| Concept sets from the vocabulary tables, with clinician review | `agentic_tte/omop/vocab.py`, `concept_sets.py` |
+| Deterministic criteria-to-SQL compiler (no look-ahead) | `agentic_tte/omop/compiler.py` |
+| Attrition table and feasibility (suppressed counts) | `agentic_tte/omop/attrition.py` |
+| Statistician: fixed method menu, estimates and diagnostics | `agentic_tte/agents/statistician.py` |
+| Replay as a LangGraph workflow with clinician reviews | `agentic_tte/graph/replay.py` |
+
 ## Quick start (local)
 
 ```bash
@@ -40,6 +51,13 @@ Draft a protocol with a local Ollama model:
 ```bash
 uv run agentic-tte llm-check
 uv run agentic-tte draft NCT04134403 --model qwen3:8b -o runs/NCT04134403/protocol.json
+```
+
+Replay a drafted protocol on an OMOP database. The run stops at each clinician review (design, concept sets, an amber gate) and writes the files to fill in:
+
+```bash
+uv run agentic-tte replay start -o runs/replay1 --db synth.duckdb --classification synthetic --protocol runs/NCT04134403/protocol.json
+uv run agentic-tte replay resume -o runs/replay1   # after each review; the report ends in runs/replay1/report.md
 ```
 
 Settings come from `ATTE_*` environment variables (see `agentic_tte/config.py`): for example `ATTE_OLLAMA_HOST`, `ATTE_MODEL` and `ATTE_CACHE_DIR`. For Hellbender, see [hpc/README.md](hpc/README.md) (procedure) and [hpc/HELLBENDER.md](hpc/HELLBENDER.md) (cluster facts and pitfalls).

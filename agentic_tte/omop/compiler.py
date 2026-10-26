@@ -327,8 +327,9 @@ def _record(ctx: _Ctx, dom: Domain, ids: list[int], atom: CriterionAtom,
     after = rel in (TemporalRelation.X_AFTER_Y, TemporalRelation.X_WITHIN_T_AFTER_Y)
     if rel in (TemporalRelation.X_WITHIN_T_BEFORE_Y, TemporalRelation.X_WITHIN_T_AFTER_Y) \
             and w is None:  # fmt: skip
-        warnings.append("'within' without a window: read as any time before/after the anchor")
-        rel = TemporalRelation.X_BEFORE_Y if rel == TemporalRelation.X_WITHIN_T_BEFORE_Y \
+        warnings.append("'within' without a window: read as any time up to / after the anchor")
+        # "Onset within [missing] before randomization" includes onset at randomization.
+        rel = TemporalRelation.X_AT_Y if rel == TemporalRelation.X_WITHIN_T_BEFORE_Y \
             else TemporalRelation.X_AFTER_Y  # fmt: skip
     anchor_txt = "time zero" if y_is_t0 else f"'{t.anchor}'"
     latest = dom == Domain.MEASUREMENT and rel in (None, TemporalRelation.X_AT_Y)

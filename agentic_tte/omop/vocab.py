@@ -101,10 +101,14 @@ def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
     tables = _tables(con)
     has_syn = "concept_synonym" in tables
     has_rel = "concept_relationship" in tables
+    cols = {r[0].lower() for r in con.execute(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE lower(table_name) = 'concept'").fetchall()}  # fmt: skip
     valid = "(c.invalid_reason IS NULL OR c.invalid_reason = '')" \
-        if "invalid_reason" in {r[0].lower() for r in con.execute(
-            "SELECT column_name FROM information_schema.columns "
-            "WHERE lower(table_name) = 'concept'").fetchall()} else "TRUE"  # fmt: skip
+        if "invalid_reason" in cols else "TRUE"  # fmt: skip
+    # concept_class_id is required in CDM v5.4, but tolerate older or minimal tables.
+    cls_s = "c.concept_class_id" if "concept_class_id" in cols else "NULL"
+    cls_t = "t.concept_class_id" if "concept_class_id" in cols else "NULL"
     found: dict[int, Candidate] = {}
 
     def add(rows, match: str, text: str) -> None:
@@ -132,7 +136,7 @@ def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
             # Standard concepts in the right domain.
             rows = con.execute(f"""
                 SELECT c.concept_id, c.concept_name, c.vocabulary_id, c.domain_id,
-                       c.concept_class_id, c.standard_concept, NULL, NULL
+                       {cls_s}, c.standard_concept, NULL, NULL
                 FROM concept c
                 WHERE c.standard_concept = 'S' AND c.domain_id = ? AND {valid} AND ({where})
                 LIMIT {limit * 3}""", [omop_domain, *params]).fetchall()  # fmt: skip
@@ -141,7 +145,7 @@ def search(con, name: str, domain: str, *, limit: int = 10) -> list[Candidate]:
                 # Non-standard source concepts, followed to their standard target.
                 rows = con.execute(f"""
                     SELECT t.concept_id, t.concept_name, t.vocabulary_id, t.domain_id,
-                           t.concept_class_id, t.standard_concept, c.concept_id, c.concept_name
+                           {cls_t}, t.standard_concept, c.concept_id, c.concept_name
                     FROM concept c
                     JOIN concept_relationship r ON r.concept_id_1 = c.concept_id
                          AND r.relationship_id = 'Maps to'

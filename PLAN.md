@@ -387,9 +387,31 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
 - **Small cells:** counts below 11 are suppressed in `public()`, the markdown and the gate check. Raw counts stay in the report object on the data side. Complementary suppression is not done yet.
 - **CLI:** `agentic-tte compile ... --db` writes `attrition.md` and `attrition.json` (suppressed). `agentic-tte gate ... --compiled compile.json [--design-hr 0.7]` runs the feasibility check. It refuses a compile from another protocol version (content hash).
 
-**Next (Phase 2):**
-- wire Trialist → concept review → compile → gate → statistics as a LangGraph Replay on synthetic data;
-- add the outcome end events ("discharge") and duration/count criteria to the compiler;
-- add complementary suppression.
+**5. End-to-end Replay in LangGraph: built** (`agentic_tte/graph/replay.py`, `agentic_tte/agents/statistician.py`; tests in `tests/test_replay_graph.py`).
+- **Graph:** draft → design review → propose concepts → concept review → compile → gate → (red: stop; amber: gate review) → analyze → report.
+- **Human reviews are LangGraph `interrupt()`s,** resumed with the reviewer's answer:
+  - **design:** approve, or change elements and name the confounders. Any change makes a new protocol version (created by the user).
+  - **concepts:** a decisions file, plus the compile spec (time zero and anchors).
+  - **gate:** proceed or stop, asked only when the gate is amber.
+- **Isolation and routing:** the database connection is closed over, not stored in the state, which holds the protocol versions, concept sets, SQL and suppressed aggregates only. The Supervisor is fixed routing for now.
+- **Statistician** (deterministic menu, no LLM):
+  - primary method: clone-censor-weight when the arm has a grace period; otherwise IPTW, or PSM if the plan says so;
+  - always: the crude HR, IPTW, SMD before and after weighting, the PH test, IPTW-weighted KM risks at the horizon, and the E-value;
+  - complete case on confounders.
+- **Checkpoints:** in tests, `InMemorySaver`. In the CLI, `SqliteSaver` in the run directory, so the reviews can happen in separate sessions. State and interrupt payloads are plain JSON (no warnings with `LANGGRAPH_STRICT_MSGPACK=true`).
+- **CLI:** `agentic-tte replay start -o RUN --db DB --classification synthetic (--nct NCT | --protocol p.json) [--design-hr]` writes the open review's files. `agentic-tte replay resume -o RUN` continues once they are filled in; every answer needs a reviewer.
+- **Test result:** the Trialist (scripted LLM) ran on the real NCT03872011 record, and a scripted clinician did the reviews; the hydrocortisone arm became the synthetic study drug as a surrogate, with a note. Results on 3,000 synthetic patients:
+  - **primary (clone-censor-weight):** HR 0.573 (0.515–0.636), against a true marginal HR of 0.561;
+  - **IPTW:** HR 0.582;
+  - **crude:** HR 0.916, showing the confounding the weighting removes;
+  - **balance:** max SMD 0.72 before weighting, 0.035 after.
+- **Bug found and fixed:** the CLI end-to-end run exposed a clone-censor-weight bug. Starts exactly at time zero were never counted as "at risk" in the first grace interval, so arm-0 weights were 1 and the estimate stayed confounded (0.73 against 0.53). Fixed in `stats/ccw.py`, with a regression test in `test_stats_recovery.py`.
+
+**Not done (Phase 2 exit criterion: Replay of 3 trials on synthetic OMOP):**
+- Replay with real LLM drafts for 3 trials. The Phase 0 benchmark drafts in `runs/exit-H100-final/` can feed `replay start --protocol`, so no new GPU run is needed.
+- The report sign-off gate, and auto-approve for batch benchmarking (§3 HITL).
+- The compiler's follow-up end events ("discharge") and duration/count criteria.
+- Complementary suppression.
+- An LLM Supervisor and LLM method choice for the Statistician.
 
 **Gold annotation (decision pending):** LLM pre-annotation is allowed only as a separate, disclosed arm, not as gold (see the discussion of 2026-10-25). The gold standard stays two blinded human annotators plus an adjudicator.

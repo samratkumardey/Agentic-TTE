@@ -66,7 +66,9 @@ def clone_censor_weight(df: pd.DataFrame, *, grace: float, covariates: list[str]
     stop0 = np.where(started, u, np.minimum(t, grace))  # end of time at risk of starting
     pi_rows, pi_k, pi_y = [], [], []
     for k in range(k_count):
-        at_risk = stop0 > edges[k]
+        # At risk of starting in interval k: not started before it, and still followed at its
+        # start. A start exactly at the interval's start (u = 0: treatment at time zero) counts.
+        at_risk = np.where(started, u >= edges[k], stop0 > edges[k])
         idx = np.flatnonzero(at_risk)
         pi_rows.append(idx)
         pi_k.append(np.full(len(idx), k))

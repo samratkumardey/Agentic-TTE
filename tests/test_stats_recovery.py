@@ -144,6 +144,17 @@ def test_ccw_with_confounded_initiation(hr):
     assert log_error(unweighted.hr, truth) > log_error(weighted.hr, truth) + 0.1
 
 
+def test_ccw_when_treatment_starts_at_time_zero():
+    """Regression (found by the end-to-end Replay): starts exactly at time zero must count in
+    the first grace interval's censoring model. They did not, so arm-0 weights were all 1 and
+    the estimate stayed confounded (0.73 against a truth of 0.53)."""
+    s = Scenario(n=N, true_hr=0.5, truth_n=TRUTH_N)  # timing at_time_zero: treat_start = 0
+    c = generate(s)
+    truth = c.truth["marginal_hr"]
+    est = ccw_hr(c.frame, grace=0.5, covariates=c.confounders)
+    assert log_error(est.hr, truth) < TOL and est.covers(truth)
+
+
 # --- effect modification --------------------------------------------------------------------
 
 

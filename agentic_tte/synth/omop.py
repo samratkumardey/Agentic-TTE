@@ -34,17 +34,21 @@ INDEX_START = datetime(2015, 1, 1)
 
 def concept_table(n_noise: int) -> pd.DataFrame:
     rows = [
-        (8507, "MALE", "Gender", "Gender", "S"),
-        (8532, "FEMALE", "Gender", "Gender", "S"),
-        (SEPTIC_SHOCK, "Septic shock", "Condition", "SNOMED", "S"),
-        (ICU_VISIT, "Intensive care unit stay (synthetic)", "Visit", "ATTE-SYNTH", None),
-        (SOFA, "SOFA score (synthetic)", "Measurement", "ATTE-SYNTH", None),
-        (LACTATE, "Lactate [mmol/L] (synthetic)", "Measurement", "ATTE-SYNTH", None),
-        (STUDY_DRUG, "Study drug (synthetic)", "Drug", "ATTE-SYNTH", None),
-    ] + [(NOISE_BASE + k, f"Noise covariate x{k} (synthetic)", "Measurement", "ATTE-SYNTH", None)
-         for k in range(1, n_noise + 1)]  # fmt: skip
-    return pd.DataFrame(rows, columns=["concept_id", "concept_name", "domain_id",
-                                       "vocabulary_id", "standard_concept"])  # fmt: skip
+        (8507, "MALE", "Gender", "Gender", "Gender", "S"),
+        (8532, "FEMALE", "Gender", "Gender", "Gender", "S"),
+        (SEPTIC_SHOCK, "Septic shock", "Condition", "SNOMED", "Clinical Finding", "S"),
+        (ICU_VISIT, "Intensive care unit stay (synthetic)", "Visit", "ATTE-SYNTH", "Visit", None),
+        (SOFA, "SOFA score (synthetic)", "Measurement", "ATTE-SYNTH", "Clinical Observation",
+         None),
+        (LACTATE, "Lactate [mmol/L] (synthetic)", "Measurement", "ATTE-SYNTH", "Lab Test", None),
+        (STUDY_DRUG, "Study drug (synthetic)", "Drug", "ATTE-SYNTH", "Ingredient", None),
+    ] + [(NOISE_BASE + k, f"Noise covariate x{k} (synthetic)", "Measurement", "ATTE-SYNTH",
+          "Lab Test", None) for k in range(1, n_noise + 1)]  # fmt: skip
+    df = pd.DataFrame(rows, columns=["concept_id", "concept_name", "domain_id", "vocabulary_id",
+                                     "concept_class_id", "standard_concept"])  # fmt: skip
+    df["concept_code"] = df["concept_id"].astype(str)
+    df["invalid_reason"] = None
+    return df
 
 
 def to_omop(cohort: Cohort) -> dict[str, pd.DataFrame]:

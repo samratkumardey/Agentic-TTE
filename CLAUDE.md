@@ -59,7 +59,11 @@ Rules for that code:
 - Its frame must keep reproducing `synth.omop.ANALYSIS_SQL`.
 - Counts that leave the data side go through `suppress` (`AttritionReport.public()`).
 
-Next: a LangGraph Replay on synthetic data, end to end (Trialist → concept review → compile → gate → statistics).
+The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its three clinician reviews (design, concepts, amber gate) are `interrupt()`s with a SQLite checkpointer. Rules for it:
+- Keep the state and interrupt payloads plain JSON (`model_dump(mode="json")`).
+- Never put the database connection or patient rows in the state.
+
+Next: Replay three trials from the real Phase 0 drafts (`replay start --protocol`), then the report sign-off gate and batch auto-approve.
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.
