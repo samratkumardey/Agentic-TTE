@@ -114,6 +114,28 @@ def _norm_sql(col: str) -> str:
     return f"trim(regexp_replace(lower({col}), '[^a-z0-9]+', ' ', 'g'))"
 
 
+def _search_index(con, has_syn: bool) -> None:
+    """Normalized names, built once per connection: ``atte_cnorm`` (concept_id, ' name ') and
+    ``atte_snorm`` (concept_id, name) for synonyms. Normalizing 2 million names with a regular
+    expression in every query made item-map proposals take hours. Rebuilt when the concept
+    table changes (row count and highest ID)."""
+    key = con.execute("SELECT count(*), max(concept_id) FROM concept").fetchone()
+    try:
+        built = con.execute("SELECT n, top FROM atte_cnorm_key").fetchone()
+    except Exception:  # noqa: BLE001 - not built yet on this connection
+        built = None
+    if built == key:
+        return
+    con.execute(f"""CREATE OR REPLACE TEMP TABLE atte_cnorm AS
+        SELECT concept_id, ' ' || {_norm_sql('concept_name')} || ' ' AS padded FROM concept""")
+    if has_syn:
+        con.execute(f"""CREATE OR REPLACE TEMP TABLE atte_snorm AS
+            SELECT concept_id, {_norm_sql('concept_synonym_name')} AS name
+            FROM concept_synonym""")  # fmt: skip
+    con.execute("CREATE OR REPLACE TEMP TABLE atte_cnorm_key AS SELECT ? AS n, ? AS top",
+                list(key))
+
+
 def search(con, name: str, domain: str, *, limit: int = 10,
            abbreviations: list | None = None) -> list[Candidate]:  # fmt: skip
     """Candidate standard concepts for a protocol concept, best first. ``abbreviations``
@@ -136,6 +158,7 @@ def search(con, name: str, domain: str, *, limit: int = 10,
     cls_s = "c.concept_class_id" if "concept_class_id" in cols else "NULL"
     cls_t = "t.concept_class_id" if "concept_class_id" in cols else "NULL"
     found: dict[int, Candidate] = {}
+    _search_index(con, has_syn)
 
     def add(rows, match: str, text: str, abbr: str | None) -> None:
         for cid, cname, vocab, dom, cls, std, via, via_name in rows:
@@ -158,23 +181,21 @@ def search(con, name: str, domain: str, *, limit: int = 10,
                 queries.append((v, label))
     for text, abbr in queries:
         words = text.split()
-        exact_name = f"{_norm_sql('c.concept_name')} = ?"
+        exact_name = "n.padded = ?"
         # Whole words only: "nacl" must not match inside "linaclotide", nor "full" inside
         # "buckminsterfullerene" (found in the MIMIC-IV inputevents proposals, 2026-10-26).
-        padded = f"(' ' || {_norm_sql('c.concept_name')} || ' ')"
-        like_all = " AND ".join([f"{padded} LIKE ?"] * len(words))
+        like_all = " AND ".join(["n.padded LIKE ?"] * len(words))
         likes = [f"% {w} %" for w in words]
-        conds = [("exact_name", exact_name, [text]), ("all_words", like_all, likes)]
+        conds = [("exact_name", exact_name, [f" {text} "]), ("all_words", like_all, likes)]
         if has_syn:
-            conds.insert(1, ("exact_synonym",
-                             f"c.concept_id IN (SELECT concept_id FROM concept_synonym s "
-                             f"WHERE {_norm_sql('s.concept_synonym_name')} = ?)", [text]))
+            conds.insert(1, ("exact_synonym", "c.concept_id IN (SELECT concept_id FROM "
+                                              "atte_snorm WHERE name = ?)", [text]))
         for match, where, params in conds:
             # Standard concepts in the right domain.
             rows = con.execute(f"""
                 SELECT c.concept_id, c.concept_name, c.vocabulary_id, c.domain_id,
                        {cls_s}, c.standard_concept, NULL, NULL
-                FROM concept c
+                FROM concept c JOIN atte_cnorm n ON n.concept_id = c.concept_id
                 WHERE c.standard_concept = 'S' AND c.domain_id = ? AND {valid} AND ({where})
                 LIMIT {limit * 3}""", [omop_domain, *params]).fetchall()  # fmt: skip
             add(rows, match, text, abbr)
@@ -183,7 +204,7 @@ def search(con, name: str, domain: str, *, limit: int = 10,
                 rows = con.execute(f"""
                     SELECT t.concept_id, t.concept_name, t.vocabulary_id, t.domain_id,
                            {cls_t}, t.standard_concept, c.concept_id, c.concept_name
-                    FROM concept c
+                    FROM concept c JOIN atte_cnorm n ON n.concept_id = c.concept_id
                     JOIN concept_relationship r ON r.concept_id_1 = c.concept_id
                          AND r.relationship_id = 'Maps to'
                     JOIN concept t ON t.concept_id = r.concept_id_2 AND t.standard_concept = 'S'

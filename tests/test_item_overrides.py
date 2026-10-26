@@ -113,3 +113,15 @@ def test_propose_lists_rejected_curated_items_and_skips_working_ones(tmp_path):
             assert "curated map rejected: 9000099" in (out / "review.md").read_text("utf-8")
         else:
             assert curated[220046] == "123 (not in the vocabulary)" and curated[999999] is None
+
+
+def test_top_keeps_the_most_frequent_items_and_every_rejected_curated_one(tmp_path):
+    src, maps = _setup(tmp_path)
+    out = tmp_path / "chart"
+    r = CliRunner().invoke(app, ["etl", "items", "propose", "--source", str(src), "--vocab",
+                                 str(VOCAB), "--kind", "chartevents", "-o", str(out),
+                                 "--min-rows", "1", "--top", "0", "--concept-map",
+                                 str(maps)])  # fmt: skip
+    assert r.exit_code == 0, r.output
+    m = json.loads((out / "map.json").read_text(encoding="utf-8"))
+    assert [e["itemid"] for e in m["entries"]] == [220046]  # only the rejected curated item

@@ -213,6 +213,8 @@ def items_propose(
                                        "procedureevents"),
     out: Path = typer.Option(..., "--out", "-o", help="Directory for the review files."),
     min_rows: int = typer.Option(11, help="Leave out items with fewer events."),
+    top: int = typer.Option(None, help="Keep only the N most frequent items (rejected curated "
+                                       "items are always kept); e.g. 200 for chartevents."),
     concept_map: Path = typer.Option(None, help="chartevents/procedureevents: the curated "
                                                 "maps, so working ones are skipped and "
                                                 "rejected ones listed."),
@@ -263,6 +265,10 @@ def items_propose(
         items = with_curated(items, {it["itemid"]: it["rows"] for it in every},
                              {it["itemid"]: it["label"] for it in every},
                              curated_status(con, concept_map, kind))  # fmt: skip
+    if top is not None:
+        rest = sorted((it for it in items if not it.get("curated")),
+                      key=lambda it: (-it["rows"], it["itemid"]))  # fmt: skip
+        items = [it for it in items if it.get("curated")] + rest[:top]
     m = propose_items(con, kind, items, total_rows=total)
     out.mkdir(parents=True, exist_ok=True)
     (out / "map.json").write_text(m.model_dump_json(indent=2), encoding="utf-8")
