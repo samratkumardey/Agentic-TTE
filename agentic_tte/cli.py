@@ -230,15 +230,17 @@ def _replay_graph(run: dict, llm=None):
 
     from langgraph.checkpoint.sqlite import SqliteSaver
 
-    from agentic_tte.graph import build_replay
+    from agentic_tte.graph import AutoApprove, build_replay
     from agentic_tte.omop import DataContext
 
     out = Path(run["out"])
     saver = SqliteSaver(sqlite3.connect(str(out / "checkpoints.sqlite"), check_same_thread=False))
     con = _open_db(Path(run["db"]), Path(run["vocab"]) if run.get("vocab") else None)
     ctx = DataContext(data_classification=run["classification"], approved_by_rcss=run["approved"])
+    auto = AutoApprove.model_validate(run["auto"]) if run.get("auto") else None
     graph = build_replay(con, llm=llm, ctgov=_ctgov() if llm else None, context=ctx,
-                         design_hr=run.get("design_hr"), checkpointer=saver)  # fmt: skip
+                         design_hr=run.get("design_hr"), checkpointer=saver,
+                         auto=auto)  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -263,10 +265,14 @@ def _replay_pause(graph, cfg, out: Path) -> None:
                                             encoding="utf-8")  # fmt: skip
         (out / "spec.json").write_text(json.dumps(ask["spec_template"], indent=2), "utf-8")
         tmpl, files = None, ["review.md", "decisions.json", "spec.json"]
-    else:
+    elif stage == "gate":
         (out / "gate.md").write_text(ask["gate"] + "\n" + ask["attrition"], encoding="utf-8")
         tmpl = {"proceed": False, "reviewer": "", "note": ""}
         files = ["gate.md", "gate.json"]
+    else:
+        (out / "report_draft.md").write_text(ask["report"], encoding="utf-8")
+        tmpl = {"approve": False, "reviewer": "", "note": ""}
+        files = ["report_draft.md", "signoff.json"]
     if tmpl is not None:
         (out / f"{stage}.json").write_text(json.dumps(tmpl, indent=2), encoding="utf-8")
     (out / "pending.txt").write_text(stage, encoding="utf-8")
@@ -285,17 +291,28 @@ def replay_start(
     approved: bool = typer.Option(False, help="Storage/compute approved for this classification."),
     design_hr: float = typer.Option(None, help="Hazard ratio to power the feasibility check."),
     vocab: Path = typer.Option(None, help="Athena vocabulary download."),
+    auto: Path = typer.Option(None, help="Auto-approve policy (JSON) for benchmarking: its "
+                                         "stages are answered without a person, and the "
+                                         "report says so."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
         typer.echo("give exactly one of --nct or --protocol", err=True)
         raise typer.Exit(2)
+    policy = None
+    if auto is not None:
+        from agentic_tte.graph import AutoApprove
+
+        policy = AutoApprove.model_validate_json(auto.read_text(encoding="utf-8"))
+        typer.echo(f"AUTO-APPROVE for {', '.join(sorted(policy.stages))}: no human review of "
+                   "those stages; the report will say so", err=True)  # fmt: skip
     out.mkdir(parents=True, exist_ok=True)
     if (out / "checkpoints.sqlite").exists():
         typer.echo(f"{out} already holds a run: use `replay resume` or a new directory", err=True)
         raise typer.Exit(2)
     run = {"out": str(out), "db": str(db), "vocab": str(vocab) if vocab else None,
-           "classification": classification, "approved": approved, "design_hr": design_hr}
+           "classification": classification, "approved": approved, "design_hr": design_hr,
+           "auto": policy.model_dump(mode="json") if policy else None}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}

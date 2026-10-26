@@ -6,9 +6,10 @@ Each trial gets a synthetic OMOP database whose concepts look like its populatio
 (``synth.omop.Profile``) and whose effect is planted, so the estimate can be checked against
 the potential-outcome truth in the population the run actually selects.
 
-The reviews are SCRIPTED, not clinical: approve a vocabulary match, mark everything without
-one unmappable, plus the per-trial decisions below, each with its reason. They exercise the
-workflow; they are not a clinician's judgement and must not be reported as one.
+The reviews are AUTO-APPROVED (``graph.AutoApprove``), not clinical: approve a vocabulary
+match, mark everything without one unmappable, plus the per-trial decisions below, each with
+its reason. Each run's report says so at the top and ends with status ``auto_approved``. They
+exercise the workflow; they are not a clinician's judgement and must not be reported as one.
 
     uv run python eval/replay_phase2.py            # writes eval/results/phase2_replay.md
 """
@@ -20,20 +21,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
-from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.types import Command
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from agentic_tte.graph import build_replay, pending  # noqa: E402
+from agentic_tte.graph import AUTO_REVIEWER, AutoApprove, build_replay  # noqa: E402
 from agentic_tte.omop import DataContext  # noqa: E402
 from agentic_tte.omop.compiler import CompiledCohort  # noqa: E402
+from agentic_tte.omop.concept_sets import ConceptSetBook, review_sheet  # noqa: E402
 from agentic_tte.synth import omop as so  # noqa: E402
 from agentic_tte.synth.dgp import Scenario, generate  # noqa: E402
 
 DRAFTS = ROOT / "tests" / "fixtures" / "protocols"
-REVIEWER = "scripted-reviewer (not a clinician)"
+REVIEWER = AUTO_REVIEWER
 INPATIENT = "Inpatient hospitalization (synthetic)"
 
 
@@ -138,48 +138,25 @@ TRIALS = [
 ]
 
 
-def decisions_for(template: dict, overrides: dict) -> dict:
-    out = {"reviewer": REVIEWER, "decisions": {}}
-    for key, d in template["decisions"].items():
-        if key in overrides:
-            out["decisions"][key] = overrides[key]
-        elif d["action"] == "approve":  # a vocabulary match was proposed
-            out["decisions"][key] = {"action": "approve", "concept_ids": d["concept_ids"],
-                                     "note": "scripted: vocabulary match accepted"}
-        else:
-            out["decisions"][key] = {"action": "unmappable",
-                                     "note": "scripted: no concept in the synthetic vocabulary"}
-    return out
-
-
 AS_DRAFTED_RRT = {  # NCT06091982 without the design fix: each modality mapped to RRT
     f"T:AKI-RRT:{m}": {"action": "surrogate", "concept_ids": [so.STUDY_DRUG],
-                       "note": "scripted: the synthetic data does not distinguish RRT modalities"}
+                       "note": "auto: the synthetic data does not distinguish RRT modalities"}
     for m in ("intermittent hemodialysis", "continuous veno-venous hemofiltration",
               "continuous veno-venous hemodialysis", "continuous veno-venous hemodiafiltration")
 }  # fmt: skip
 
 
 def replay(t: TrialReplay, design: dict | None = None, overrides: dict | None = None) -> dict:
-    cohort = generate(t.scenario, with_truth=False)
-    con = so.write_duckdb(so.to_omop(cohort, t.profile))
-    graph = build_replay(con, context=DataContext(data_classification="synthetic"),
-                         checkpointer=InMemorySaver())  # fmt: skip
-    cfg = {"configurable": {"thread_id": t.nct}}
     import json
 
-    graph.invoke({"protocol": json.loads(t.draft.read_text(encoding="utf-8"))}, cfg)
-    graph.invoke(Command(resume=design or t.design), cfg)
-    ask = pending(graph, cfg)
-    sheet = ask["review_sheet"]
-    graph.invoke(Command(resume={"decisions": decisions_for(ask["decisions_template"],
-                                                            overrides or t.overrides),
-                                 "spec": t.spec}), cfg)  # fmt: skip
-    ask = pending(graph, cfg)
-    if ask is not None:  # amber gate
-        graph.invoke(Command(resume={"proceed": True, "reviewer": REVIEWER,
-                                     "note": "synthetic replay"}), cfg)  # fmt: skip
-    state = graph.get_state(cfg).values
+    cohort = generate(t.scenario, with_truth=False)
+    con = so.write_duckdb(so.to_omop(cohort, t.profile))
+    policy = AutoApprove(design=design or t.design, spec=t.spec,
+                         overrides=overrides or t.overrides)  # fmt: skip
+    graph = build_replay(con, context=DataContext(data_classification="synthetic"), auto=policy)
+    state = graph.invoke({"protocol": json.loads(t.draft.read_text(encoding="utf-8"))})
+    sheet = review_sheet(ConceptSetBook.model_validate(state["book"])) if state.get("book") \
+        else ""  # fmt: skip
     out = {"state": state, "review_sheet": sheet, "truth": None, "eligible": None}
     if state.get("compiled"):
         cc = CompiledCohort.model_validate(state["compiled"])
@@ -241,7 +218,8 @@ def main() -> None:
     lines = ["# Phase 2: Replay of three trials on synthetic OMOP", "",
              "Generated by `eval/replay_phase2.py`. Drafts: the Phase 0 final benchmark "
              "(qwen3:32b, H100, replicate 1). Data: synthetic OMOP, one profile per trial, with "
-             "a planted effect. **Reviews are scripted, not clinical** (see the script). The "
+             "a planted effect. **Reviews are auto-approved, not clinical** (`AutoApprove`; "
+             "see the script). The "
              "truth is the marginal HR from potential outcomes in the population each run "
              "selects. Replay agreement with the trials' published results is not assessed "
              "here: the data are synthetic.", ""]  # fmt: skip

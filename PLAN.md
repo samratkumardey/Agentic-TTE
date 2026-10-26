@@ -431,8 +431,19 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
 - **Synthetic CDM:** it now includes empty, typed `procedure_occurrence`, `observation` and `device_exposure` tables, as a real CDM does.
 - **Not assessed:** agreement with the trials' published results, because the data are synthetic. That needs MIMIC-IV (Phase 3).
 
+**7. Report sign-off and batch auto-approve: built** (§3 HITL; `agentic_tte/graph/replay.py`).
+- **Sign-off:** after an analysed run's report, a fourth review signs it off. `{"approve": true, ...}` gives status `signed_off`; `false` gives `returned`, with the note. Blocked or stopped runs have nothing to sign off.
+- **Audit trail:** every review is recorded in `reviews` (stage, reviewer, automatic or not, decision, note, UTC time) and shown as a table in the report.
+- **`AutoApprove`:** a fixed answer policy for chosen stages, for batch benchmarking.
+  - design: as given;
+  - concepts: approve vocabulary proposals, mark the rest unmappable, apply `overrides`; a `spec` is required;
+  - gate: proceed on amber;
+  - sign-off: approve.
+- **Labelling auto-approved runs:** the report opens with "AUTO-APPROVED BENCHMARK RUN. No person reviewed: <stages>. Not for clinical use." Its status is `auto_approved`, never `signed_off`. A policy may cover only some stages; the others still wait for a person. A run fully covered by the policy needs no checkpointer.
+- **CLI:** `replay start --auto policy.json` saves the policy with the run, and `replay resume` uses it. The sign-off review writes `report_draft.md` and `signoff.json`.
+- **Three-trial harness:** `eval/replay_phase2.py` now runs on `AutoApprove`, with the same estimates as before; its reports are labelled auto-approved.
+
 **Not done:**
-- The report sign-off gate, and auto-approve for batch benchmarking (§3 HITL).
 - Abbreviations in concept search ("diagnosis of ADHF" found nothing).
 - The compiler's follow-up end events ("discharge") and duration/count criteria.
 - Complementary suppression.

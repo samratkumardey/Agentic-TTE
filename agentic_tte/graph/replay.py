@@ -1,7 +1,7 @@
 """Replay as a LangGraph workflow (PLAN.md §3, §13; Phase 2 exit criterion).
 
     draft -> design_review* -> propose_concepts -> concept_review* -> compile -> gate
-          -> [red: stop] [amber: gate_review*] -> analyze -> report
+          -> [red: report, stop] [amber: gate_review*] -> analyze -> report -> signoff*
 
 ``*`` marks a human review. Each one is a LangGraph ``interrupt()``: the run stops, its state is
 saved by the checkpointer, and it resumes with the reviewer's answer
@@ -11,6 +11,13 @@ saved by the checkpointer, and it resumes with the reviewer's answer
 - concept_review: the concept-set review sheet, a decisions file to fill in, and the compile
   spec (time zero and anchors as concept sets). Answer ``{"decisions": ..., "spec": ...}``.
 - gate_review: only when the gate is amber. Answer ``{"proceed": bool, "reviewer": ...}``.
+- signoff: the report of an analysed run. Answer ``{"approve": bool, "reviewer": ...,
+  "note": ...}``: status ``signed_off``, or ``returned`` with the note.
+
+Every review is recorded (``reviews``: stage, reviewer, automatic or not, time, decision) and
+listed in the report. ``AutoApprove`` answers chosen reviews by a fixed policy, for batch
+benchmarking: such a run is labelled as auto-approved at the top of its report, its sign-off
+gives status ``auto_approved`` (never ``signed_off``), and it is not for clinical use.
 
 The LLM is used only by the Trialist, on registry text. The database connection is closed over
 when the graph is built, never put in the state. The state holds the protocol, concept sets,
@@ -21,10 +28,12 @@ fixed routing below for now; an LLM supervisor can replace it later.
 from __future__ import annotations
 
 import operator
-from typing import Annotated, Any, TypedDict
+from datetime import UTC, datetime
+from typing import Annotated, Any, Literal, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
+from pydantic import BaseModel, Field
 
 from agentic_tte.omop.attrition import attrition
 from agentic_tte.omop.compiler import CompiledCohort, CompileSpec, compile_protocol, spec_template
@@ -55,8 +64,57 @@ class ReplayState(TypedDict, total=False):
     analysis: dict
     analysis_md: str
     report: str
-    status: str  # running, blocked, stopped, done
+    status: str  # running, blocked, stopped, done, signed_off, returned, auto_approved
     log: Annotated[list[str], operator.add]
+    reviews: Annotated[list[dict], operator.add]  # audit trail of every review
+
+
+Stage = Literal["design", "concepts", "gate", "signoff"]
+AUTO_REVIEWER = "auto-approve (benchmark; no human review)"
+
+
+class AutoApprove(BaseModel):
+    """A fixed answer policy for batch benchmarking. It replaces human judgement, so every
+    use is recorded and shown, and an auto-approved report is never "signed off".
+
+    - design: approve, with ``design`` (e.g. confounders, changes) applied as given;
+    - concepts: approve every vocabulary proposal, mark the rest unmappable, apply
+      ``overrides`` (decisions by key); ``spec`` (time zero, anchors) must be given;
+    - gate: proceed on amber if ``proceed_on_amber``;
+    - signoff: approve if ``sign_off``."""
+
+    stages: set[Stage] = Field(default_factory=lambda: {"design", "concepts", "gate",
+                                                        "signoff"})  # fmt: skip
+    reviewer: str = AUTO_REVIEWER
+    design: dict = Field(default_factory=dict)
+    spec: dict | None = None
+    overrides: dict[str, dict] = Field(default_factory=dict)
+    proceed_on_amber: bool = True
+    sign_off: bool = True
+
+    def answer(self, stage: Stage, payload: dict) -> dict:
+        if stage == "design":
+            return {**self.design, "reviewer": self.reviewer}
+        if stage == "concepts":
+            if self.spec is None:
+                raise ValueError("auto-approving concepts needs a compile spec (time zero)")
+            decisions = {}
+            for key, d in payload["decisions_template"]["decisions"].items():
+                if key in self.overrides:
+                    decisions[key] = self.overrides[key]
+                elif d["action"] == "approve":
+                    decisions[key] = {"action": "approve", "concept_ids": d["concept_ids"],
+                                      "note": "auto: vocabulary proposal accepted"}
+                else:
+                    decisions[key] = {"action": "unmappable",
+                                      "note": "auto: no vocabulary proposal"}
+            return {"decisions": {"reviewer": self.reviewer, "decisions": decisions},
+                    "spec": self.spec}
+        if stage == "gate":
+            return {"proceed": self.proceed_on_amber, "reviewer": self.reviewer,
+                    "note": "auto: amber accepted" if self.proceed_on_amber else "auto: stop"}
+        return {"approve": self.sign_off, "reviewer": self.reviewer,
+                "note": "auto-approved for benchmarking; not reviewed by a person"}
 
 
 def _p(state: ReplayState) -> TargetTrialProtocol:
@@ -68,11 +126,25 @@ def _version(p: TargetTrialProtocol, why: str) -> dict:
     return {"protocol": d, "versions": [d], "log": [f"protocol v{p.version}: {why}"]}
 
 
+def _record(stage: str, answer: dict, auto: bool, decision: str) -> dict:
+    who = answer.get("reviewer") or (answer.get("decisions") or {}).get("reviewer")
+    return {"stage": stage, "reviewer": who or "reviewer", "auto": auto, "decision": decision,
+            "note": answer.get("note") or "",
+            "at": datetime.now(UTC).isoformat(timespec="seconds")}
+
+
 def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = None,
-                 design_hr: float | None = None, checkpointer=None):  # fmt: skip
+                 design_hr: float | None = None, checkpointer=None,
+                 auto: AutoApprove | None = None):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
-    the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI)."""
+    the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
+    ``auto`` covering every stage, the run needs none."""
     context = context or DataContext()
+
+    def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
+        if auto is not None and stage in auto.stages:
+            return auto.answer(stage, payload), True
+        return interrupt(payload) or {}, False
 
     def draft(state: ReplayState) -> dict:
         if state.get("protocol"):
@@ -88,25 +160,27 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
 
     def design_review(state: ReplayState) -> dict:
         p = _p(state)
-        answer = interrupt({
+        answer, is_auto = review("design", {
             "stage": "design",
             "protocol": state["protocol"],
             "completeness": p.completeness(),
             "element_status": {k: str(v) for k, v in p.element_status().items()},
             "ask": "Approve with {\"reviewer\": \"...\"}, or also change elements: "
                    "{\"changes\": {field: value}, \"confounders\": [{\"name\", \"domain\"}]}",
-        }) or {}  # fmt: skip
+        })  # fmt: skip
         changes = dict(answer.get("changes") or {})
         if answer.get("confounders") is not None:
             refs = [ConceptRef.model_validate(c).model_dump(mode="json")
                     for c in answer["confounders"]]
             changes["assignment"] = {**p.assignment.model_dump(mode="json"), "confounders": refs,
                                      "origin": Origin.USER.value}  # fmt: skip
+        what = ("changed " + ", ".join(sorted(changes))) if changes else "approved as drafted"
+        rec = {"reviews": [_record("design", answer, is_auto, what)]}
         if not changes:
-            return {"log": [f"design approved by {answer.get('reviewer') or 'reviewer'}"]}
+            return {**rec, "log": [f"design approved by {answer.get('reviewer') or 'reviewer'}"]}
         v = new_version(p, created_by=answer.get("reviewer") or "user",
                         notes="design review: " + ", ".join(sorted(changes)), **changes)
-        return _version(v, f"design review changed {', '.join(sorted(changes))}")
+        return {**_version(v, f"design review {what}"), **rec}
 
     def propose_concepts(state: ReplayState) -> dict:
         book = propose(con, _p(state))
@@ -116,7 +190,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     def concept_review(state: ReplayState) -> dict:
         book = ConceptSetBook.model_validate(state["book"])
         p = _p(state)
-        answer = interrupt({
+        answer, is_auto = review("concepts", {
             "stage": "concepts",
             "review_sheet": review_sheet(book),
             "decisions_template": decisions_template(book),
@@ -128,7 +202,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             **reviewed.gate_sets(), **(answer["spec"].get("concept_sets") or {})}})
         v = apply_to_protocol(p, reviewed)
         return {**_version(v, f"concept sets reviewed: {reviewed.summary()}"),
-                "book": reviewed.model_dump(mode="json"), "spec": spec.model_dump(mode="json")}
+                "book": reviewed.model_dump(mode="json"), "spec": spec.model_dump(mode="json"),
+                "reviews": [_record("concepts", answer, is_auto, str(reviewed.summary()))]}
 
     def compile_node(state: ReplayState) -> dict:
         spec = CompileSpec.model_validate(state["spec"])
@@ -161,15 +236,17 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         return "gate_review" if GateStatus.AMBER in statuses else "analyze"
 
     def gate_review(state: ReplayState) -> dict:
-        answer = interrupt({"stage": "gate", "gate": state["gate_md"],
+        answer, is_auto = review("gate", {"stage": "gate", "gate": state["gate_md"],
                             "attrition": state["attrition_md"],
                             "ask": "Amber: proceed with these limitations? "
                                    "{\"proceed\": true|false, \"reviewer\": \"...\", "
-                                   "\"note\": \"...\"}"}) or {}  # fmt: skip
+                                   "\"note\": \"...\"}"})  # fmt: skip
         who = answer.get("reviewer") or "reviewer"
         if not answer.get("proceed"):
-            return {"status": "stopped", "log": [f"stopped at the gate by {who}"]}
-        return {"log": [f"gate limitations accepted by {who}: {answer.get('note') or ''}"]}
+            return {"status": "stopped", "log": [f"stopped at the gate by {who}"],
+                    "reviews": [_record("gate", answer, is_auto, "stop")]}
+        return {"log": [f"gate limitations accepted by {who}: {answer.get('note') or ''}"],
+                "reviews": [_record("gate", answer, is_auto, "proceed")]}
 
     def after_gate_review(state: ReplayState) -> str:
         return "report" if state.get("status") == "stopped" else "analyze"
@@ -191,18 +268,23 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         return {"analysis": res.model_dump(mode="json"), "analysis_md": res.to_markdown(),
                 "log": [msg]}
 
-    def report(state: ReplayState) -> dict:
+    def render(state: ReplayState, status: str, reviews: list[dict]) -> str:
         p = _p(state)
-        status = state.get("status") or "running"
-        if status == "running":
-            status = "done"
         cc = CompiledCohort.model_validate(state["compiled"]) if state.get("compiled") else None
         parts = [f"# Replay: {p.source.nct_id or p.protocol_id}"
-                 + (f" — {p.source.title}" if p.source.title else ""), "",
-                 f"Status: **{status}**. Protocol v{p.version} (hash "
-                 f"`{p.content_hash()[:12]}`); data classification "
-                 f"{context.data_classification}.", "",
-                 "## Run log", ""] + [f"- {m}" for m in state.get("log", [])]  # fmt: skip
+                 + (f" — {p.source.title}" if p.source.title else ""), ""]
+        autos = [r["stage"] for r in reviews if r["auto"]]
+        if autos:
+            parts += [f"> **AUTO-APPROVED BENCHMARK RUN.** No person reviewed: "
+                      f"{', '.join(autos)}. Not for clinical use.", ""]
+        parts += [f"Status: **{status}**. Protocol v{p.version} (hash "
+                  f"`{p.content_hash()[:12]}`); data classification "
+                  f"{context.data_classification}.", "",
+                  "## Reviews", "", "| Stage | Reviewer | Automatic | Decision | Note | Time |",
+                  "|---|---|---|---|---|---|"]  # fmt: skip
+        parts += [f"| {r['stage']} | {r['reviewer']} | {'yes' if r['auto'] else 'no'} | "
+                  f"{r['decision']} | {r['note'] or '–'} | {r['at']} |" for r in reviews]
+        parts += ["", "## Run log", ""] + [f"- {m}" for m in state.get("log", [])]
         if state.get("gate_md"):
             parts += ["", state["gate_md"].replace("# Data Support Gate", "## Data Support Gate")]
         if state.get("attrition_md"):
@@ -216,13 +298,35 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                   "- Accuracy against the trial's published result is not scored here.",
                   "- Criteria that were not compiled or applied are listed above; the cohort "
                   "is wider than the protocol by them."]  # fmt: skip
-        return {"report": "\n".join(parts) + "\n", "status": status}
+        return "\n".join(parts) + "\n"
+
+    def report(state: ReplayState) -> dict:
+        status = state.get("status") or "running"
+        if status == "running":
+            status = "done"
+        return {"report": render(state, status, state.get("reviews", [])), "status": status}
+
+    def after_report(state: ReplayState) -> str:
+        return "signoff" if state.get("status") == "done" else END
+
+    def signoff(state: ReplayState) -> dict:
+        answer, is_auto = review("signoff", {
+            "stage": "signoff", "report": state["report"],
+            "ask": "Sign off the report? {\"approve\": true|false, \"reviewer\": \"...\", "
+                   "\"note\": \"...\"}"})  # fmt: skip
+        ok = bool(answer.get("approve"))
+        status = ("auto_approved" if is_auto else "signed_off") if ok else "returned"
+        rec = _record("signoff", answer, is_auto, "approve" if ok else "return")
+        reviews = [*state.get("reviews", []), rec]
+        return {"report": render(state, status, reviews), "status": status, "reviews": [rec],
+                "log": [f"report {status} by {rec['reviewer']}"]}
 
     g = StateGraph(ReplayState)
     for name, fn in (("draft", draft), ("design_review", design_review),
                      ("propose_concepts", propose_concepts), ("concept_review", concept_review),
                      ("compile", compile_node), ("gate", gate), ("gate_review", gate_review),
-                     ("analyze", analyze_node), ("report", report)):  # fmt: skip
+                     ("analyze", analyze_node), ("report", report),
+                     ("signoff", signoff)):  # fmt: skip
         g.add_node(name, fn)
     g.add_edge(START, "draft")
     g.add_edge("draft", "design_review")
@@ -233,7 +337,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     g.add_conditional_edges("gate", after_gate, ["report", "gate_review", "analyze"])
     g.add_conditional_edges("gate_review", after_gate_review, ["report", "analyze"])
     g.add_edge("analyze", "report")
-    g.add_edge("report", END)
+    g.add_conditional_edges("report", after_report, ["signoff", END])
+    g.add_edge("signoff", END)
     return g.compile(checkpointer=checkpointer)
 
 

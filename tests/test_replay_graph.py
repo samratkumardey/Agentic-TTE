@@ -3,13 +3,14 @@ the real NCT03872011 registry record) -> design review -> concept review -> comp
 -> gate review -> statistics -> report, checked against potential-outcome truth."""
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
-from agentic_tte.graph import build_replay, pending
+from agentic_tte.graph import AUTO_REVIEWER, AutoApprove, build_replay, pending
 from agentic_tte.llm import ScriptedClient
 from agentic_tte.omop import DataContext
 from agentic_tte.synth import omop as so
@@ -72,10 +73,18 @@ def test_replay_end_to_end(synthetic, nct03872011_study):
 
     ask = pending(graph, cfg)  # amber: made-up criteria unmappable, local vocabulary only
     assert ask["stage"] == "gate" and "AMBER" in ask["gate"]
-    state = graph.invoke(Command(resume={"proceed": True, "reviewer": "Dr Test",
-                                         "note": "synthetic run"}), cfg)  # fmt: skip
+    graph.invoke(Command(resume={"proceed": True, "reviewer": "Dr Test",
+                                 "note": "synthetic run"}), cfg)  # fmt: skip
 
-    assert state["status"] == "done" and pending(graph, cfg) is None
+    ask = pending(graph, cfg)  # the report waits for sign-off
+    assert ask["stage"] == "signoff" and "Status: **done**" in ask["report"]
+    state = graph.invoke(Command(resume={"approve": True, "reviewer": "Dr Test",
+                                         "note": "methods checked"}), cfg)  # fmt: skip
+    assert state["status"] == "signed_off" and pending(graph, cfg) is None
+    assert [r["stage"] for r in state["reviews"]] == ["design", "concepts", "gate", "signoff"]
+    assert not any(r["auto"] for r in state["reviews"])
+    assert "Status: **signed_off**" in state["report"] and "AUTO-APPROVED" not in state["report"]
+    assert "| signoff | Dr Test | no | approve | methods checked |" in state["report"]
     versions = [v["version"] for v in state["versions"]]
     assert versions == [1, 2, 3]  # draft, design review (confounders), concept review
     a = state["analysis"]
@@ -121,6 +130,53 @@ def test_reviewer_can_stop_at_an_amber_gate(synthetic, nct03872011_study):
                                  "spec": SPEC}), cfg)  # fmt: skip
     state = graph.invoke(Command(resume={"proceed": False, "reviewer": "Dr Test"}), cfg)
     assert state["status"] == "stopped" and "analysis" not in state
+    assert pending(graph, cfg) is None  # nothing to sign off: no analysis was run
+
+
+def _auto(**kw):
+    return AutoApprove(design={"confounders": CONFOUNDERS}, spec=SPEC, overrides={
+        k: v for k, v in clinician_decisions({"decisions": {
+            "T:Vitamin C,thiamine,hydrocortisone:hydrocortisone": {}, "C:sofa": {},
+            "C:lactate": {}}})["decisions"].items()}, **kw)  # fmt: skip
+
+
+def test_auto_approve_runs_without_a_person_and_says_so(synthetic, nct03872011_study):
+    """Batch benchmarking: no interrupts at all (no checkpointer needed), every review
+    recorded as automatic, and the report can never read as signed off."""
+    _, con = synthetic
+    graph = build_replay(con, llm=ScriptedClient(_respond, max_retries=1),
+                         context=DataContext(data_classification="synthetic"), auto=_auto())
+    state = graph.invoke({"study": nct03872011_study})
+    assert state["status"] == "auto_approved"
+    assert all(r["auto"] and r["reviewer"] == AUTO_REVIEWER for r in state["reviews"])
+    assert [r["stage"] for r in state["reviews"]] == ["design", "concepts", "gate", "signoff"]
+    rep = state["report"]
+    assert rep.splitlines()[2].startswith("> **AUTO-APPROVED BENCHMARK RUN.**")
+    assert "design, concepts, gate, signoff" in rep and "signed_off" not in rep
+    assert state["analysis"]["primary_method"] == "clone-censor-weight"
+
+
+def test_auto_approve_can_cover_some_stages(synthetic, nct03872011_study):
+    """Auto design and gate, but a person reviews the concepts and signs off: the report
+    names exactly the automatic stages."""
+    _, con = synthetic
+    graph = build_replay(con, llm=ScriptedClient(_respond, max_retries=1),
+                         context=DataContext(data_classification="synthetic"),
+                         checkpointer=InMemorySaver(),
+                         auto=_auto(stages={"design", "gate"}))  # fmt: skip
+    cfg = {"configurable": {"thread_id": "partial"}}
+    graph.invoke({"study": nct03872011_study}, cfg)
+    ask = pending(graph, cfg)
+    assert ask["stage"] == "concepts"
+    graph.invoke(Command(resume={"decisions": clinician_decisions(ask["decisions_template"]),
+                                 "spec": SPEC}), cfg)  # fmt: skip
+    assert pending(graph, cfg)["stage"] == "signoff"  # the amber gate was auto-accepted
+    state = graph.invoke(Command(resume={"approve": False, "reviewer": "Dr Test",
+                                         "note": "recheck the surrogate"}), cfg)  # fmt: skip
+    assert state["status"] == "returned"
+    assert "No person reviewed: design, gate." in state["report"]
+    with pytest.raises(ValueError, match="compile spec"):
+        AutoApprove().answer("concepts", {"decisions_template": {"decisions": {}}})
 
 
 def test_cli_replay_resumes_from_checkpoints(tmp_path, nct03872011_study):
@@ -164,8 +220,40 @@ def test_cli_replay_resumes_from_checkpoints(tmp_path, nct03872011_study):
     (out / "gate.json").write_text(json.dumps({"proceed": True, "reviewer": "Dr Test"}), "utf-8")
     r = run(app, ["replay", "resume", "-o", str(out)])
     assert r.exit_code == 0, r.output
+    assert "waiting for the signoff review" in r.output
+    assert "clone-censor-weight (primary)" in (out / "report_draft.md").read_text("utf-8")
+
+    (out / "signoff.json").write_text(json.dumps({"approve": True, "reviewer": "Dr Test"}),
+                                      "utf-8")  # fmt: skip
+    r = run(app, ["replay", "resume", "-o", str(out)])
+    assert r.exit_code == 0, r.output
+    assert "run signed_off" in r.output
     report = (out / "report.md").read_text(encoding="utf-8")
-    assert "Status: **done**" in report and "clone-censor-weight (primary)" in report
+    assert "Status: **signed_off**" in report and "clone-censor-weight (primary)" in report
     r = run(app, ["replay", "start", "-o", str(out), "--db", str(db), "--protocol", str(proto),
                   "--classification", "synthetic"])  # fmt: skip
     assert r.exit_code == 2  # a run directory is never reused
+
+
+def test_cli_auto_approve_policy(tmp_path):
+    """`replay start --auto` runs a benchmark to the end in one command."""
+    from typer.testing import CliRunner
+
+    from agentic_tte.cli import app
+
+    db = tmp_path / "synth.duckdb"
+    so.write_duckdb(so.to_omop(generate(Scenario(n=600, horizon_days=90.0),
+                                        with_truth=False)), db).close()  # fmt: skip
+    proto = Path(__file__).parent / "fixtures" / "protocols" \
+        / "NCT04134403.final-H100.qwen3-32b.json"  # fmt: skip
+    policy = tmp_path / "policy.json"
+    policy.write_text(AutoApprove(spec=SPEC, design={"confounders": CONFOUNDERS})
+                      .model_dump_json(), encoding="utf-8")  # fmt: skip
+    out = tmp_path / "run"
+    r = CliRunner().invoke(app, ["replay", "start", "-o", str(out), "--db", str(db),
+                                 "--protocol", str(proto), "--classification", "synthetic",
+                                 "--auto", str(policy)])  # fmt: skip
+    assert r.exit_code == 0, r.output
+    assert "AUTO-APPROVE" in r.output and "run auto_approved" in r.output
+    report = (out / "report.md").read_text(encoding="utf-8")
+    assert "AUTO-APPROVED BENCHMARK RUN" in report and not (out / "pending.txt").exists()

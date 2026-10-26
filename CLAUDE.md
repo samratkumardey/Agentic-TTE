@@ -65,8 +65,9 @@ The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its 
 
 The Phase 2 exit criterion is met on synthetic data (2026-10-26; `eval/results/phase2_replay.md`). Three trials were replayed end to end from the real qwen3:32b Phase 0 drafts, and every primary CI covers the planted marginal truth. The reviews were scripted, not clinical: never describe them as clinician review.
 
+Reports now need sign-off (status `signed_off` or `returned`). Batch benchmarks use `AutoApprove`: their reports are labelled auto-approved, with status `auto_approved`. Never present an auto-approved run as reviewed or signed off.
+
 Next:
-- the report sign-off gate and batch auto-approve;
 - abbreviation handling in concept search;
 - then Phase 3 (MIMIC-IV OMOP on Hellbender; confirm the data classification with RCSS first).
 

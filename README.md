@@ -53,7 +53,7 @@ uv run agentic-tte llm-check
 uv run agentic-tte draft NCT04134403 --model qwen3:8b -o runs/NCT04134403/protocol.json
 ```
 
-Replay a drafted protocol on an OMOP database. The run stops at each clinician review (design, concept sets, an amber gate) and writes the files to fill in:
+Replay a drafted protocol on an OMOP database. The run stops at each clinician review (design, concept sets, an amber gate, report sign-off) and writes the files to fill in. For batch benchmarks, `--auto policy.json` answers chosen reviews by a fixed policy (`agentic_tte.graph.AutoApprove`); those reports are labelled auto-approved and are never signed off.
 
 ```bash
 uv run agentic-tte replay start -o runs/replay1 --db synth.duckdb --classification synthetic --protocol runs/NCT04134403/protocol.json

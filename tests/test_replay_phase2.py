@@ -141,7 +141,7 @@ def test_three_trial_replay(i):
     t = replace(t, scenario=replace(t.scenario, n=2500))
     res = rp.replay(t)
     st = res["state"]
-    assert st["status"] == "done"
+    assert st["status"] == "auto_approved"
     a = st["analysis"]
     p = next(e for e in a["estimates"] if e["method"] == a["primary_method"])
     assert abs(np.log(p["hr"]) - np.log(res["truth"])) < 0.2
