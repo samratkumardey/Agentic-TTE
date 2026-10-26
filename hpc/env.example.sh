@@ -44,9 +44,11 @@ export ATTE_MODEL="${ATTE_MODEL:-qwen3:32b}"
 export ATTE_THINK="${ATTE_THINK:-false}"
 
 # --- MIMIC-IV and OMOP (Phase 3; hpc/HELLBENDER.md "Data already on Hellbender") ---------
-# All inside the ~/data quota. The vocabulary folder name has a space: keep the quotes.
+# All inside the ~/data quota. Keep the quotes around paths.
 export ATTE_MIMIC_SOURCE="/cluster/pixstor/data/$USER/mimic-source/mimic-iv-3.1"
-export ATTE_VOCAB="/cluster/pixstor/data/$USER/tte-project/athena/S07/Athena Verison"
+# Athena release v5.0 29-AUG-26 (2026-10-26 download; has ICD9CM, ICD9Proc, NDC). The
+# older S07 copy lacks those three: do not use it for MIMIC.
+export ATTE_VOCAB="/cluster/pixstor/data/$USER/tte-project/athena/v5-2026-08-29"
 export ATTE_MIMIC_CONCEPT_MAP="/cluster/pixstor/data/$USER/mimic-code/mimic-iv/concepts/concept_map"
 export ATTE_OMOP_DIR="/cluster/pixstor/data/$USER/tte-project/omop"
 export ATTE_ITEM_MAPS="${ATTE_ITEM_MAPS:-}"   # reviewed item maps (space-separated paths)

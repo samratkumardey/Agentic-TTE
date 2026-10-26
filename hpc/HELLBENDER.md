@@ -48,6 +48,10 @@ All of this is under `/cluster/pixstor/data/$USER/` (`$P` below). The user confi
 
 **Both Athena copies are incomplete for MIMIC-IV** (checked 2026-10-26 against `VOCABULARY.csv`). S07 and `tte-project/athena_vocab` each hold only ICD10CM, ICD10PCS, LOINC, RxNorm and SNOMED. **ICD9CM, ICD9Proc and NDC are missing.** In the 1% ETL pilot, this left every ICD-9 diagnosis and procedure (about half of MIMIC-IV's coding) and every prescription (NDC) unmapped. A new Athena download with those vocabularies is needed before the full ETL.
 
+**Athena release v5.0 29-AUG-26** (downloaded 2026-10-26; zip 722 MB, about 4.2 GB unpacked) goes to `$P/tte-project/athena/v5-2026-08-29/` (`ATTE_VOCAB`).
+- **Vocabularies:** ICD9CM, ICD9Proc, ICD10CM, ICD10PCS, ICD10, SNOMED (2026), RxNorm (20260601), RxNorm Extension, NDC (20260823), ATC, HCPCS, CVX, LOINC, UCUM, ICDO3, NUCC, Medicare Specialty, CMS Place of Service, UB04, and the OMOP infrastructure vocabularies.
+- **CPT4** is shipped as `CONCEPT_CPT4.csv` and only joins `CONCEPT.csv` after `./cpt.sh <UMLS API key>` (needs Java and internet). The MIMIC ETL does not need CPT4; do it before an EHR source with CPT procedure codes.
+
 ## Slurm
 
 - Account `general`, QOS `normal`.
