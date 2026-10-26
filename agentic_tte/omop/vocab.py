@@ -70,21 +70,35 @@ _SALTS = {"sodium", "succinate", "hydrochloride", "hcl", "phosphate", "sulfate",
           "acetate", "chloride", "potassium", "citrate", "tartrate", "maleate", "mesylate",
           "calcium", "besylate", "bitartrate", "fumarate", "bromide", "injection", "infusion",
           "intravenous", "iv", "oral", "tablet", "tablets"}  # fmt: skip
+# Words in ICU drug and fluid labels that name an administration, not a substance
+# (MIMIC-IV inputevents: "KCL (Bolus)", "Replete with Fiber (Full)", "Fentanyl (Concentrate)").
+_DRUG_NOISE = {"solution", "bolus", "full", "concentrate", "prophylaxis", "premix", "piggyback",
+               "drip", "crrt", "intake", "flush", "push", "gtt", "infusion", "mini", "bag",
+               "with", "and", "in"}  # fmt: skip
 
 
 def query_variants(name: str, domain: str | None = None) -> list[str]:
     """"T2DM (type 2 diabetes mellitus)" -> the full text, the text outside the brackets and
     the bracketed expansion; then the same without generic words ("serum lactate level" ->
-    "serum lactate") and, for drugs, without salt and form words. Normalized, de-duplicated,
-    most specific first."""
+    "serum lactate"). For drugs, also without salt, form and administration words and without
+    strengths ("Albumin 5%" -> "albumin"); a variant left with only such words is dropped, so
+    "(Full)" never becomes a query on its own. Normalized, de-duplicated, most specific
+    first."""
+    drug = domain == Domain.DRUG
     out = [name]
     inner = re.findall(r"\(([^)]+)\)", name)
     outer = re.sub(r"\([^)]*\)", " ", name)
     out += inner + [outer]
-    drop = _GENERIC | (_SALTS if domain == Domain.DRUG else set())
+    drop = _GENERIC | (_SALTS | _DRUG_NOISE if drug else set())
     out += [" ".join(w for w in norm(v).split() if w not in drop) for v in list(out)]
+    if drug:
+        out += [" ".join(w for w in norm(v).split() if w not in drop and not w.isdigit())
+                for v in list(out)]  # fmt: skip
     seen, variants = set(), []
     for v in map(norm, out):
+        words = v.split()
+        if drug and all(w in drop or w.isdigit() for w in words):
+            continue  # nothing left that names a substance
         if v and v not in seen:
             seen.add(v)
             variants.append(v)
@@ -145,8 +159,11 @@ def search(con, name: str, domain: str, *, limit: int = 10,
     for text, abbr in queries:
         words = text.split()
         exact_name = f"{_norm_sql('c.concept_name')} = ?"
-        like_all = " AND ".join([f"{_norm_sql('c.concept_name')} LIKE ?"] * len(words))
-        likes = [f"%{w}%" for w in words]
+        # Whole words only: "nacl" must not match inside "linaclotide", nor "full" inside
+        # "buckminsterfullerene" (found in the MIMIC-IV inputevents proposals, 2026-10-26).
+        padded = f"(' ' || {_norm_sql('c.concept_name')} || ' ')"
+        like_all = " AND ".join([f"{padded} LIKE ?"] * len(words))
+        likes = [f"% {w} %" for w in words]
         conds = [("exact_name", exact_name, [text]), ("all_words", like_all, likes)]
         if has_syn:
             conds.insert(1, ("exact_synonym",

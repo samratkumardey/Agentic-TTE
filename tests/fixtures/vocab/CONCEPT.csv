@@ -24,3 +24,8 @@ concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concep
 9000092	Dependence on renal dialysis	Observation	ICD10CM	4-char billing code		Z99.2	19700101	20991231	
 9000093	Dependence on renal dialysis	Observation	SNOMED	Clinical Finding	S	T093	19700101	20991231	
 9000100	Heart rate	Measurement	LOINC	Clinical Observation	S	T100	19700101	20991231	
+9000110	linaclotide 0.29 MG	Drug	RxNorm	Clinical Drug Comp	S	T110	19700101	20991231	
+9000111	buckminsterfullerene	Drug	RxNorm	Ingredient	S	T111	19700101	20991231	
+9000112	albumin human	Drug	RxNorm	Ingredient	S	T112	19700101	20991231	
+9000113	albumin,chromated Cr-51 serum	Drug	RxNorm	Ingredient	S	T113	19700101	20991231	
+9000114	elranatamab	Drug	RxNorm	Ingredient	S	T114	19700101	20991231	

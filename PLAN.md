@@ -525,6 +525,20 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
   - **Labs join on the patient,** so outpatient labs are kept with no visit. Input amounts go to `quantity` and `dose_unit_source_value`.
   - **The review files stay on Hellbender:** they hold item labels and per-item counts from the credentialed data, with counts below 11 suppressed.
   - **The reviews are the user's or a clinician's to do;** nothing is approved automatically.
+  - **First real proposals (inputevents, 2026-10-26)** exposed a search bug: all-words matching used substrings.
+    - **The damage:**
+      - "NaCl 0.9%" (1.6M rows) was proposed as linaclotide 0.29 MG;
+      - 30 tube feeds labelled "(Full)" as buckminsterfullerene;
+      - "LR" as elranatamab;
+      - "KCL (Bolus)" as a *Cochliobolus* allergen.
+      
+      Substring matches made up 103 of 307 items and 42% of rows. Exact-name matches (149 items, 41% of rows) were sound.
+    - **The fix** (`vocab.py`, shared with protocol concept sets):
+      - whole-word matching;
+      - administration words ("bolus", "full", "concentrate", …) and strengths are dropped from drug queries;
+      - a query left with only such words is not run.
+      
+      The decoys are regression tests. Phase 2 results are unchanged. **Proposals made before this fix must be regenerated.**
 - **Checks:** on the ETL output, the gate's structure, CDM-version and death checks pass, and a compiled cohort and frame run, with exact times.
 - **Options,** all recorded in `cdm_source` and the manifest:
   - `diagnosis_time` (admission by default, a mild look-ahead; or discharge);

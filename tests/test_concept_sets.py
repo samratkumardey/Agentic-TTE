@@ -41,7 +41,7 @@ def ids(cands):
 
 def test_load_athena_counts(vocab):
     n = vocab.execute("SELECT count(*) FROM concept").fetchone()[0]
-    assert n == 25
+    assert n == 30
     with pytest.raises(FileNotFoundError):
         load_athena(duckdb.connect(), VOCAB / "missing")
 
@@ -192,3 +192,24 @@ def test_confounders_and_outcome_concepts_are_reviewed_too(vocab):
     v2 = apply_to_protocol(p, reviewed)
     assert v2.assignment.confounders[0].status == "mapped"
     assert v2.outcomes[0].concept.omop_concept_id == 196236
+
+
+@pytest.mark.parametrize("label,expected", [
+    ("NaCl 0.9%", []),  # not linaclotide 0.29 MG ("nacl" inside the word)
+    ("Replete with Fiber (Full)", []),  # not buckminsterfullerene ("full" inside the word)
+    ("LR", []),  # not elranatamab
+    ("Solution", []),  # a form word alone is not a query
+    ("Albumin 5%", [9000112]),  # albumin human, not the Cr-51 radiolabel ("5" inside "51")
+    ("Fentanyl (Concentrate)", []),  # nothing named fentanyl in this vocabulary
+    ("Hydrocortisone (Bolus)", [9000020]),
+])  # fmt: skip
+def test_whole_word_search_on_real_icu_drug_labels(vocab, label, expected):
+    """Regression for the MIMIC-IV inputevents proposals (2026-10-26): substring matching
+    proposed linaclotide for 'NaCl 0.9%' (1.6M rows) and buckminsterfullerene for 30 tube
+    feeds. Matches must be whole words; strengths and administration words are not queries."""
+    got = [c.concept_id for c in search(vocab, label, "Drug")]
+    if not expected:
+        assert got == []
+        return
+    assert got[0] == expected[0]  # the proposal; a whole-word decoy may still be an alternative
+    assert got[0] not in {9000110, 9000111, 9000113, 9000114}
