@@ -228,9 +228,18 @@ def items_propose(
     if kind not in ("labevents", "inputevents"):
         typer.echo("kind must be labevents or inputevents", err=True)
         raise typer.Exit(2)
-    con = duckdb.connect()
-    load_athena(con, vocab)
     module, dictionary = ("hosp", "d_labitems") if kind == "labevents" else ("icu", "d_items")
+    for f in (source / module / f"{kind}.csv.gz", source / module / f"{dictionary}.csv.gz"):
+        if not f.exists():  # check before the slow vocabulary load
+            typer.echo(f"missing {f.resolve()}" + (" (is ATTE_MIMIC_SOURCE set? `source "
+                       "hpc/env.sh`)" if str(source) == "." else ""), err=True)  # fmt: skip
+            raise typer.Exit(2)
+    con = duckdb.connect()
+    try:
+        load_athena(con, vocab)
+    except FileNotFoundError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from e
 
     def csv(module_, table):
         path = (source / module_ / f"{table}.csv.gz").as_posix()

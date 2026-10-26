@@ -57,7 +57,7 @@ All of this is under `/cluster/pixstor/data/$USER/` (`$P` below). The user confi
 | `gpu` | 3 nodes × 2 H100 (64 CPU, ~490 GB RAM); nodes g032–g034 report **H100 NVL, 95830 MiB** (2026-10-25) | 2 days, not preemptible | Final benchmark runs. Queue waits can be many hours. OnDemand g020 is a different type (H100 80GB HBM3), so never pool runs from both |
 | `gpu_requeue` | H100 (×8, ×4, ×2 nodes), A100 ×4 on 15 nodes, H200, L40S | 2 days, **preemptible** | Development and fast turnaround; `--gres=gpu:A100:1` usually starts quickly |
 
-CPU partitions (`sinfo -s`, 2026-10-26). Per-node cores and memory are not recorded yet: check with `sinfo -p general -N -o "%N %c %m"`.
+CPU partitions (`sinfo -s`, 2026-10-26). `general` nodes come in three sizes (`sinfo -p general -N -o "%N %c %m"`): 128 cores with about 490 GB (c001, c022 types), and 48 cores with about 363 GB (c149 type). The ETL's 16 CPUs and 96 GB fit every node.
 
 | Partition | Nodes | Limits | When to use |
 |---|---|---|---|
@@ -86,6 +86,7 @@ Jobs request 8 CPUs and 64 GB RAM, which fits every GPU node. The model lives in
 | Replicates differ at temperature 0 (exit run: qwen3 6/10, medgemma 4/10 substantively identical) | **Server state** (repro test 2026-10-24): on a restarted server, replicates are identical at both parallelism settings. The parallelism setting itself also changes outputs, and outputs appear to depend on earlier requests | `OLLAMA_NUM_PARALLEL=1` by default; Ollama restarted per replicate; model unloaded before every trial (`ATTE_UNLOAD_PER_TRIAL=1`). All recorded in `manifest.txt`. Order independence confirmed 2026-10-25: protocols identical with trials forward or reversed |
 | Every batch manifest says `restart_count=2` though the jobs ran once (final run, 2026-10-25) | Submitted from inside the OnDemand job, whose own `SLURM_RESTART_COUNT` (it had been requeued twice) was passed on by `--export=ALL` | `exit_run_submit.sh` unsets `SLURM_RESTART_COUNT` before submitting. To tell a real restart apart, check that the job ID matches `runs/exit-<label>.jobs` and that start and finish are continuous |
 | `interactive_ollama.sh` refuses: "runs with '…', not '…'" | A server started with other parallelism or flash-attention settings is still running | `source hpc/interactive_ollama.sh stop`, then start again |
+| `no CONCEPT.csv in .` (or `missing ./hosp/...`) from `agentic-tte etl ...` | A new shell without `source hpc/env.sh`: `$ATTE_VOCAB` / `$ATTE_MIMIC_SOURCE` are empty, and an empty path is `.` | `source hpc/env.sh` in every new shell; the commands now say so |
 | Port 11434 busy on OnDemand nodes | A personal Ollama 0.13.5 often runs there | Project uses port 11500 interactively and a per-job port in batch |
 | `apptainer pull` → "Disk quota exceeded" | Build files and cache went to `~/data` | `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` on `/local/scratch`, and `apptainer pull --disable-cache` |
 | `WARNING: Error changing the container working directory` | `~/data` is a symlink to `/mnt/pixstor`, which is not bound into the container | Harmless. Never pass paths under `~/data` into the container |

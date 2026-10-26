@@ -189,6 +189,10 @@ def load_athena(con, directory: str | Path) -> dict[str, int]:
     """Load an Athena vocabulary download (tab-separated CSVs) into the connected database,
     replacing existing vocabulary tables. Returns row counts per table loaded."""
     d = Path(directory)
+    if not (d / "CONCEPT.csv").exists():
+        hint = (" (the path is empty: is the variable set? on Hellbender, `source hpc/env.sh`)"
+                if str(directory).strip() in ("", ".") else "")  # fmt: skip
+        raise FileNotFoundError(f"no CONCEPT.csv in {d.resolve()}{hint}")
     counts = {}
     for name in ATHENA_FILES:
         f = d / f"{name}.csv"
@@ -201,6 +205,4 @@ def load_athena(con, directory: str | Path) -> dict[str, int]:
                                    all_varchar = false, dateformat = '%Y%m%d')""",
                     [str(f)])  # fmt: skip
         counts[table] = con.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
-    if "concept" not in counts:
-        raise FileNotFoundError(f"no CONCEPT.csv in {d}")
     return counts

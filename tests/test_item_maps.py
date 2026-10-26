@@ -192,3 +192,15 @@ def test_cli_propose_apply_and_etl(setup, tmp_path):
                   str(tmp_path / "c.duckdb"), "--item-map", str(rev / "reviewed.json")])
     assert r.exit_code == 0, r.output
     assert "item_maps=" in (tmp_path / "c.manifest.txt").read_text(encoding="utf-8")
+
+
+def test_cli_explains_an_unset_path(setup, tmp_path):
+    """An unset environment variable gives an empty path ("."): say so, before any slow load."""
+    mimic, _ = setup
+    run = CliRunner().invoke
+    r = run(app, ["etl", "items", "propose", "--source", "", "--vocab", str(VOCAB),
+                  "--kind", "inputevents", "-o", str(tmp_path / "x")])  # fmt: skip
+    assert r.exit_code == 2 and "ATTE_MIMIC_SOURCE" in r.output
+    r = run(app, ["etl", "items", "propose", "--source", str(mimic), "--vocab", "",
+                  "--kind", "inputevents", "-o", str(tmp_path / "x")])  # fmt: skip
+    assert r.exit_code == 2 and "source hpc/env.sh" in r.output
