@@ -1,3 +1,9 @@
+# Scoring methods (pre-registered)
+
+This file holds two pre-registrations, each fixed by the commit that added it:
+- **Phase 0 exit run** (protocol drafting; 2026-10-24): the sections from "Design" to the Phase 0 changelog.
+- **Phase 3 Replay on MIMIC-IV** (trial selection and agreement with the trials; 2026-10-27): the section "Phase 3 Replay" at the end, with its own changelog.
+
 # Phase 0 exit run: scoring method (pre-registered)
 
 Fixed on 2026-10-24, before any exit-run output exists. The commit that adds this file is the pre-registration; cite its hash in the methods. Any change after outputs exist goes in the changelog at the end, with the reason.
@@ -139,3 +145,149 @@ Reasoning tokens (gpt-oss) are reported separately when the server exposes them,
      - (b) Replicates were identical on every field in every arm (10/10 trials, 77/77 criteria), including replicate pairs that ran on different nodes.
      - (c) The GPU type differs from the pilot and the reproducibility tests (H100 80GB HBM3 on g020); the final run used one type throughout, as designed.
      - (d) Every manifest shows `restart_count=2`, inherited from the submitting OnDemand job's environment. The jobs ran once: their job IDs match `runs/exit-H100-final.jobs`, start and finish times are continuous, and cache hits equal the within-run repeats (2) exactly. Fixed for later runs in `hpc/exit_run_submit.sh`.
+
+# Phase 3 Replay on MIMIC-IV: trial selection and agreement with the trials (pre-registered)
+
+Fixed on 2026-10-27 (PLAN.md §17). The commit that adds this section is the pre-registration; cite its hash in the methods. Changes go in the changelog at the end of this section, with the date, the reason and what had been seen by then.
+
+**What had been seen when this was fixed:**
+- The MIMIC-IV 3.1 OMOP CDM (job 19365483) and its ETL report: aggregate counts only.
+- The published results of the candidate trials, and EmulatRx's three case-study HRs.
+- The Phase 2 synthetic Replay of three trials.
+- **No effect estimate from MIMIC** had been computed by this project for any trial.
+
+## R1. Data, pipeline and run settings
+
+| Item | Fixed value |
+|---|---|
+| Data | MIMIC-IV 3.1 in OMOP CDM 5.4, `mimiciv-3.1-cdm54-19365483.duckdb` (built at commit 9cad08c, Athena v5.0 29-AUG-26, the reviewed item maps of 2026-10-27). A rebuild is a new data version and is recorded in the changelog |
+| Primary model | `qwen3:32b`, think off. Its Phase 0 drafts are the start for the 10 parity trials; new trials are drafted under the Phase 0 run settings (amendment 8: OLLAMA_NUM_PARALLEL=1, a restart per replicate, the model unloaded per trial) |
+| Pipeline | The LangGraph Replay (`agentic_tte/graph/replay.py`) at one commit, recorded in every manifest |
+| Replicates | 1 for scoring. A second replicate checks determinism and is never averaged in |
+| Reviews | Design, concepts and gate are reviewed **before** the analysis node runs. Each review is labelled with who did it: a clinician, the user, or `AutoApprove`. Only reviews by a named clinician are called clinician review |
+
+## R2. Trial sets
+
+- **Parity set:** EmulatRx's 10 MIMIC trials ([reference/replay_trials.json](reference/replay_trials.json)), all run end to end.
+  - Scored on the pipeline endpoints (R5).
+  - Scored on agreement (R4) only if a trial meets the selection rule (R3) on its own.
+  - On the 2026-10-27 reference file, NCT00475852 and NCT02856698 have a verified numeric estimate. Four trials have no published result and are never scored for agreement.
+  - NCT00475852's primary outcome includes heart-failure rehospitalization. Under S7 it can enter only the *secondary* agreement set.
+- **Agreement set:** every trial, parity or new, that meets R3. This is the set the primary endpoint is computed on.
+
+## R3. Trial-selection rule
+
+**Candidates:**
+1. The 10 parity trials.
+2. The candidates named in PLAN.md §17.3 point 2.
+3. A registry search, ClinicalTrials.gov API v2, run once and saved with its date:
+   - interventional, randomized, status completed;
+   - adults;
+   - enrolment ≥ 100;
+   - condition or keyword in: sepsis, septic shock, acute respiratory distress syndrome, acute respiratory failure, mechanical ventilation, acute kidney injury, delirium, critical illness, intensive care, acute heart failure.
+
+Every candidate is screened against the same criteria. Each criterion is judged from the registry record and the primary publication only, never from MIMIC estimates.
+
+| # | Criterion |
+|---|---|
+| S1 | Randomized and parallel-group (cluster and cluster-crossover allowed). The trial is superiority or non-inferiority |
+| S2 | A published primary result: an effect estimate with a 95% CI, as HR, RR, OR or risk difference, for a binary or time-to-event primary outcome. Taken from the primary peer-reviewed paper or the CT.gov results, and checked against the source (`verification: verified`, with PMID or DOI and the table or figure) |
+| S3 | Adult inpatients whose eligibility starts in a setting MIMIC records: an ICU stay, a hospital admission, or an ED visit leading to admission |
+| S4 | The intervention and comparator are observable in structured data as a drug exposure or a procedure, or as their absence (placebo or usual care → not treated within the grace period) |
+| S5 | **Dynamic strategies are excluded** from the agreement set: strategies defined by a physiological target (glucose, blood pressure, oxygen saturation, transfusion threshold). They may be run as exploratory |
+| S6 | The primary outcome is **fully ascertainable** in MIMIC: all-cause death at a fixed horizon up to 365 days (deaths are recorded to one year after the last discharge), in-hospital death, or an event recorded in structured data during the stay (e.g. RRT, ventilation) |
+| S7 | The outcome is not partly ascertainable. Outcomes needing other hospitals or later follow-up (rehospitalization, functional or patient-reported outcomes) put the trial in the *secondary* agreement set, never the primary |
+| S8 | **Feasibility on MIMIC**, checked from counts only (the Data Support Gate): at least 50 eligible patients per arm after eligibility, and at least 20 outcome events pooled over arms. Counts are never split by arm and outcome before the analysis runs |
+
+**Size:** all trials that pass. If more than 30 pass S1–S8, keep the 30 with the largest enrolment. Enrolment is fixed before any result, so this choice cannot depend on agreement.
+
+**Screening log:** `eval/reference/replay_selection.json`. Every candidate goes in, with the criteria it passes or fails and the reason, and is reported as a flow diagram.
+
+**Reference values:**
+- The trial's primary estimate, in its own measure and orientation (intervention vs comparator as the trial defines them), with its 95% CI.
+- Each value is checked by a second person before any emulation of that trial. Disagreements are settled against the source.
+
+## R4. Agreement with the trial (agreement set)
+
+**Measure:** the emulation reports the trial's own measure.
+- HR from the weighted Cox model.
+- RR, OR or risk difference from the weighted risks at the trial's horizon, with 95% CIs by nonparametric bootstrap: 500 resamples, seed 20261027, refitting the weights in every resample. This bootstrap must be implemented and tested before any agreement-set trial is analysed.
+- Published estimates are never converted to another measure.
+
+**Analysis:** the primary analysis is the one in the signed-off report, chosen by the pipeline's rules before the estimate exists:
+- clone-censor-weight when the protocol has a grace period, IPTW otherwise;
+- the ITT analogue.
+
+Once an estimate exists, any change to the protocol, concepts or analysis makes a new protocol version. It is reported as post hoc and is never scored as the primary result.
+
+**Metrics per trial** (as in RCT-DUPLICATE). Here *E* is the emulation and *R* the trial, on the log scale for ratios and the linear scale for differences, with standard errors taken from the 95% CIs.
+
+| Metric | Definition |
+|---|---|
+| Standardized difference agreement | \|z\| < 1.96, where z = (θ_E − θ_R) / √(SE_E² + SE_R²) |
+| Estimate agreement | θ_E inside the trial's 95% CI |
+| Regulatory agreement | Same direction and same significance at 0.05 (both significant the same way, or both not significant) |
+| Direction agreement | Same sign of θ, or both CIs containing the null |
+| Ratio of ratios (ROR) | exp(θ_E − θ_R), with its 95% CI (for ratio measures) |
+
+**Primary endpoints** (agreement set, primary outcome only):
+1. The share of trials with standardized difference agreement, with an exact (Clopper–Pearson) 95% CI.
+2. The pooled ROR over ratio-measure trials: random-effects meta-analysis (REML), with its 95% CI and τ².
+
+Estimate, regulatory and direction agreement are secondary.
+
+The emulation's own precision (CI width) is reported next to every agreement call, because a wide emulation CI makes standardized difference agreement easier.
+
+**Failures count:** a trial in the agreement set that does not reach an estimate is scored as no agreement on every binary metric:
+- the pipeline failed;
+- the gate was red;
+- feasibility fell below S8 at analysis;
+- the analysis did not converge.
+
+The reason is reported. A complete-case analysis is reported alongside, never instead.
+
+**Secondary agreement set** (S7) and **dynamic-strategy trials** (S5): the same metrics, reported separately and never pooled with the primary.
+
+## R5. Pipeline endpoints (all trials: parity and agreement sets)
+
+- **End-to-end completion:** a signed-off report or an auto-approved one, labelled.
+- **Criteria:**
+  - share compiled;
+  - share reported as not compilable, with reasons;
+  - none dropped silently.
+- **Concept sets:**
+  - concepts proposed, approved, replaced and rejected at review;
+  - the reviewer's edit count per interrupt (design, concepts, gate).
+- **Gate:** green, amber or red, and the checks that failed.
+- **Cohort:**
+  - N per arm and attrition per criterion (counts below 11 suppressed);
+  - maximum \|SMD\| after weighting (target < 0.1);
+  - effective sample size per arm;
+  - the immortal-time flag;
+  - the proportional-hazards test;
+  - the E-value.
+- **Operations:** LLM calls, tokens and wall time per node, from the manifests.
+- **Concepts:** parsing F1 against the gold annotation (Phase 0 parts B and C) once `eval/gold/` exists. It is not reported before that.
+
+## R6. Comparison with EmulatRx
+
+- **The three case-study trials:** our estimate next to EmulatRx's, with the RCT result where one exists. No agreement call is made for a trial without a published result:
+  - NCT00475852: HR 0.59 (0.46–0.76);
+  - NCT06091982: HR 0.64;
+  - NCT04134403: HR 1.30 (1.07–1.58).
+- **Parity set:** compile success and SQL failures per criterion against EmulatRx's error counts (their Table 2). The definitions differ (their error types vs our not-compilable reasons), and this is stated.
+
+## R7. Planned secondary analyses
+
+These are named now, and each is fully specified in this changelog before it runs:
+- **Ablations:**
+  - without the Protocol Auditor;
+  - without the Clinician;
+  - LLM-written SQL instead of the compiler.
+- **Model comparison:** the other Phase 0 models.
+- **Sensitivity of the primary estimate:** PSM instead of IPTW, the grace period ±50%, and the horizon as in the trial vs 28 days.
+- **Negative-control outcomes:** one per trial, chosen before its analysis.
+
+## Phase 3 changelog
+
+- 2026-10-27: initial version.
