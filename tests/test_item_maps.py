@@ -252,3 +252,41 @@ def test_specimen_follows_the_lab_category(setup):
          "rows": 40}], total_rows=90)  # fmt: skip
     assert m.entries[0].concept_id == 9000135  # Creatinine in Serum or Plasma
     assert m.entries[1].concept_id == 9000030  # Lactate in Blood
+
+
+def test_lab_items_carry_their_most_common_unit(setup):
+    mimic, con = setup
+    items, _ = item_counts(con, "labevents", _csv(mimic, "hosp", "labevents"),
+                           _csv(mimic, "hosp", "d_labitems"), min_rows=1)  # fmt: skip
+    units = {it["itemid"]: it["unit"] for it in items}
+    assert units[LACTATE] == "mmol/L" and units[CREATININE] == "mg/dL"
+    assert units[MADE_UP] is None
+
+
+def test_unit_rank_prefers_the_matching_loinc_property():
+    """A g/dL item is a mass concentration, not [Presence]; a % item is a fraction, not a
+    count; an unknown or missing unit ranks nothing."""
+    from agentic_tte.etl.item_maps import _unit_rank
+    from agentic_tte.omop.vocab import Candidate
+
+    def c(name):
+        return Candidate(concept_id=1, concept_name=name, vocabulary_id="LOINC",
+                         domain_id="Measurement", standard=True, match="all_words",
+                         matched_text=name, score=0.5)  # fmt: skip
+
+    assert _unit_rank(c("Hemoglobin [Mass/volume] in Blood"), "g/dL") == 0
+    assert _unit_rank(c("Hemoglobin [Presence] in Blood"), "g/dL") == 1
+    assert _unit_rank(c("Neutrophils/100 leukocytes in Blood"), "%") == 0
+    assert _unit_rank(c("Neutrophils [#/volume] in Blood"), "%") == 1
+    assert _unit_rank(c("Neutrophils [#/volume] in Blood"), "K/uL") == 0
+    assert _unit_rank(c("Anything"), "furlongs") == 0
+    assert _unit_rank(c("Anything"), None) == 0
+
+
+def test_lab_queries_match_plurals_and_skip_count():
+    from agentic_tte.omop.vocab import Domain, _other_number, query_variants
+
+    assert _other_number("platelet") == "platelets" and _other_number("platelets") == "platelet"
+    assert _other_number("ph") == "ph" and _other_number("24") == "24"
+    variants = query_variants("Platelet Count", Domain.MEASUREMENT)
+    assert "platelet" in [v.lower() for v in variants]

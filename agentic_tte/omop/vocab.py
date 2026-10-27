@@ -105,6 +105,8 @@ def query_variants(name: str, domain: str | None = None) -> list[str]:
     outer = re.sub(r"\([^)]*\)", " ", name)
     out += inner + [outer]
     drop = _GENERIC | (_SALTS | _DRUG_NOISE if drug else set())
+    if domain == Domain.MEASUREMENT:
+        drop = drop | {"count", "absolute"}  # LOINC says "[#/volume]", not "count"
     out += [" ".join(w for w in norm(v).split() if w not in drop) for v in list(out)]
     if drug:
         out += [" ".join(w for w in norm(v).split() if w not in drop and not w.isdigit())
@@ -131,6 +133,13 @@ def _tables(con) -> set[str]:
 
 def _norm_sql(col: str) -> str:
     return f"trim(regexp_replace(lower({col}), '[^a-z0-9]+', ' ', 'g'))"
+
+
+def _other_number(word: str) -> str:
+    """The plural or singular of a query word, for matching: "platelet" <-> "platelets"."""
+    if word.endswith("s") and len(word) > 3:
+        return word[:-1]
+    return word if word.isdigit() or len(word) < 3 else word + "s"
 
 
 def _prefer(alias: str) -> str:
@@ -242,8 +251,9 @@ def search(con, name: str, domain: str, *, limit: int = 10,
         exact_name = "n.padded = ?"
         # Whole words only: "nacl" must not match inside "linaclotide", nor "full" inside
         # "buckminsterfullerene" (found in the MIMIC-IV inputevents proposals, 2026-10-26).
-        like_all = " AND ".join(["n.padded LIKE ?"] * len(words))
-        likes = [f"% {w} %" for w in words]
+        # Singular and plural both match ("platelet count" finds "Platelets [#/volume]").
+        like_all = " AND ".join(["(n.padded LIKE ? OR n.padded LIKE ?)"] * len(words))
+        likes = [x for w in words for x in (f"% {w} %", f"% {_other_number(w)} %")]
         conds = [("exact_name", exact_name, [f" {text} "])]
         # A short abbreviation ("LR", "KCL", "GT") gets exact matches only: as a word it found
         # RxNorm Extension code names ("LR-90", "KCL-1999000269").

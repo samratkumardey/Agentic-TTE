@@ -101,6 +101,36 @@ def _specimen_rank(c: Candidate, specimen: str | None, category: str | None = No
     return 1 if any(w in name for w in words) else 2
 
 
+# Units in MIMIC-IV lab and chart data, and the LOINC property they imply.
+_UNIT_PROPERTY = {
+    "mg/dl": ("mass/volume",), "g/dl": ("mass/volume",), "ng/ml": ("mass/volume",),
+    "pg/ml": ("mass/volume",), "ug/dl": ("mass/volume",), "mg/l": ("mass/volume",),
+    "g/l": ("mass/volume",), "ug/ml": ("mass/volume",), "ng/dl": ("mass/volume",),
+    "meq/l": ("moles/volume",), "mmol/l": ("moles/volume",), "umol/l": ("moles/volume",),
+    "nmol/l": ("moles/volume",), "pmol/l": ("moles/volume",),
+    "iu/l": ("enzymatic activity",), "u/l": ("enzymatic activity",),
+    "units/l": ("enzymatic activity",),
+    "k/ul": ("#/volume",), "/ul": ("#/volume",), "#/ul": ("#/volume",), "m/ul": ("#/volume",),
+    "#/hpf": ("#/area",), "/hpf": ("#/area",),
+    "%": ("/100", "volume fraction"), "sec": ("time",), "fl": ("entitic volume",),
+    "pg": ("entitic mass",), "mmhg": ("partial pressure", "pressure"),
+    "mosm/kg": ("osmolality",), "ml/min/1.73m2": ("volume rate",),
+}  # fmt: skip
+
+
+def _unit_rank(c: Candidate, unit: str | None) -> int:
+    """0 when the candidate's LOINC property fits the item's unit ("g/dL" -> Mass/volume,
+    "%" -> /100 or Volume Fraction, "K/uL" -> #/volume); 1 when it does not; 0 without a
+    known unit. Stops "Hemoglobin [Presence]" for a g/dL item, or a count for a % item."""
+    if not unit:
+        return 0
+    props = _UNIT_PROPERTY.get(unit.strip().lower().replace(" ", ""))
+    if not props:
+        return 0
+    name = c.concept_name.lower()
+    return 0 if any(p in name for p in props) else 1
+
+
 def propose_items(con, kind: Kind, items: list[dict], *, total_rows: int,
                   n_candidates: int = 5) -> ItemMap:  # fmt: skip
     """Proposals for ``items`` (dicts with itemid, label, rows and, for labs, specimen and
@@ -109,12 +139,14 @@ def propose_items(con, kind: Kind, items: list[dict], *, total_rows: int,
     for it in sorted(items, key=lambda x: (-x["rows"], x["itemid"])):
         cands = []
         for domain in DOMAINS[kind]:
-            cands += search(con, it["label"], domain, limit=n_candidates * 3)
+            # Many candidates: the specimen and unit rules below need the right one among them
+            # (the serum version of a chemistry test was cut at 15).
+            cands += search(con, it["label"], domain, limit=60)
         cands.sort(key=lambda c: c.rank)
-        if kind == "labevents":
+        if kind in ("labevents", "chartevents"):
             cands.sort(key=lambda c: (c.rank[0], c.rank[1],
                                       _specimen_rank(c, it.get("specimen"), it.get("category")),
-                                      c.rank[2:]))  # fmt: skip
+                                      _unit_rank(c, it.get("unit")), c.rank[2:]))  # fmt: skip
         cands = cands[:n_candidates]
         e = ItemEntry(itemid=it["itemid"], label=it["label"], specimen=it.get("specimen"),
                       category=it.get("category"), unit=it.get("unit"),
@@ -219,15 +251,19 @@ def item_counts(con, kind: Kind, source_sql: str, dictionary_sql: str,
                 *, min_rows: int = SMALL_CELL) -> tuple[list[dict], int]:  # fmt: skip
     """Per-item row counts joined to the item dictionary (one scan of the events table).
     Returns the items with at least ``min_rows`` rows and the total row count."""
-    counts = con.execute(f"""SELECT TRY_CAST(itemid AS BIGINT) AS itemid, count(*) AS n
-        FROM {source_sql} GROUP BY 1""").fetchall()  # fmt: skip
+    # Labs: the most common unit per item, from the same scan (d_labitems has no units).
+    unit = "mode(valueuom)" if kind == "labevents" else "NULL"
+    rows = con.execute(f"""SELECT TRY_CAST(itemid AS BIGINT) AS itemid, count(*) AS n,
+        {unit} AS unit FROM {source_sql} GROUP BY 1""").fetchall()  # fmt: skip
+    counts = [(i, n) for i, n, _ in rows]
+    units = {i: u for i, _, u in rows}
     total = sum(n for _, n in counts)
     if kind == "labevents":
         meta = {r[0]: r[1:] for r in con.execute(f"""SELECT TRY_CAST(itemid AS BIGINT), label,
             fluid, category FROM {dictionary_sql}""").fetchall()}  # fmt: skip
         items = [{"itemid": i, "rows": n, "label": meta.get(i, ("?",))[0],
                   "specimen": meta.get(i, (None, None, None))[1],
-                  "category": meta.get(i, (None, None, None))[2]}
+                  "category": meta.get(i, (None, None, None))[2], "unit": units.get(i)}
                  for i, n in counts if n >= min_rows and i is not None]  # fmt: skip
     else:
         meta = {r[0]: r[1:] for r in con.execute(f"""SELECT TRY_CAST(itemid AS BIGINT), label,
