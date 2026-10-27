@@ -763,6 +763,9 @@ The count is not the contribution. Each new agent gets an ablation (run without 
    - **Screening done 2026-10-27 (AI, to be checked by the user):** `eval/reference/replay_selection.json`.
      - 1,193 candidates screened.
      - Tentative sets: 16 primary, 2 secondary, 8 exploratory; 8 uncertain on one named criterion.
+     - **Wave 2** (wider conditions, PubMed result linkage, coverage rule; SCORING.md Phase 3 changelog items 5–9):
+       - 2,309 candidates; 37 tentatively primary, 30 selected;
+       - coverage met for F1–F4 and F7; F5 and F6 have 2 trials each.
      - Next: extract and verify S2 estimates (primary papers), then S8 counts on Hellbender.
 2. Build the Clinician (RAG), Supervisor and Protocol Auditor, with tests on synthetic OMOP.
 3. Run the first real Replay (NCT04134403) on the full CDM, end to end, with reviews. Then the other 9.

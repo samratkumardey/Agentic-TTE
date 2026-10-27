@@ -343,3 +343,16 @@ These are named now, and each is fully specified in this changelog before it run
      2. Fill up to 30 by enrolment.
 
      Enrolment and features are known before any result, so the choice cannot depend on agreement.
+  9. **Wave-2 screening run** (2026-10-27, before any MIMIC estimate).
+     - **Numbers:** 2,301 registry hits, 2,309 candidates in all. 622 trials were linked through PubMed.
+     - **Outcome rule B1:** a search hit not judged in the first screening goes to stage B only if its first primary outcome is death or a structured in-hospital event. The rule is a fixed pattern (`outcome_rule_b1` in `eval/replay_screen.py`); it kept 149 of 720 such hits.
+     - **Tentative result:**
+       - 37 primary trials, 30 selected by the item-8 rule;
+       - 2 secondary, 19 exploratory, 7 conditional, 34 uncertain.
+     - **Coverage:** F5 (composite) and F6 (lab-defined) have 2 trials each, below the target of 3. The conditional trials SMART (F5) and PROTection (F6) would fill them if their items are mapped.
+     - **Selection is recomputed, by the same outcome-blind rule, whenever a trial leaves the primary set:**
+       - S2 not verified;
+       - S8 below threshold;
+       - or an uncertain or conditional trial resolved.
+
+       Every recomputation is logged here.
