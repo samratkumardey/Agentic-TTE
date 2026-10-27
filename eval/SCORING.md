@@ -307,3 +307,39 @@ These are named now, and each is fully specified in this changelog before it run
   4. **Who screened:** Claude (AI), 2026-10-27. Every decision is to be checked by the user before any trial enters a set.
      - S2 values are extracted from the primary paper and checked by a second person.
      - S8 comes from Data Support Gate counts on Hellbender.
+- 2026-10-27, **wave 2 and the coverage rule**, decided after the first screening (16 tentative primary trials, below the 20–30 target) and **before any MIMIC estimate**. The user approved them. R3's criteria S1–S8 are unchanged.
+  5. **Wave-2 search, run once:** the same query as R3, with the condition and keyword list widened by:
+     - shock, cardiogenic shock, cardiac arrest, critically ill;
+     - pneumonia, gastrointestinal hemorrhage, acute pancreatitis;
+     - cardiac surgery, pulmonary embolism;
+     - subarachnoid hemorrhage, intracerebral hemorrhage, traumatic brain injury.
+
+     Saved with its date. Wave 1 and wave 2 are screened together.
+  6. **Result linkage through PubMed (S2 screen):** a trial passes the stage-A S2 screen if:
+     - the registry links a result publication, or
+     - it posts a primary analysis with a CI, or
+     - PubMed lists an article carrying its NCT number (`<NCT>[si]`) with publication type "Randomized Controlled Trial".
+
+     This applies to every hit of both waves that passes the other stage-A screens, so trials whose paper is not linked on CT.gov are no longer missed. The links are saved.
+  7. **Items unmappable in the MIMIC reviews:** a trial that fails S4 or S6 only because of such an item has status *conditional* and names the item.
+     - It joins a set only if the item is later mapped by a reviewed decision and the CDM is rebuilt. That is a data change, recorded here before any estimate.
+     - The candidate items are LR and other balanced crystalloids, delirium assessments (CAM-ICU), patient position (prone) and IV amino acids.
+  8. **Coverage rule:** each pipeline feature below should have at least 3 trials in the primary agreement set.
+
+     | Feature | Meaning |
+     |---|---|
+     | F1 | Placebo or usual-care comparator, emulated as not treated |
+     | F2 | Active comparator (drug vs drug) |
+     | F3 | Procedure intervention |
+     | F4 | Timing strategy with a grace period |
+     | F5 | Composite outcome built from structured data |
+     | F6 | Lab-defined outcome |
+     | F7 | Mortality horizon other than 28 days |
+
+     A trial can cover several features. A feature with fewer than 3 eligible trials is reported as a finding.
+
+     **Selection when more than 30 pass:**
+     1. For each feature, take its 3 largest eligible trials by enrolment.
+     2. Fill up to 30 by enrolment.
+
+     Enrolment and features are known before any result, so the choice cannot depend on agreement.
