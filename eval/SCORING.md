@@ -435,3 +435,27 @@ These are named now, and each is fully specified in this changelog before it run
         The trials that would fill F3–F6 failed S2 (AKIKI, DISCO, PRATO-ACS-2) or are conditional on unmapped items (SMART, PROTection). This is reported as a finding.
       - **Breadth set:** the other 17 selected trials (10 with verified estimates).
       - **Still open:** the second-person check of R3.
+  13. **Core rebalanced and breadth agreement added** (2026-10-27, by the user's decision, **before any MIMIC estimate**).
+      - **Why:**
+        - The item-12 core held one trial with a significant published result. Agreement between two null results is easy, so that core could barely show errors.
+        - The trials' published results were public before any selection, so a rule based on them cannot depend on our emulations.
+      - **Core rule (replaces 11a step 2):**
+        1. Among the selected trials with a verified estimate, the trials whose published 95% CI excludes the null (1 for ratios, 0 for differences) enter first, largest first, up to 6.
+        2. Then the item-8 coverage rule fills the core to 12, counting the trials already in towards each feature.
+      - **Core (12):**
+
+        | Group | Trials |
+        |---|---|
+        | Significant (5) | APROCCHSS, CAPE COD, LOVIT, EvK, ACURASYS |
+        | Null (7) | CHEST, ADRENAL, STARRT-AKI, CRISTAL, ECLS-SHOCK, BICAR-ICU, HYDRAREA |
+
+      - **Core coverage:**
+
+        | Met (3 or more) | Below target |
+        |---|---|
+        | F1 (7), F2 (4), F7 (7) | F3 (2), F4 (1), F5 (2), F6 (1) |
+
+      - **Breadth agreement:** the other selected trials with a verified estimate get the R4 metrics as a **secondary, exploratory** result.
+        - They are reported separately, never pooled with the core, and never used for the primary endpoints.
+        - The trials (10): SUP-ICU, RSI, SOAP II, VIOLET, ROSE, BICARICU-2, NCT03872011, CATS, DESIRE, NCT01284452.
+      - **Breadth without agreement (7):** the remaining breadth trials have no verified estimate and get the R5 pipeline endpoints only.

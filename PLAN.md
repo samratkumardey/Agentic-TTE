@@ -779,8 +779,12 @@ The count is not the contribution. Each new agent gets an ablation (run without 
      - E5 agreement with attribution by substitution;
      - E6 breadth.
 3. **Done 2026-10-27:** the user verified the S2 estimates (SCORING.md Phase 3 changelog item 12).
-   - **Core set (12):** CHEST, ADRENAL, SUP-ICU, STARRT-AKI, CRISTAL, RSI, SOAP II, VIOLET, LOVIT, ECLS-SHOCK, BICAR-ICU, HYDRAREA.
-   - **Breadth set:** 17 trials.
+   - **Core set (12), rebalanced (changelog item 13):**
+     - 5 trials with significant published results: APROCCHSS, CAPE COD, LOVIT, EvK, ACURASYS;
+     - 7 null trials: CHEST, ADRENAL, STARRT-AKI, CRISTAL, ECLS-SHOCK, BICAR-ICU, HYDRAREA.
+   - **Breadth set (17):**
+     - 10 with verified estimates also get agreement as a secondary, exploratory result;
+     - 7 get pipeline endpoints only.
    - **8 trials failed S2** and are reported.
    - **Core coverage below target:** F3 (procedure), F4 (timing), F5 (composite), F6 (lab-defined).
 4. **Build:**

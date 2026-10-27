@@ -29,7 +29,9 @@
   "conditional": 7,
   "primary_selected": 29,
   "selected_s2_verified": 22,
-  "core": 12
+  "core": 12,
+  "core_rct_significant": 5,
+  "breadth_agreement": 10
  },
  "coverage": {
   "F1": {
@@ -71,12 +73,12 @@
  "core_coverage": {
   "F1": {
    "name": "placebo or usual-care comparator (not treated)",
-   "trials": 6,
+   "trials": 7,
    "met": true
   },
   "F2": {
    "name": "active comparator (drug vs drug)",
-   "trials": 5,
+   "trials": 4,
    "met": true
   },
   "F3": {
@@ -101,7 +103,7 @@
   },
   "F7": {
    "name": "mortality horizon other than 28 days",
-   "trials": 6,
+   "trials": 7,
    "met": true
   }
  },
@@ -1167,7 +1169,9 @@
     "F2"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT00148642",
@@ -2482,7 +2486,9 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": true,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT00304382",
@@ -2569,7 +2575,9 @@
     "F2"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT00314990",
@@ -2659,7 +2667,9 @@
     "F2"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT00320099",
@@ -4825,7 +4835,9 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": true,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT00626028",
@@ -6557,7 +6569,9 @@
     "F7"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT00939900",
@@ -8366,7 +8380,9 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT01292031",
@@ -9051,7 +9067,9 @@
     "F7"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT01449721",
@@ -9133,7 +9151,8 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT01457248",
@@ -10237,7 +10256,9 @@
     "F6"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT01640925",
@@ -10857,7 +10878,9 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT01768650",
@@ -14486,7 +14509,9 @@
     "F7"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT02468063",
@@ -14600,7 +14625,9 @@
     "F5"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT02479152",
@@ -14810,7 +14837,9 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT02511470",
@@ -14900,7 +14929,9 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": true,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT02518087",
@@ -15196,7 +15227,9 @@
     "F7"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT02577211",
@@ -15251,7 +15284,8 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT02582957",
@@ -15563,7 +15597,9 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": true,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT02643472",
@@ -16749,7 +16785,8 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT02858596",
@@ -18178,7 +18215,9 @@
     "F7"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT03097692",
@@ -19176,7 +19215,8 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT03260478",
@@ -19556,7 +19596,8 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT03339505",
@@ -19631,7 +19672,8 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT03347201",
@@ -20987,7 +21029,9 @@
     "F7"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT03640949",
@@ -21201,7 +21245,9 @@
     "F5"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": true,
+   "core": true,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT03680963",
@@ -22062,7 +22108,9 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT03872154",
@@ -22529,7 +22577,9 @@
     "F7"
    ],
    "selected": true,
-   "core": false
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT04012008",
@@ -27309,7 +27359,9 @@
     "F2"
    ],
    "selected": true,
-   "core": true
+   "rct_significant": false,
+   "core": false,
+   "breadth_agreement": true
   },
   {
    "nct_id": "NCT05283733",
@@ -28714,7 +28766,8 @@
     "F1"
    ],
    "selected": true,
-   "core": false
+   "core": false,
+   "breadth_agreement": false
   },
   {
    "nct_id": "NCT05781243",

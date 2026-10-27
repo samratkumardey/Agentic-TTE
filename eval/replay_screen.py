@@ -437,17 +437,20 @@ FEATURE_NAMES = {
 }
 
 
-def coverage_select(primary: list[dict], cap: int = 30) -> tuple[list[str], dict]:
-    """Changelog item 8: up to 3 largest per feature first, then fill by enrolment."""
+def coverage_select(primary: list[dict], cap: int = 30,
+                    pre: tuple[str, ...] = ()) -> tuple[list[str], dict]:  # fmt: skip
+    """Changelog item 8: up to 3 largest per feature first, then fill by enrolment. ``pre``:
+    trials already chosen (item 13: the significant trials); they count towards each feature."""
     by_size = sorted(primary, key=lambda r: (-(r["enrollment"] or 0), r["nct_id"]))
-    chosen: list[str] = []
+    chosen: list[str] = list(pre)
     if len(primary) <= cap:
         chosen = [r["nct_id"] for r in by_size]
     else:
         for f in FEATURE_NAMES:
-            for r in [r for r in by_size if f in r.get("features", [])][:3]:
-                if r["nct_id"] not in chosen:
-                    chosen.append(r["nct_id"])
+            have = sum(f in r.get("features", []) for r in primary if r["nct_id"] in chosen)
+            for r in [r for r in by_size if f in r.get("features", [])
+                      and r["nct_id"] not in chosen][:max(0, 3 - have)]:  # fmt: skip
+                chosen.append(r["nct_id"])
         for r in by_size:
             if len(chosen) >= cap:
                 break
@@ -457,6 +460,13 @@ def coverage_select(primary: list[dict], cap: int = 30) -> tuple[list[str], dict
            for f in FEATURE_NAMES}  # fmt: skip
     return chosen, {f: {"name": FEATURE_NAMES[f], "trials": n, "met": n >= 3}
                     for f, n in got.items()}  # fmt: skip
+
+
+def rct_significant(v: dict) -> bool:
+    """The published 95% CI excludes the null: 1 for ratios, 0 for differences."""
+    lo, hi = v["ci"]
+    null = 0.0 if v["measure"].startswith("RD") else 1.0
+    return hi < null or lo > null
 
 
 def main() -> None:
@@ -532,11 +542,19 @@ def main() -> None:
     chosen, coverage = coverage_select(primary)
     for r in primary:
         r["selected"] = r["nct_id"] in chosen
-    # Core set (changelog item 11a): selected trials with a user-verified S2 estimate, cap 12.
+    # Core set (changelog items 11a and 13): selected trials with a user-verified S2 estimate,
+    # cap 12; the trials whose published primary result is significant come first (cap 6).
     verified = [r for r in primary if r["selected"] and values.get(r["nct_id"], {}).get("s2") == "pass"]
-    core, core_coverage = coverage_select(verified, cap=12)
+    for r in verified:
+        r["rct_significant"] = rct_significant(values[r["nct_id"]])
+    sig = sorted((r for r in verified if r["rct_significant"]),
+                 key=lambda r: (-(r["enrollment"] or 0), r["nct_id"]))[:6]  # fmt: skip
+    core, core_coverage = coverage_select(verified, cap=12, pre=tuple(r["nct_id"] for r in sig))
     for r in primary:
         r["core"] = r["nct_id"] in core
+        # Breadth agreement (item 13): secondary, exploratory, never pooled with the core.
+        r["breadth_agreement"] = (r["selected"] and not r["core"]
+                                  and values.get(r["nct_id"], {}).get("s2") == "pass")  # fmt: skip
     flow: dict[str, int] = {"candidates": len(out)}
     for r in out:
         key = f"excluded_{r['failed']}" if r["status"] == "excluded" else r["status"]
@@ -544,6 +562,8 @@ def main() -> None:
     flow["primary_selected"] = len(chosen)
     flow["selected_s2_verified"] = len(verified)
     flow["core"] = len(core)
+    flow["core_rct_significant"] = len(sig)
+    flow["breadth_agreement"] = sum(r.get("breadth_agreement", False) for r in primary)
     doc = {
         "_about": "Screening of Replay candidates against eval/SCORING.md R3 (S1-S8).",
         "pre_registration": "eval/SCORING.md, section Phase 3 Replay (commit 77bbc85), "
