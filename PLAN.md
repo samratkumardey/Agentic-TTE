@@ -789,7 +789,9 @@ The count is not the contribution. Each new agent gets an ablation (run without 
    - **Core coverage below target:** F3 (procedure), F4 (timing), F5 (composite), F6 (lab-defined).
 4. **Build:**
    - the bootstrap CIs (R4);
-   - the Protocol Auditor and the fault injector (E1);
+   - **done 2026-10-27:** the Protocol Auditor (`agents/auditor.py`, checks A-a to A-j) and the fault injector (`faults.py`, F-a to F-j).
+     - On synthetic data, 10 of 10 faults are caught, with no alarm on the correct design (`eval/results/fault_injection_synthetic.md`; changelog item 14).
+     - Still to do: wire the Auditor into the Replay graph before the gate, and measure its false alarms on real protocols;
    - the metamorphic and differential cohort tests (E2), and the mimic-code comparison on the Postgres build;
    - then the Clinician (RAG) and Supervisor.
 

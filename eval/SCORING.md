@@ -459,3 +459,21 @@ These are named now, and each is fully specified in this changelog before it run
         - They are reported separately, never pooled with the core, and never used for the primary endpoints.
         - The trials (10): SUP-ICU, RSI, SOAP II, VIOLET, ROSE, BICARICU-2, NCT03872011, CATS, DESIRE, NCT01284452.
       - **Breadth without agreement (7):** the remaining breadth trials have no verified estimate and get the R5 pipeline endpoints only.
+  14. **E1 built and checked on synthetic data** (2026-10-27, before any MIMIC estimate).
+      - **Code:**
+        - `agentic_tte/faults.py`: the 10 faults;
+        - `agentic_tte/agents/auditor.py`: the checks A-a to A-j, one per fault;
+        - `eval/fault_injection.py` → `eval/results/fault_injection_synthetic.md`.
+      - **F-h reinterpreted:**
+        - The compiler reads every confounder at or before time zero by construction (tested in `tests/test_compiler.py`), so "a confounder measured after time zero" cannot be expressed in a compiled design.
+        - F-h therefore plants the nearest expressible error: the treatment itself as a confounder.
+        - The structural guarantee is reported as such.
+      - **Result on synthetic data** (n = 3,000, treatment within a 3-day grace period, truth: marginal HR 0.590):
+        - 10 of 10 faults caught by their own check, and no alarm on the correct design.
+        - Immortal-time faults (F-a, F-i): HR 0.496 against 0.612 for the correct design, the expected bias toward benefit.
+        - F-c (time zero after treatment start) and F-j (wrong concept set): no estimate (too few treated).
+        - F-d (arms swapped): no estimate (the frame refuses an active comparator).
+        - F-b, F-e, F-f, F-g and F-h leave the synthetic estimate unchanged. The synthetic design hides their effect: every patient meets I1, no one has the treatment before time zero, the data end at 28 days, death is never censored by the compiler, and the treatment confounder is constant. Their bias is to be measured on the MIMIC core trials.
+      - **What this does and does not show:**
+        - It shows that each guard works on a design where the truth is known.
+        - It does not show the false-alarm rate on real protocols. That is measured on the core trials' reference protocols (E3) and the Trialist drafts before any claim. A-f in particular will flag every protocol without an explicit new-user exclusion.
