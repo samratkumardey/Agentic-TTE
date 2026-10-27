@@ -654,3 +654,114 @@ The decoys and a 600-decoy retrieval case are regression tests. Phase 2 results 
 **Open decisions:**
 - The ETL route above, versus loading from the Postgres build.
 - Whether to delete the duplicate 9.9 GB MIMIC zip once the raw copy's checksums pass.
+
+## 17. Replay on MIMIC: finish EmulatRx's pipeline, then go beyond it (plan, 2026-10-27)
+
+The user's order (2026-10-27): first a successful Replay on MIMIC-IV covering what EmulatRx did, with clear contributions over it; the CREST-2 Replay on Oracle comes after.
+
+### 17.1 What EmulatRx did (from the paper)
+
+- **Agents (5):** Supervisor, Trialist, Informatician, Clinician, Statistician, in LangGraph.
+- **Trials (20):**
+  - 10 acute trials on MIMIC-IV (§11, item 3);
+  - 10 chronic trials on INSIGHT (NYC);
+  - all 20 used for criteria parsing (F1 against a 266-concept gold set) and SQL error types.
+- **Models:** GPT-4o (best), plus Phi-4, DeepSeek-R1 14B and Gemma 3 12B, which were weaker at parsing and much weaker at SQL.
+- **Statistician:** evaluated on synthetic data only (HR 0.5, 1, 2, 3). It was compared with the planted conditional HR, which is not what IPTW or PSM estimates (§13, findings 1–2).
+- **Real effect estimates:** 3 MIMIC case studies only, with no pre-specified agreement test:
+  - nesiritide (NCT00475852): HR 0.59, but ASCEND-HF was null (risk difference −0.7, 95% CI −2.1 to 0.7);
+  - RRT in AKI (NCT06091982): HR 0.64, with no published result to compare against;
+  - hydrocortisone in septic shock (NCT04134403): HR 1.30 (harm), against no published result for that trial.
+- **Their stated limitations:**
+  - no standard end-to-end benchmark;
+  - structured data only (notes and imaging were future work);
+  - two databases;
+  - Clinician RAG without a knowledge graph.
+- **Also in the paper:** RLHF (reward model, PPO and DPO), eligibility-criteria Shapley optimization, adaptive sample size, and Clinician answers rated by three experts on a Likert scale.
+
+**What the reference file shows** (`eval/reference/replay_trials.json`): of the 10 MIMIC trials, only 2 have a numeric primary estimate with a CI (NCT00475852, NCT02856698), 3 more have a verified or probable result without an estimate we can score, and 4 have no published result (NCT04134403, NCT06091982, NCT03592693, NCT01560650). So agreement with the RCT cannot be scored for most of EmulatRx's own trials. A scored Replay needs a trial set chosen for that purpose.
+
+### 17.2 Part A: finish the pipeline (parity with EmulatRx, on OMOP)
+
+The MIMIC OMOP CDM exists (§16). What is missing for an end-to-end Replay of the 10 trials:
+1. **Clinician agent:** RAG over PubMed abstracts for surrogate concepts and confounder lists, with cited passages. It answers the Informatician (unmappable concept → surrogate) and the Statistician (imbalance → drop or replace a covariate).
+2. **Supervisor:** routing, loop caps and budgets, plus the Informatician ↔ Clinician and Statistician ↔ Clinician feedback loops (§3).
+3. **Covariates on real data:** the confounder sets from the Clinician, compiled through reviewed concept sets (§15). EmulatRx used 87–89 covariates per case.
+4. **Run the 10 trials** on the full CDM from the qwen3:32b Phase 0 drafts.
+   - Reviews are done by the user, so they are labelled as such, not as clinician review.
+   - The first trial is NCT04134403, compared with EmulatRx's three case-study numbers.
+5. **Reports** for each trial, with attrition, balance, the estimate and the gate result.
+
+**Exit:** 10/10 trials run end to end on MIMIC OMOP, with reports and manifests.
+
+### 17.3 Part B: contributions over EmulatRx
+
+**1. Agents (5 → 9), each with a job that can be measured.**
+
+| Agent | In EmulatRx | Ours | Status |
+|---|---|---|---|
+| Supervisor | yes | yes | to build |
+| Trialist | LLM parse | schema-constrained protocol with 7 TTE elements, versioned | built |
+| Informatician | LLM writes SQL | LLM proposes concepts, vocabulary grounds them, a deterministic compiler writes the SQL | built |
+| Clinician | RAG | RAG with citations | to build |
+| Statistician | PSM/IPTW + Cox | adds CCW for grace periods, E-values, PH test and immortal-time flag; the LLM never produces a number | built |
+| **Protocol Auditor** | no | checks time-zero alignment, immortal time, look-ahead, estimand vs the trial's | to build |
+| **Data Support Gate** | no | feasibility, attrition, positivity, small-cell suppression | built |
+| **Concordance agent** | no | pre-registered agreement metrics against the RCT | to build |
+| **Reporter** | summary by GPT-4o | report with sign-off status (signed off / auto-approved) | built (basic) |
+
+The count is not the contribution. Each new agent gets an ablation (run without it) so its effect on the results is shown.
+
+**2. Trials: a scored benchmark, not case studies.**
+- Keep EmulatRx's 10 for parity: parsing, compile success, cohorts.
+- **Add MIMIC-emulable ICU trials with published results**, chosen by a rule written down before any is run:
+  - adult ICU population;
+  - intervention and comparator observable in MIMIC;
+  - primary outcome observable in MIMIC (in-hospital or 28/90-day death; deaths are captured to 1 year);
+  - a published primary estimate with a CI.
+- **Target:** 20–30 trials in total.
+- **Candidates to vet** (NCT IDs to be confirmed in the registry when selected):
+  - ADRENAL and APROCCHSS (corticosteroids in septic shock);
+  - SPICE III and MENDS2 (dexmedetomidine);
+  - SUP-ICU (stress-ulcer prophylaxis);
+  - AID-ICU (haloperidol);
+  - VICTAS and LOVIT (vitamin C);
+  - STARRT-AKI (timing of RRT);
+  - SMART (balanced crystalloids);
+  - TRISS (transfusion threshold);
+  - NICE-SUGAR (glucose control).
+- **Some candidates need inputs marked unmappable in the 2026-10-27 reviews:** LR for SMART, blood components for TRISS. Choosing them means revisiting those items first.
+
+**3. Scoring, pre-registered** (`eval/SCORING.md`, before any MIMIC estimate is seen). This answers EmulatRx's first limitation.
+- Agreement with the RCT: same direction, estimate inside the trial's CI, standardized difference, same significance conclusion, as in RCT-DUPLICATE.
+- Parsing P/R/F1 against our gold annotation (`eval/gold/`, still to be made).
+- Compile success and SQL failures per criterion, compared with EmulatRx's local-model error rates.
+- Cohort size and attrition.
+- Runtime and tokens.
+
+**4. Open-weight only, reproducible.**
+- Local models, with identical replicates at temperature 0 (§12). EmulatRx's best results needed GPT-4o.
+- A manifest for every run: commit, model digest, vocabulary version, data hash.
+
+**5. Portable: OMOP-native.**
+- The same compiler and gate run on MIMIC and, later, on Oracle Health RWD (OMOP).
+- EmulatRx's SQL targets MIMIC's native schema.
+
+**6. Design-bias safeguards.**
+- Clone-censor-weight for grace periods; no look-ahead in eligibility.
+- Synthetic recovery scored against marginal truth (§13).
+- Negative-control outcomes and E-values in every report.
+
+**7. Human review that leaves a trail.**
+- Interrupts for design, concepts, gate and sign-off, with reviewer names.
+- Auto-approved benchmark runs are labelled as such.
+
+### 17.4 Order of work
+
+1. Pre-register the scoring (17.3 point 3) and the trial-selection rule (17.3 point 2), before any MIMIC estimate.
+2. Build the Clinician (RAG), Supervisor and Protocol Auditor, with tests on synthetic OMOP.
+3. Run the first real Replay (NCT04134403) on the full CDM, end to end, with reviews. Then the other 9.
+4. Select and add the further trials by the rule, and verify their registry results.
+5. Make the gold annotation (user and clinician) for parsing F1.
+6. Run the full benchmark, ablations (without Auditor, without Clinician, direct LLM-SQL instead of the compiler) and model comparisons.
+7. Write up. Then CREST-2 on Oracle (the user's next goal), with the same pipeline.

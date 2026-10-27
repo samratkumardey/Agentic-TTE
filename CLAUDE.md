@@ -76,9 +76,10 @@ Concept search expands abbreviations only from the protocol's own text and from 
 - All four item reviews were done by the user (reviewer Samrat Kumar Dey). The reviewed maps live in `$ATTE_OMOP_DIR/review/`.
 - Confirm any hand-chosen concept ID by name against the vocabulary before a run: a pasted ID once lost its first digit.
 
-Next:
-- Short-term goal (user, 2026-10-26): an agentic Replay of CREST-2 on the user's Oracle Health EHR (OMOP), building on their Protocol2TTE paper. Oracle details are still to come from the user.
-- The MIMIC trial benchmark (the rest of PLAN.md §16) is paused, not dropped.
+Next (user, 2026-10-27): finish the Replay on MIMIC first, at parity with EmulatRx and then beyond it (PLAN.md §17).
+- Pre-register the scoring and the trial-selection rule before any MIMIC estimate is seen.
+- Then CREST-2 on the user's Oracle Health EHR (OMOP), building on their Protocol2TTE paper.
+- Only 2 of EmulatRx's 10 MIMIC trials have a numeric published estimate (`eval/reference/replay_trials.json`). Never claim RCT agreement for a trial without a published result.
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.
