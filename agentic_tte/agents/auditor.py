@@ -159,10 +159,12 @@ def data_summary(con, protocol: TargetTrialProtocol, spec: CompileSpec,
 def audit(protocol: TargetTrialProtocol, spec: CompileSpec, *,
           compiled: CompiledCohort | None = None, summary: dict | None = None,
           approved_sets: dict[str, list[int]] | None = None,
-          concept_names: dict[int, str] | None = None) -> AuditReport:  # fmt: skip
+          concept_names: dict[int, str] | None = None,
+          surrogate_keys: set[str] | None = None) -> AuditReport:  # fmt: skip
     """Run every check. ``approved_sets`` are the reviewed concept sets
     (``ConceptSetBook.gate_sets()``); ``concept_names`` maps concept IDs to names (the
-    vocabulary), for the name check of A-j when no reviewed sets are given."""
+    vocabulary), for the name check of A-j when no reviewed sets are given; sets a reviewer
+    approved as surrogates (``surrogate_keys``) are exempt from that name check."""
     p = protocol
     rep = AuditReport(protocol_id=p.protocol_id, checks_run=list(CHECKS))
     add = rep.findings.append
@@ -309,7 +311,10 @@ def audit(protocol: TargetTrialProtocol, spec: CompileSpec, *,
     elif concept_names is not None:
         for a in arms:
             for comp in a.components:
-                ids = spec.concept_sets.get(f"T:{a.label}:{comp.concept.name}", [])
+                key = f"T:{a.label}:{comp.concept.name}"
+                if key in (surrogate_keys or set()):
+                    continue  # a reviewed surrogate is named differently on purpose
+                ids = spec.concept_sets.get(key, [])
                 want = set(_norm(comp.concept.name).split())
                 bad = [i for i in ids if not want & set(_norm(concept_names.get(i, "")).split())]
                 if bad:

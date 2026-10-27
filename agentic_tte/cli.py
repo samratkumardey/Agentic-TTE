@@ -499,6 +499,10 @@ def _replay_pause(graph, cfg, out: Path) -> None:
         (out / "protocol.json").write_text(json.dumps(ask["protocol"], indent=2), "utf-8")
         tmpl = {"reviewer": "", "confounders": None, "changes": {}}
         files = ["protocol.json", "design.json"]
+        if ask.get("audit"):  # the Protocol Auditor failed the design: fix it or override
+            (out / "audit.md").write_text(ask["audit"], encoding="utf-8")
+            tmpl["override_audit"] = None
+            files.insert(0, "audit.md")
     elif stage == "concepts":
         (out / "review.md").write_text(ask["review_sheet"], encoding="utf-8")
         (out / "decisions.json").write_text(json.dumps(ask["decisions_template"], indent=2),

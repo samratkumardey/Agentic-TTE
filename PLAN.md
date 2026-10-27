@@ -791,7 +791,12 @@ The count is not the contribution. Each new agent gets an ablation (run without 
    - the bootstrap CIs (R4);
    - **done 2026-10-27:** the Protocol Auditor (`agents/auditor.py`, checks A-a to A-j) and the fault injector (`faults.py`, F-a to F-j).
      - On synthetic data, 10 of 10 faults are caught, with no alarm on the correct design (`eval/results/fault_injection_synthetic.md`; changelog item 14).
-     - Still to do: wire the Auditor into the Replay graph before the gate, and measure its false alarms on real protocols;
+     - **Wired into the Replay graph (2026-10-27):** compile → audit → gate.
+       - A failed audit goes back to design review with the findings. The reviewer changes the design, which is re-proposed and re-reviewed only if new concepts appear, or overrides it with a written reason, shown in the report.
+       - 3 failed rounds stop the run.
+       - Under `AutoApprove` the failure is overridden automatically (labelled) or stops the run (`audit="stop"`).
+       - Sets approved as surrogates are exempt from the A-j name check.
+     - Still to do: measure the Auditor's false alarms on real protocols. A-f fires on the qwen3:32b draft of NCT03872011, which has no new-user exclusion;
    - the metamorphic and differential cohort tests (E2), and the mimic-code comparison on the Postgres build;
    - then the Clinician (RAG) and Supervisor.
 

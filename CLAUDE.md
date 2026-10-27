@@ -61,7 +61,11 @@ Rules for that code:
 - Its frame must keep reproducing `synth.omop.ANALYSIS_SQL`.
 - Counts that leave the data side go through `suppress` (`AttritionReport.public()`).
 
-The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its three clinician reviews (design, concepts, amber gate) are `interrupt()`s with a SQLite checkpointer. Rules for it:
+The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its clinician reviews (design, concepts, amber gate, sign-off) are `interrupt()`s with a SQLite checkpointer.
+- The Protocol Auditor (`agents/auditor.py`) runs between compile and the gate. A failure goes back to design review, where the reviewer fixes the design or overrides it with a reason.
+- Never let a run reach the gate with an unexplained audit failure.
+
+Rules for the graph:
 - Keep the state and interrupt payloads plain JSON (`model_dump(mode="json")`).
 - Never put the database connection or patient rows in the state.
 

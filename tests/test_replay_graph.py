@@ -10,9 +10,11 @@ import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
+from agentic_tte.faults import new_user_exclusion
 from agentic_tte.graph import AUTO_REVIEWER, AutoApprove, build_replay, pending
 from agentic_tte.llm import ScriptedClient
 from agentic_tte.omop import DataContext
+from agentic_tte.protocol import TargetTrialProtocol
 from agentic_tte.synth import omop as so
 from agentic_tte.synth.dgp import Scenario, generate
 from tests.test_trialist import _respond
@@ -30,7 +32,7 @@ def clinician_decisions(template: dict) -> dict:
     and the made-up criteria are unmappable."""
     out = {"reviewer": "Dr Test", "decisions": {}}
     for key, d in template["decisions"].items():
-        if key.startswith("T:"):
+        if key.startswith(("T:", "E-new-user:")):
             out["decisions"][key] = {"action": "surrogate", "concept_ids": [so.STUDY_DRUG],
                                      "note": "synthetic study drug stands in for the trial arm"}
         elif key == "C:sofa":
@@ -46,6 +48,10 @@ def clinician_decisions(template: dict) -> dict:
 def synthetic():
     cohort = generate(Scenario(n=3000, horizon_days=90.0), with_truth=False)
     return cohort, so.write_duckdb(so.to_omop(cohort))
+
+
+OVERRIDE = {"reviewer": "Dr Test", "override_audit": {
+    "reason": "synthetic test data: no one has the treatment before time zero"}}
 
 
 def _run(con, study, context, **kw):
@@ -71,6 +77,18 @@ def test_replay_end_to_end(synthetic, nct03872011_study):
     graph.invoke(Command(resume={"decisions": clinician_decisions(ask["decisions_template"]),
                                  "spec": SPEC}), cfg)  # fmt: skip
 
+    ask = pending(graph, cfg)  # the Protocol Auditor sends the design back
+    assert ask["stage"] == "design" and "Failed:** A-f" in ask["audit"]
+    p = TargetTrialProtocol.model_validate(ask["protocol"])
+    fix = [c.model_dump(mode="json") for c in [*p.eligibility, new_user_exclusion(p)]]
+    graph.invoke(Command(resume={"changes": {"eligibility": fix}, "reviewer": "Dr Test"}), cfg)
+
+    ask = pending(graph, cfg)  # a new concept: the new-user exclusion's treatment set
+    assert ask["stage"] == "concepts"
+    assert any(k.startswith("E-new-user:") for k in ask["decisions_template"]["decisions"])
+    graph.invoke(Command(resume={"decisions": clinician_decisions(ask["decisions_template"]),
+                                 "spec": SPEC}), cfg)  # fmt: skip
+
     ask = pending(graph, cfg)  # amber: made-up criteria unmappable, local vocabulary only
     assert ask["stage"] == "gate" and "AMBER" in ask["gate"]
     graph.invoke(Command(resume={"proceed": True, "reviewer": "Dr Test",
@@ -81,12 +99,15 @@ def test_replay_end_to_end(synthetic, nct03872011_study):
     state = graph.invoke(Command(resume={"approve": True, "reviewer": "Dr Test",
                                          "note": "methods checked"}), cfg)  # fmt: skip
     assert state["status"] == "signed_off" and pending(graph, cfg) is None
-    assert [r["stage"] for r in state["reviews"]] == ["design", "concepts", "gate", "signoff"]
+    assert [r["stage"] for r in state["reviews"]] == ["design", "concepts", "design", "concepts",
+                                                      "gate", "signoff"]  # fmt: skip
     assert not any(r["auto"] for r in state["reviews"])
+    assert "audit: failed A-f" in state["report"] and "audit: passed" in state["report"]
     assert "Status: **signed_off**" in state["report"] and "AUTO-APPROVED" not in state["report"]
     assert "| signoff | Dr Test | no | approve | methods checked |" in state["report"]
     versions = [v["version"] for v in state["versions"]]
-    assert versions == [1, 2, 3]  # draft, design review (confounders), concept review
+    # draft, design (confounders), concepts, design (new-user exclusion), concepts
+    assert versions == [1, 2, 3, 4, 5]
     a = state["analysis"]
     assert a["primary_method"] == "clone-censor-weight"  # the arm has a 12-hour grace period
     assert a["confounders"] == ["age", "female", "sofa", "lactate"]
@@ -115,6 +136,8 @@ def test_red_gate_stops_the_run(synthetic, nct03872011_study):
     ask = pending(graph, cfg)
     graph.invoke(Command(resume={"decisions": clinician_decisions(ask["decisions_template"]),
                                  "spec": SPEC}), cfg)  # fmt: skip
+    assert pending(graph, cfg)["stage"] == "design"  # the audit fails first (A-f)
+    graph.invoke(Command(resume=OVERRIDE), cfg)
     state = graph.get_state(cfg).values
     assert pending(graph, cfg) is None  # no gate review: red blocks
     assert state["status"] == "blocked" and "analysis" not in state
@@ -128,6 +151,8 @@ def test_reviewer_can_stop_at_an_amber_gate(synthetic, nct03872011_study):
     ask = pending(graph, cfg)
     graph.invoke(Command(resume={"decisions": clinician_decisions(ask["decisions_template"]),
                                  "spec": SPEC}), cfg)  # fmt: skip
+    graph.invoke(Command(resume=OVERRIDE), cfg)  # audit override, with a reason
+    assert pending(graph, cfg)["stage"] == "gate"
     state = graph.invoke(Command(resume={"proceed": False, "reviewer": "Dr Test"}), cfg)
     assert state["status"] == "stopped" and "analysis" not in state
     assert pending(graph, cfg) is None  # nothing to sign off: no analysis was run
@@ -149,10 +174,12 @@ def test_auto_approve_runs_without_a_person_and_says_so(synthetic, nct03872011_s
     state = graph.invoke({"study": nct03872011_study})
     assert state["status"] == "auto_approved"
     assert all(r["auto"] and r["reviewer"] == AUTO_REVIEWER for r in state["reviews"])
-    assert [r["stage"] for r in state["reviews"]] == ["design", "concepts", "gate", "signoff"]
+    assert [r["stage"] for r in state["reviews"]] == ["design", "concepts", "audit", "gate",
+                                                      "signoff"]  # fmt: skip
     rep = state["report"]
     assert rep.splitlines()[2].startswith("> **AUTO-APPROVED BENCHMARK RUN.**")
-    assert "design, concepts, gate, signoff" in rep and "signed_off" not in rep
+    assert "design, concepts, audit, gate, signoff" in rep and "signed_off" not in rep
+    assert "**Audit overridden** (A-f)" in rep and "(automatic)" in rep
     assert state["analysis"]["primary_method"] == "clone-censor-weight"
 
 
@@ -174,7 +201,7 @@ def test_auto_approve_can_cover_some_stages(synthetic, nct03872011_study):
     state = graph.invoke(Command(resume={"approve": False, "reviewer": "Dr Test",
                                          "note": "recheck the surrogate"}), cfg)  # fmt: skip
     assert state["status"] == "returned"
-    assert "No person reviewed: design, gate." in state["report"]
+    assert "No person reviewed: design, audit, gate." in state["report"]
     with pytest.raises(ValueError, match="compile spec"):
         AutoApprove().answer("concepts", {"decisions_template": {"decisions": {}}})
 
@@ -212,6 +239,12 @@ def test_cli_replay_resumes_from_checkpoints(tmp_path, nct03872011_study):
     spec = json.loads((out / "spec.json").read_text(encoding="utf-8"))
     assert spec["time_zero"]["concept_ids"] == []  # the reviewer fills this in
     (out / "spec.json").write_text(json.dumps({**spec, **SPEC}), "utf-8")
+    r = run(app, ["replay", "resume", "-o", str(out)])
+    assert r.exit_code == 0, r.output
+    assert "waiting for the design review" in r.output
+    assert "A-f" in (out / "audit.md").read_text(encoding="utf-8")
+    assert json.loads((out / "design.json").read_text("utf-8"))["override_audit"] is None
+    (out / "design.json").write_text(json.dumps(OVERRIDE), "utf-8")
     r = run(app, ["replay", "resume", "-o", str(out)])
     assert r.exit_code == 0, r.output
     assert "waiting for the gate review" in r.output and "AMBER" in (out / "gate.md").read_text(
@@ -257,3 +290,47 @@ def test_cli_auto_approve_policy(tmp_path):
     assert "AUTO-APPROVE" in r.output and "run auto_approved" in r.output
     report = (out / "report.md").read_text(encoding="utf-8")
     assert "AUTO-APPROVED BENCHMARK RUN" in report and not (out / "pending.txt").exists()
+
+
+def _to_audit(con, study):
+    """Run to the first failed audit (the drafted design has no new-user exclusion)."""
+    graph, cfg = _run(con, study, DataContext(data_classification="synthetic"))
+    graph.invoke(Command(resume={"confounders": CONFOUNDERS, "reviewer": "Dr Test"}), cfg)
+    ask = pending(graph, cfg)
+    graph.invoke(Command(resume={"decisions": clinician_decisions(ask["decisions_template"]),
+                                 "spec": SPEC}), cfg)  # fmt: skip
+    assert pending(graph, cfg)["stage"] == "design"
+    return graph, cfg
+
+
+def test_an_audit_override_needs_a_reason(synthetic, nct03872011_study):
+    _, con = synthetic
+    graph, cfg = _to_audit(con, nct03872011_study)
+    with pytest.raises(ValueError, match="needs a reason"):
+        graph.invoke(Command(resume={"reviewer": "Dr Test", "override_audit": {"reason": " "}}),
+                     cfg)  # fmt: skip
+
+
+def test_repeated_audit_failures_stop_the_run(synthetic, nct03872011_study):
+    """Approving a failed design without changing it re-compiles and fails again; after
+    MAX_AUDIT_ROUNDS failures the run stops with the findings in the report."""
+    from agentic_tte.graph.replay import MAX_AUDIT_ROUNDS
+
+    _, con = synthetic
+    graph, cfg = _to_audit(con, nct03872011_study)
+    for _ in range(MAX_AUDIT_ROUNDS - 1):
+        graph.invoke(Command(resume={"reviewer": "Dr Test"}), cfg)
+    state = graph.get_state(cfg).values
+    assert pending(graph, cfg) is None and state["status"] == "stopped"
+    assert state["audit_rounds"] == MAX_AUDIT_ROUNDS and "analysis" not in state
+    assert "failed the audit" in state["report"] and "A-f" in state["report"]
+
+
+def test_auto_approve_can_stop_on_a_failed_audit(synthetic, nct03872011_study):
+    _, con = synthetic
+    graph = build_replay(con, llm=ScriptedClient(_respond, max_retries=1),
+                         context=DataContext(data_classification="synthetic"),
+                         auto=_auto(audit="stop"))  # fmt: skip
+    state = graph.invoke({"study": nct03872011_study})
+    assert state["status"] == "stopped" and "analysis" not in state
+    assert "audit: failed A-f" in state["report"]
