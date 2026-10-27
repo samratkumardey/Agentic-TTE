@@ -53,10 +53,11 @@ class Candidate(BaseModel):
 
     @property
     def rank(self) -> tuple:
-        # Within a match level: fewer signs of a different concept, then a direct match over
-        # one through an abbreviation, then the candidate found by the fullest query
-        # ("pain level" over "pain"), then the closest in length.
-        return (MATCH_RANK[self.match], self.penalty, self.abbreviation is not None,
+        # Signs of a different concept come first: an exact synonym of the wrong variant
+        # ("Hematocrit ... adjusted ... by calculation") must not beat the plain test found by
+        # its words. Then the match level, a direct match over one through an abbreviation,
+        # the candidate found by the fullest query ("pain level" over "pain"), and length.
+        return (self.penalty, MATCH_RANK[self.match], self.abbreviation is not None,
                 self.via is not None, -len(self.matched_text), -self.score, self.concept_id)
 
 
@@ -73,6 +74,11 @@ _SALTS = {"sodium", "succinate", "hydrochloride", "hcl", "phosphate", "sulfate",
           "acetate", "chloride", "potassium", "citrate", "tartrate", "maleate", "mesylate",
           "calcium", "besylate", "bitartrate", "fumarate", "bromide", "injection", "infusion",
           "intravenous", "iv", "oral", "tablet", "tablets"}  # fmt: skip
+# LOINC names read "Analyte [Property] in System": system words are not another analyte.
+_LOINC_SYSTEM = {"in", "of", "by", "or", "and", "blood", "serum", "plasma", "urine", "total"}
+# Variants of a test rather than the test itself.
+_VARIANTS = {"adjusted", "calculation", "calculated", "corrected", "goal", "ratio", "post",
+             "pre", "fetal", "maternal", "donor", "challenge", "stimulation", "measurement"}
 # Words that turn a concept into its opposite or absence.
 _NEGATIONS = {"non", "not", "no", "without", "absent", "absence", "negative", "free"}
 # Words in ICU drug and fluid labels that name an administration, not a substance
@@ -127,6 +133,12 @@ def _norm_sql(col: str) -> str:
     return f"trim(regexp_replace(lower({col}), '[^a-z0-9]+', ' ', 'g'))"
 
 
+def _prefer(alias: str) -> str:
+    """SQL ordering before the cut: LOINC tests with a measured property, then short names."""
+    return (f"({alias}.vocabulary_id = 'LOINC' AND {alias}.concept_name LIKE '%[%') DESC, "
+            f"length({alias}.concept_name)")
+
+
 def _search_index(con, has_syn: bool) -> None:
     """Normalized names, built once per connection: ``atte_cnorm`` (concept_id, ' name ') and
     ``atte_snorm`` (concept_id, name) for synonyms. Normalizing 2 million names with a regular
@@ -172,6 +184,10 @@ def search(con, name: str, domain: str, *, limit: int = 10,
     cls_t = "t.concept_class_id" if "concept_class_id" in cols else "NULL"
     found: dict[int, Candidate] = {}
     _search_index(con, has_syn)
+    # Retrieve many matches and rank them all: a common lab name ("creatinine") matches
+    # hundreds of LOINC tests, and keeping the first few the database returns lost the right
+    # one (MIMIC-IV proposals, 2026-10-26).
+    fetch = max(limit * 3, 500)
 
     asked = set(norm(name).split())
 
@@ -189,6 +205,14 @@ def search(con, name: str, domain: str, *, limit: int = 10,
                 p += 1  # newborn cord-blood tests
             if vocab != "LOINC":
                 p += 1  # LOINC is OMOP's standard vocabulary for lab tests and vital signs
+            else:
+                analyte = set(norm(cname.split("[")[0]).split())
+                if "[" not in cname and "panel" not in asked:
+                    p += 1  # a panel or narrative, not a measured quantity
+                elif analyte - asked - _LOINC_SYSTEM:
+                    p += 1  # another analyte: "Calcium/Sodium", "Hemoglobin F1", "CD19 cells"
+            if _VARIANTS & words - asked:
+                p += 1  # a calculated, adjusted, ratio or goal variant
         if omop_domain == "Drug" and vocab == "RxNorm Extension":
             p += 1  # prefer RxNorm; Extension names include codes such as "LR-90"
         return p
@@ -235,7 +259,8 @@ def search(con, name: str, domain: str, *, limit: int = 10,
                        {cls_s}, c.standard_concept, NULL, NULL
                 FROM concept c JOIN atte_cnorm n ON n.concept_id = c.concept_id
                 WHERE c.standard_concept = 'S' AND c.domain_id = ? AND {valid} AND ({where})
-                LIMIT {limit * 3}""", [omop_domain, *params]).fetchall()  # fmt: skip
+                ORDER BY {_prefer('c')} LIMIT {fetch}""",
+                               [omop_domain, *params]).fetchall()  # fmt: skip
             add(rows, match, text, abbr)
             if has_rel:
                 # Non-standard source concepts, followed to their standard target.
@@ -248,7 +273,8 @@ def search(con, name: str, domain: str, *, limit: int = 10,
                     JOIN concept t ON t.concept_id = r.concept_id_2 AND t.standard_concept = 'S'
                     WHERE (c.standard_concept IS NULL OR c.standard_concept <> 'S')
                       AND t.domain_id = ? AND {valid} AND ({where})
-                    LIMIT {limit * 3}""", [omop_domain, *params]).fetchall()  # fmt: skip
+                    ORDER BY {_prefer('t')} LIMIT {fetch}""",
+                                   [omop_domain, *params]).fetchall()  # fmt: skip
                 add(rows, match, text, abbr)
     ranked = sorted(found.values(), key=lambda c: c.rank)
     # Drugs: prefer the ingredient, which covers every product through concept_ancestor.

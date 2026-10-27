@@ -565,6 +565,29 @@ The fixes (commit 5d7675b):
   - item proposals rank the specimen by category: serum or plasma for chemistry, blood for blood gas and haematology.
 - **Tests:** the decoys are regression tests. Phase 2 results are unchanged. **Proposals made before this must be regenerated.**
 
+**Second pre-check (2026-10-26).** Lab proposals were still wrong where it matters:
+
+| MIMIC lab | Proposed |
+|---|---|
+| Creatinine | BUN/Creatinine ratio |
+| Potassium | … in Red Blood Cells |
+| Sodium | Calcium/Sodium ratio |
+| Hemoglobin | Hemoglobin F1/total |
+| Lactate | a gas panel |
+| Hematocrit | an "adjusted by calculation" variant, via an exact synonym |
+
+There were two causes. **Retrieval:** each query kept only the first ~30–45 rows the database returned, before ranking, so the right test among hundreds of LOINC matches was usually never seen. **Ranking:** it could not tell a different analyte from the one asked for.
+
+The fixes:
+- **Retrieval:** up to 500 matches, ordered so LOINC tests with a measured property and shorter names come first; all are then ranked.
+- **Measurement penalties:**
+  - a LOINC analyte (the text before `[`) with words the label lacks;
+  - a LOINC name without a `[property]` (panels, narratives);
+  - calculated, adjusted, ratio, goal or `[Measurement]` variants.
+- **Ordering:** the penalty now ranks before the match level.
+
+The decoys and a 600-decoy retrieval case are regression tests. Phase 2 results are unchanged.
+
 **Step 2, part 1: built** (`agentic_tte/etl/mimic_omop.py`, `agentic-tte etl mimic`; tests in `tests/test_etl_mimic.py` on a made-up four-patient dataset written at test time).
 - **Built:** person, observation_period, visit_occurrence (admissions; ER-and-inpatient when there was an ED stay), visit_detail (ICU stays), death, and the diagnoses, procedures and prescriptions coded through the vocabulary.
   - **Source codes:** ICD9CM, ICD10CM, ICD9Proc, ICD10PCS and NDC codes are matched with the dots removed, then followed through 'Maps to'. Each record goes to the table of its standard concept's domain.

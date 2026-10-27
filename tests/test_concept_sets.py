@@ -41,7 +41,7 @@ def ids(cands):
 
 def test_load_athena_counts(vocab):
     n = vocab.execute("SELECT count(*) FROM concept").fetchone()[0]
-    assert n == 42
+    assert n == 50
     with pytest.raises(FileNotFoundError):
         load_athena(duckdb.connect(), VOCAB / "missing")
 
@@ -238,3 +238,28 @@ def test_short_labels_do_not_match_junk(vocab, label):
     assert 9000136 not in got  # "LR" is not "LR-90"
     if label == "H":
         assert got == []
+
+
+@pytest.mark.parametrize("label,first", [
+    ("Sodium", 9000142),  # not "Calcium/Sodium [Mass Ratio]" (another analyte)
+    ("Hematocrit", 9000144),  # not the exact synonym "... adjusted ... by calculation"
+    ("Lactate", 9000030),  # a lactate test, not "Gas and Lactate panel"
+    ("Creatinine", 9000140),  # a LOINC test, not "BUN/Creatinine ratio"
+    ("Hemoglobin", 9000148),  # not "Hemoglobin F1/Hemoglobin.total"
+])  # fmt: skip
+def test_lab_names_rank_the_test_itself_first(vocab, label, first):
+    """Regression for the second pre-check of the MIMIC-IV lab proposals (2026-10-26)."""
+    assert search(vocab, label, "Measurement")[0].concept_id == first
+
+
+def test_the_right_concept_is_retrieved_among_many_matches():
+    """A common lab name matches hundreds of LOINC tests. Keeping only the first few rows the
+    database returned lost the right one; all are now ranked."""
+    con = duckdb.connect()
+    con.execute("""CREATE TABLE concept AS SELECT 100000 + i AS concept_id,
+        'Creatinine [Mass/volume] in Urine --' || i || ' hour specimen collection' AS concept_name,
+        'Measurement' AS domain_id, 'LOINC' AS vocabulary_id, 'Lab Test' AS concept_class_id,
+        'S' AS standard_concept, NULL AS invalid_reason FROM range(600) t(i)""")
+    con.execute("INSERT INTO concept VALUES (7, 'Creatinine [Mass/volume] in Serum or Plasma', "
+                "'Measurement', 'LOINC', 'Lab Test', 'S', NULL)")
+    assert search(con, "Creatinine", "Measurement")[0].concept_id == 7

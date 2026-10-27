@@ -92,7 +92,8 @@ def test_proposals_from_labels_most_frequent_first(setup):
     assert [e.itemid for e in m.entries] == [LACTATE, CREATININE, MADE_UP]
     lac = m.entries[0]
     assert lac.rows == 13 and lac.specimen == "Blood" and lac.status == "proposed"
-    assert {c.concept_id for c in lac.candidates} == {9000030, 9000031}  # Blood, Serum/Plasma
+    assert {9000030, 9000031} <= {c.concept_id for c in lac.candidates}  # Blood, Serum/Plasma
+    assert lac.candidates[0].concept_id != 9000145  # the panel is only an alternative
     assert m.entries[1].rows == "<11"  # suppressed in the file too
     assert m.entries[1].status == "proposed"  # creatinine is in the fixture vocabulary
     assert m.entries[2].status == "no_match"  # the made-up assay is not

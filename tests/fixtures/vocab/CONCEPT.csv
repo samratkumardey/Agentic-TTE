@@ -41,3 +41,11 @@ concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concep
 9000138	Neutrophils [#/volume] in Cord blood	Measurement	LOINC	Lab Test	S	T138	19700101	20991231	
 9000139	Neutrophils [#/volume] in Blood	Measurement	LOINC	Lab Test	S	T139	19700101	20991231	
 9000140	Creatinine [Mass/volume] in Blood	Measurement	LOINC	Lab Test	S	T140	19700101	20991231	
+9000141	Calcium/Sodium [Mass Ratio] in Serum or Plasma	Measurement	LOINC	Lab Test	S	T141	19700101	20991231	
+9000142	Sodium [Moles/volume] in Serum or Plasma	Measurement	LOINC	Lab Test	S	T142	19700101	20991231	
+9000143	Hematocrit [Volume Fraction] adjusted to ideal blood volume by calculation	Measurement	LOINC	Lab Test	S	T143	19700101	20991231	
+9000144	Hematocrit [Volume Fraction] of Blood	Measurement	LOINC	Lab Test	S	T144	19700101	20991231	
+9000145	Gas and Lactate panel - Venous blood	Measurement	LOINC	Panel	S	T145	19700101	20991231	
+9000146	BUN/Creatinine ratio	Measurement	SNOMED	Observable Entity	S	T146	19700101	20991231	
+9000147	Hemoglobin F1/Hemoglobin.total in Blood	Measurement	LOINC	Lab Test	S	T147	19700101	20991231	
+9000148	Hemoglobin [Mass/volume] in Blood	Measurement	LOINC	Lab Test	S	T148	19700101	20991231	
