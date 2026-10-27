@@ -614,6 +614,7 @@
    "note": "Glucontrol: glucose target",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -702,6 +703,7 @@
    "note": "Leuven medical ICU: intensive insulin to a glucose target",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "16452557"
@@ -962,12 +964,29 @@
    "note": "VISEP: hydroxyethyl starch vs crystalloid (the volume comparison); 28-day death. The insulin comparison is a glucose target (S5)",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00135473",
+     "trial": "VISEP",
+     "pmid": "18184958",
+     "paper": "N Engl J Med 2008",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "pentastarch (HES) vs Ringer's lactate",
+     "population": null,
+     "status": "needs_full_text",
+     "verified_by": null,
+     "note": "The abstract reports the HES comparison only for renal outcomes"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "18184958"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "needs_full_text"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -1080,6 +1099,7 @@
    "note": "CORTICUS: hydrocortisone vs placebo; the primary population is ACTH-test non-responders, which MIMIC may not record",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "18184957"
@@ -1105,6 +1125,25 @@
    "note": "CATS: norepinephrine + dobutamine vs epinephrine; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00148278",
+     "trial": "CATS",
+     "pmid": "17720019",
+     "paper": "Lancet 2007",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": "RR",
+     "value": 0.86,
+     "ci": [
+      0.65,
+      1.14
+     ],
+     "ci_level": 95,
+     "contrast": "norepinephrine + dobutamine vs epinephrine",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "17720019"
@@ -1112,7 +1151,7 @@
     "pubmed_rct_pmids": [
      "17720019"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -1342,6 +1381,7 @@
    "note": "LOVS: open-lung ventilation strategy",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -1782,6 +1822,7 @@
    "note": "NICE-SUGAR: glucose target",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [],
@@ -2167,6 +2208,7 @@
    "note": "Lactate-directed therapy",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -2268,6 +2310,7 @@
    "note": "Tight glucose control in cardiac surgery",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -2369,6 +2412,7 @@
    "note": "IV clarithromycin in septic syndrome; mortality, horizon not stated in the registry",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -2393,13 +2437,33 @@
    "note": "ACURASYS: cisatracurium vs placebo in ARDS; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00299650",
+     "trial": "ACURASYS",
+     "pmid": "20843245",
+     "paper": "N Engl J Med 2010",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "HR (adjusted for PaO2:FiO2, plateau pressure, SAPS II)",
+     "value": 0.68,
+     "ci": [
+      0.48,
+      0.98
+     ],
+     "ci_level": 95,
+     "contrast": "cisatracurium vs placebo",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null,
+     "note": "Adjusted HR is the primary analysis; the crude difference was not significant (P = 0.08)"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "27894328",
      "20843245"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -2461,12 +2525,31 @@
    "note": "SOAP II: dopamine vs norepinephrine in shock; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00314704",
+     "trial": "SOAP II",
+     "pmid": "20200382",
+     "paper": "N Engl J Med 2010",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": "OR",
+     "value": 1.17,
+     "ci": [
+      0.97,
+      1.42
+     ],
+     "ci_level": 95,
+     "contrast": "dopamine vs norepinephrine",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "20200382"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -2527,6 +2610,25 @@
    "note": "CRISTAL: colloids vs crystalloids; 28-day death. LR (a crystalloid) is unmapped in our inputevents map; saline and colloids are mapped",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00318942",
+     "trial": "CRISTAL",
+     "pmid": "24108515",
+     "paper": "JAMA 2013",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": "RR",
+     "value": 0.96,
+     "ci": [
+      0.88,
+      1.04
+     ],
+     "ci_level": 95,
+     "contrast": "colloids vs crystalloids",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "24108515"
@@ -2535,7 +2637,7 @@
      "28988172",
      "24108515"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -2557,6 +2659,7 @@
    "note": "COIITSS: the primary comparison is intensive insulin to a glucose target",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "20103758"
@@ -2608,6 +2711,7 @@
    "note": "Dialysis strategies in critically ill patients; 90-day death. Which modalities are compared needs checking",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -2995,6 +3099,7 @@
    "note": "LactATES: resuscitation end point",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -3705,6 +3810,7 @@
      "rates": "9.4% vs 10.1%",
      "verification": "verified"
     },
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Composite of Rehospitalization Due to Heart Failure and All-Cause Mortality",
      "param_type": "Risk Difference (RD)",
@@ -3865,6 +3971,7 @@
    "note": "ProCESS: protocolized resuscitation",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -4046,6 +4153,7 @@
    "note": "PROSEVA: prone positioning; 28-day death. Needs the patient-position items mapped (changelog item 7)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "23688302"
@@ -4527,6 +4635,7 @@
    "note": "PROWESS-SHOCK: drotrecogin alfa vs placebo; 28-day death. Drotrecogin is in MIMIC (Xigris) but rare: S8 likely fails",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "28-Day All-Cause Mortality",
      "param_type": "Risk Ratio (RR)",
@@ -4638,6 +4747,7 @@
    "note": "Fenoldopam vs placebo after cardiac surgery; RRT. Fenoldopam use to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -4662,6 +4772,25 @@
    "note": "APROCCHSS: hydrocortisone + fludrocortisone vs placebo; 90-day death (the activated protein C arm was stopped)",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00625209",
+     "trial": "APROCCHSS",
+     "pmid": "29490185",
+     "paper": "N Engl J Med 2018",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RR",
+     "value": 0.88,
+     "ci": [
+      0.78,
+      0.99
+     ],
+     "ci_level": 95,
+     "contrast": "hydrocortisone + fludrocortisone vs placebo",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "23525934"
@@ -4671,7 +4800,7 @@
      "29490185",
      "23525934"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -4785,6 +4914,7 @@
    "note": "PEITHO: tenecteplase in intermediate-risk PE; death or haemodynamic collapse at day 7. Collapse needs a structured definition",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "15262836"
@@ -5501,6 +5631,7 @@
    "note": "Atorvastatin vs placebo before cardiac surgery; AKI. Statin start may be before admission",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -5734,6 +5865,7 @@
    "note": "SISPCT: sodium selenite factorial; 28-day death. Whether IV selenite is given in MIMIC is unknown (S8)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "27428731"
@@ -6373,13 +6505,32 @@
    "note": "CHEST: hydroxyethyl starch vs saline in ICU; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT00935168",
+     "trial": "CHEST",
+     "pmid": "23075127",
+     "paper": "N Engl J Med 2012",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RR",
+     "value": 1.06,
+     "ci": [
+      0.96,
+      1.18
+     ],
+     "ci_level": 95,
+     "contrast": "hydroxyethyl starch vs saline",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "27324967",
      "23075127"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -6493,6 +6644,7 @@
    "note": "6S: HES vs Ringer's acetate; death or dialysis dependence at 90 days (dialysis after discharge is not seen)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "22738085"
@@ -6898,6 +7050,7 @@
    "note": "TTM: 33 vs 36 degrees",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -7471,6 +7624,7 @@
    "note": "SEPSISPAM: blood-pressure target",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -7795,12 +7949,29 @@
    "note": "Parity: clarithromycin vs placebo; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01223690",
+     "trial": "Clarithromycin as immunomodulator in sepsis (parity)",
+     "pmid": null,
+     "paper": null,
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "clarithromycin vs placebo",
+     "population": null,
+     "status": "not_found",
+     "verified_by": null,
+     "note": "Only sub-studies are on PubMed; the 2008 VAP trial (PMID 18444850) predates this registration"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "28274246"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "not_found"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -8173,12 +8344,32 @@
    "note": "Hydrocortisone vs placebo in severe sepsis; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01284452",
+     "trial": "Hydrocortisone in sepsis-associated ARDS (Tongyoo)",
+     "pmid": "27741949",
+     "paper": "Crit Care 2016",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": "HR (adjusted)",
+     "value": 0.8,
+     "ci": [
+      0.46,
+      1.41
+     ],
+     "ci_level": 95,
+     "contrast": "hydrocortisone vs placebo",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null,
+     "note": "The abstract says 'day 28 survival ... HR 0.80': check that the HR is for death, and whether the primary outcome is 28- or 60-day mortality"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "27741949"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -8512,6 +8703,7 @@
    "note": "N-acetylcysteine vs saline to prevent AKI after surgery; population to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -8835,12 +9027,31 @@
    "note": "ADRENAL: hydrocortisone vs placebo in septic shock on ventilation; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01448109",
+     "trial": "ADRENAL",
+     "pmid": "29347874",
+     "paper": "N Engl J Med 2018",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "OR",
+     "value": 0.95,
+     "ci": [
+      0.82,
+      1.1
+     ],
+     "ci_level": 95,
+     "contrast": "hydrocortisone vs placebo",
+     "population": "ITT (3658 with known status)",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "29347874"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -8915,6 +9126,7 @@
    "note": "Early vs late antiretroviral therapy in critically ill HIV patients; hospital death",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -9126,6 +9338,7 @@
    "note": "TRISS: haemoglobin transfusion threshold",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "25270275"
@@ -9673,6 +9886,7 @@
    "note": "CoRAb: colistin with vs without rifampicin for MDR Acinetobacter; 30-day death. The population needs microbiology, not in our CDM",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -9995,12 +10209,32 @@
    "note": "HYDRAREA: bicarbonate vs saline before contrast in ICU patients; contrast AKI at 72 h (creatinine, structured)",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01636089",
+     "trial": "HYDRAREA",
+     "pmid": "28181941",
+     "paper": "Crit Care Med 2017",
+     "outcome": "contrast-associated AKI (AKIN)",
+     "horizon": "72 hours",
+     "measure": "RD (percentage points)",
+     "value": -1.8,
+     "ci": [
+      -12.3,
+      8.9
+     ],
+     "ci_level": 95,
+     "contrast": "saline vs bicarbonate (as reported: saline 33.3%, bicarbonate 35.1%)",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null,
+     "note": "The registry linked a different trial (PMID 32065601, outpatient CT). This paper matches by design and size (n = 307) but its abstract does not cite the NCT number: confirm it is NCT01636089. Orientation is saline minus bicarbonate"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "32065601"
     ],
     "pubmed_rct_pmids": [],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -10374,12 +10608,29 @@
    "note": "VANCS II: vasopressin vs norepinephrine in cancer patients with septic shock; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01718613",
+     "trial": "VANCS II",
+     "pmid": "31609774",
+     "paper": "Crit Care Med 2019",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "vasopressin vs norepinephrine",
+     "population": "250 randomized",
+     "status": "needs_full_text",
+     "verified_by": null,
+     "note": "The abstract gives counts only: 71/125 (56.8%) vs 66/125 (52.8%), P = 0.52"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "31609774"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "needs_full_text"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -10454,6 +10705,7 @@
    "note": "SPICE III: early goal-directed sedation (dexmedetomidine-based) vs usual care; 90-day death. Emulable only as early dexmedetomidine vs not",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [],
@@ -10606,13 +10858,33 @@
    "note": "DESIRE: dexmedetomidine vs none in ventilated sepsis; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01760967",
+     "trial": "DESIRE",
+     "pmid": "28322414",
+     "paper": "JAMA 2017",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": "HR",
+     "value": 0.69,
+     "ci": [
+      0.38,
+      1.22
+     ],
+     "ci_level": 95,
+     "contrast": "dexmedetomidine vs no dexmedetomidine",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null,
+     "note": "Co-primary with ventilator-free days"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "32778146",
      "28322414"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -10738,6 +11010,7 @@
    "note": "VALSE: IV valproate in status epilepticus; discharged alive at day 15 (definition to check)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -11060,6 +11333,7 @@
    "note": "Sodium bicarbonate vs saline to prevent AKI; population to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -11200,12 +11474,32 @@
    "note": "PRATO-ACS-2: rosuvastatin vs atorvastatin in ACS before angiography; contrast AKI at 72 h",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01870804",
+     "trial": "PRATO-ACS-2",
+     "pmid": "32434204",
+     "paper": "Cardiorenal Med 2020",
+     "outcome": "contrast AKI",
+     "horizon": "72 hours",
+     "measure": "RD (percentage points)",
+     "value": 0.54,
+     "ci": [
+      -3.9,
+      2.8
+     ],
+     "ci_level": 90,
+     "contrast": "rosuvastatin vs atorvastatin (as reported)",
+     "population": "non-inferiority",
+     "status": "non_95_ci",
+     "verified_by": null,
+     "note": "The abstract's point estimate (0.54) lies outside its own CI (-3.9 to 2.8), and 8.2% vs 7.6% gives +0.6: check the sign and the CI in the full text"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "32434204"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "non_95_ci"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -11345,6 +11639,7 @@
    "note": "IVNICTUS: early non-invasive ventilation vs oxygen; 28-day death. NIV must be identifiable in procedureevents",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "26444879"
@@ -11371,6 +11666,7 @@
    "note": "CULPRIT-SHOCK: culprit-only vs multivessel PCI; 30-day death or RRT. Vessel count only in ICD-10-PCS",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -11418,6 +11714,23 @@
    "note": "AKIKI: early vs delayed RRT; 60-day survival",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT01932190",
+     "trial": "AKIKI",
+     "pmid": "27181456",
+     "paper": "N Engl J Med 2016",
+     "outcome": "death",
+     "horizon": "60 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "early vs delayed RRT",
+     "population": "619 analysed",
+     "status": "needs_full_text",
+     "verified_by": null,
+     "note": "The abstract gives Kaplan-Meier mortality only: 48.5% vs 49.7%, P = 0.79"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -11425,7 +11738,7 @@
      "27181456",
      "25902813"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "needs_full_text"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -11982,6 +12295,7 @@
    "note": "Tedizolid vs linezolid in ventilated pneumonia; 28-day death. Tedizolid is likely rare in MIMIC",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Number of Participants With All-Cause Mortality in the Intent-to-Treat (ITT) Population",
      "param_type": "Difference in all-cause mortality",
@@ -12340,6 +12654,7 @@
    "note": "ASPECT-NP: ceftolozane/tazobactam vs meropenem; 28-day death. Ceftolozane is likely rare",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Percentage of Participants With All Cause Mortality in the Intent-to-Treat (ITT) Population - Day 28",
      "param_type": "Difference in Percentage of Participants",
@@ -13339,6 +13654,7 @@
    "note": "Dexmedetomidine after cardiac surgery; delirium. Needs the delirium assessments (CAM-ICU) mapped (changelog item 7)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Incidence of Postoperative Delirium",
      "param_type": "Odds Ratio (OR)",
@@ -13553,12 +13869,29 @@
    "note": "DISCO: immediate vs deferred coronary angiography after cardiac arrest; 30-day survival",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02309151",
+     "trial": "DISCO",
+     "pmid": null,
+     "paper": null,
+     "outcome": "survival",
+     "horizon": "30 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "immediate vs deferred coronary angiography",
+     "population": null,
+     "status": "not_found",
+     "verified_by": null,
+     "note": "Only the 79-patient pilot (PMID 31028826) and the design paper are on PubMed"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "31028826"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "not_found"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -14155,6 +14488,7 @@
    "note": "SMART: balanced crystalloids vs saline; MAKE30 (structured). Needs LR and Plasma-Lyte mapped (changelog item 7)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Major Adverse Kidney Event Within 30 Days",
      "param_type": "Odds Ratio (OR)",
@@ -14251,6 +14585,25 @@
    "note": "SUP-ICU: pantoprazole vs placebo; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02467621",
+     "trial": "SUP-ICU",
+     "pmid": "30354950",
+     "paper": "N Engl J Med 2018",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RR",
+     "value": 1.02,
+     "ci": [
+      0.91,
+      1.13
+     ],
+     "ci_level": 95,
+     "contrast": "pantoprazole vs placebo",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -14260,7 +14613,7 @@
      "30354950",
      "27093939"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -14348,12 +14701,31 @@
    "note": "BICAR-ICU: sodium bicarbonate vs none in severe acidaemia; day-28 death or organ failure at day 7",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02476253",
+     "trial": "BICAR-ICU",
+     "pmid": "29910040",
+     "paper": "Lancet 2018",
+     "outcome": "death by day 28 or at least one organ failure at day 7",
+     "horizon": "28 days",
+     "measure": "RD (percentage points)",
+     "value": -5.5,
+     "ci": [
+      -15.2,
+      4.2
+     ],
+     "ci_level": 95,
+     "contrast": "bicarbonate vs control",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "29910040"
     ],
     "pubmed_rct_pmids": [],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -14428,6 +14800,7 @@
    "note": "RESTORE-IMI 2: imipenem/relebactam vs piperacillin/tazobactam; 28-day death. Relebactam is likely rare",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Percentage of Participants With All-cause Mortality (ACM) Through Day 28 in the Modified Intention-to-treat (MITT) Population",
      "param_type": "Adjusted difference in ACM",
@@ -14526,6 +14899,25 @@
    "note": "ROSE: early cisatracurium in ARDS; in-hospital death to day 90",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02509078",
+     "trial": "ROSE",
+     "pmid": "31112383",
+     "paper": "N Engl J Med 2019",
+     "outcome": "in-hospital death",
+     "horizon": "to day 90",
+     "measure": "RD (percentage points)",
+     "value": -0.3,
+     "ci": [
+      -6.4,
+      5.9
+     ],
+     "ci_level": 95,
+     "contrast": "early cisatracurium vs usual care",
+     "population": "ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": {
      "outcome": "Hospital Mortality to Day 90",
      "param_type": "Risk Difference (RD)",
@@ -14541,7 +14933,7 @@
      "31112383",
      "27779896"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -14603,6 +14995,25 @@
    "note": "CAPE COD: hydrocortisone vs placebo in severe community-acquired pneumonia; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02517489",
+     "trial": "CAPE COD",
+     "pmid": "36942789",
+     "paper": "N Engl J Med 2023",
+     "outcome": "death",
+     "horizon": "28 days",
+     "measure": "RD (percentage points)",
+     "value": -5.6,
+     "ci": [
+      -9.6,
+      -1.7
+     ],
+     "ci_level": 95,
+     "contrast": "hydrocortisone vs placebo",
+     "population": "795 analysed (stopped early)",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "32876689"
@@ -14611,7 +15022,7 @@
      "36942789",
      "32876689"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -14881,10 +15292,29 @@
    "note": "STARRT-AKI: accelerated vs standard RRT initiation; 90-day death. A timing strategy with a grace period (clone-censor-weight), not a physiological target",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02568722",
+     "trial": "STARRT-AKI",
+     "pmid": "32668114",
+     "paper": "N Engl J Med 2020",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RR",
+     "value": 1.0,
+     "ci": [
+      0.93,
+      1.09
+     ],
+     "ci_level": 95,
+     "contrast": "accelerated vs standard RRT initiation",
+     "population": "modified ITT",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -14934,6 +15364,7 @@
    "note": "Hydrocortisone vs saline in septic shock; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -15221,6 +15652,26 @@
    "note": "EvK: etomidate vs ketamine for emergency intubation; day-7 survival",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02643381",
+     "trial": "EvK",
+     "pmid": "34904190",
+     "paper": "Intensive Care Med 2022",
+     "outcome": "survival",
+     "horizon": "7 days",
+     "measure": "RD in survival (percentage points)",
+     "value": -7.8,
+     "ci": [
+      -13.0,
+      -2.4
+     ],
+     "ci_level": 95,
+     "contrast": "etomidate vs ketamine",
+     "population": "791 analysed",
+     "status": "extracted",
+     "verified_by": null,
+     "note": "A difference in survival, not death: the emulation must report the same orientation"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "29715485"
@@ -15228,7 +15679,7 @@
     "pubmed_rct_pmids": [
      "34904190"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -15589,6 +16040,7 @@
    "note": "PLUS: Plasma-Lyte vs saline; 90-day death. Needs balanced crystalloids mapped",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -16249,6 +16701,7 @@
    "note": "Nitric oxide during cardiac surgery; AKI. Delivery during bypass is not recorded",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -16363,6 +16816,7 @@
    "note": "MINDDS: dexmedetomidine after cardiac surgery; delirium. Needs CAM-ICU mapped (changelog item 7)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Number of Participants With Delirium",
      "param_type": "Odds Ratio (OR)",
@@ -16406,6 +16860,7 @@
      "rates": "12.7% vs 17.9%",
      "verification": "verified"
     },
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [],
@@ -16510,6 +16965,7 @@
    "note": "BaSICS: Plasma-Lyte vs saline; 90-day death. Needs balanced crystalloids mapped",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -16705,6 +17161,7 @@
    "note": "TTM-2: temperature target after cardiac arrest",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -16944,6 +17401,7 @@
    "note": "ACTIVATE-AKI: calcifediol/calcitriol vs placebo; death within 7 days, a phase 2 trial; the published estimate must be checked",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "40924491"
@@ -17138,12 +17596,31 @@
    "note": "PREVENT CLOT: aspirin vs LMWH after orthopaedic trauma (inpatients); 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT02984384",
+     "trial": "PREVENT CLOT",
+     "pmid": "36652352",
+     "paper": "N Engl J Med 2023",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RD (percentage points)",
+     "value": 0.05,
+     "ci": [
+      -0.27,
+      0.38
+     ],
+     "ci_level": 96.2,
+     "contrast": "aspirin vs LMWH",
+     "population": "12211 randomized (non-inferiority)",
+     "status": "non_95_ci",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "36652352"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "non_95_ci"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -17465,6 +17942,7 @@
    "note": "APEKS-NP: cefiderocol vs meropenem; 14-day death. Cefiderocol is likely rare",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "All-cause Mortality Rate at Day 14",
      "param_type": "Treatment Difference",
@@ -17823,12 +18301,31 @@
    "note": "VIOLET: enteral vitamin D3 vs placebo; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT03096314",
+     "trial": "VIOLET",
+     "pmid": "31826336",
+     "paper": "N Engl J Med 2019",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RD (percentage points)",
+     "value": 2.9,
+     "ci": [
+      -2.1,
+      7.9
+     ],
+     "ci_level": 95,
+     "contrast": "vitamin D3 vs placebo",
+     "population": "confirmed vitamin D deficiency (25-OH-D < 20 ng/mL), 1078",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "31826336"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -18189,6 +18686,7 @@
    "note": "Methylprednisolone or vitamin A vs placebo in sepsis; 28-day death. IV vitamin A use to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -18290,6 +18788,7 @@
    "note": "HOT-ICU: oxygenation target",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -18615,6 +19114,7 @@
    "note": "TOP: transfusion threshold; composite with myocardial infarction",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "A Composite Endpoint of All-cause Post-randomization Mortality, Myocardial Infarction (MI), Coronary Revascularization, Acute Renal Failure, or Post-randomization Ischemic Stroke up to 90 Days After Randomization",
      "param_type": "Odds Ratio (OR)",
@@ -18818,6 +19318,7 @@
    "note": "Parity: hydrocortisone + vitamin C + thiamine vs saline; hospital survival to day 14",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [],
@@ -19195,6 +19696,7 @@
    "note": "Vitamin C vs placebo in septic shock; ICU death to day 28",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -19261,6 +19763,7 @@
    "note": "INCLASS: clarithromycin vs placebo in sepsis; 28-day death",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "24292991",
@@ -19685,6 +20188,7 @@
    "note": "CLOVERS: protocolized restrictive vs liberal fluid resuscitation",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Death Before Discharge Home by Day 90",
      "param_type": "difference in mortality rate",
@@ -20177,6 +20681,7 @@
    "note": "ELITE: early CRRT on ECMO; 30-day death. Timing strategy to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -20369,6 +20874,7 @@
    "note": "Imipenem/relebactam vs piperacillin/tazobactam; 28-day death. Relebactam is likely rare",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Percentage of Participants With All-cause Mortality Through Day 28 in the Modified Intent to Treat (MITT) Population",
      "param_type": "Adjusted difference in percentage",
@@ -20596,6 +21102,25 @@
    "note": "ECLS-SHOCK: ECLS vs usual care in infarct-related cardiogenic shock; 30-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT03637205",
+     "trial": "ECLS-SHOCK",
+     "pmid": "37634145",
+     "paper": "N Engl J Med 2023",
+     "outcome": "death",
+     "horizon": "30 days",
+     "measure": "RR",
+     "value": 0.98,
+     "ci": [
+      0.8,
+      1.19
+     ],
+     "ci_level": 95,
+     "contrast": "ECLS vs usual care",
+     "population": "417 analysed",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -20603,7 +21128,7 @@
      "40139846",
      "37634145"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -20679,6 +21204,7 @@
    "note": "A2B: dexmedetomidine or clonidine vs propofol; time to successful extubation (procedureevents). Extubation as an event needs checking",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Time to First Successful Extubation Post-randomisation (Hours).",
      "param_type": "Subdistribution hazard ratio",
@@ -20711,6 +21237,23 @@
    "note": "ALBIOSS-BALANCED: albumin factorial; 90-day death. The balanced-solution factor needs LR, unmapped",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT03654001",
+     "trial": "ALBIOSS-BALANCED",
+     "pmid": null,
+     "paper": null,
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "albumin vs no albumin",
+     "population": null,
+     "status": "not_found",
+     "verified_by": null,
+     "note": "The registry links papers of the earlier ALBIOS trial (NCT00707122) and of SMART"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "24635772",
@@ -20720,7 +21263,7 @@
      "23984731"
     ],
     "pubmed_rct_pmids": [],
-    "s2_status": "to extract and check"
+    "s2_status": "not_found"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -20756,6 +21299,7 @@
    "note": "CLASSIC: restrictive fluid strategy",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -20807,6 +21351,25 @@
    "note": "LOVIT: vitamin C vs placebo; death or persistent organ dysfunction (vasopressors, ventilation, RRT) at day 28, all in structured data while in hospital",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT03680274",
+     "trial": "LOVIT",
+     "pmid": "35704292",
+     "paper": "N Engl J Med 2022",
+     "outcome": "death or persistent organ dysfunction",
+     "horizon": "28 days",
+     "measure": "RR",
+     "value": 1.21,
+     "ci": [
+      1.04,
+      1.4
+     ],
+     "ci_level": 95,
+     "contrast": "vitamin C vs placebo",
+     "population": "863 analysed",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -20814,7 +21377,7 @@
      "39774855",
      "35704292"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -20837,6 +21400,7 @@
    "note": "EVERDAC: early arterial catheter vs a non-invasive strategy; 28-day death. Arterial lines are in procedureevents; the strategy needs a grace period",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "41159885"
@@ -20927,6 +21491,7 @@
    "note": "PROTection: IV amino acids after cardiac surgery; AKI (creatinine). Needs IV amino acids mapped (changelog item 7)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "38865168",
@@ -21608,6 +22173,7 @@
    "note": "GAMECHANGER: cefiderocol vs best available therapy; 14-day death. Cefiderocol is likely rare",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -21645,12 +22211,29 @@
    "note": "Parity: vitamin C + thiamine + hydrocortisone vs placebo; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT03872011",
+     "trial": "Hydrocortisone, vitamin C and thiamine in septic shock",
+     "pmid": "36171582",
+     "paper": "Crit Care 2022",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": null,
+     "value": null,
+     "ci": null,
+     "ci_level": null,
+     "contrast": "intervention vs placebo",
+     "population": "per-protocol primary (408); ITT 426",
+     "status": "needs_full_text",
+     "verified_by": null,
+     "note": "The abstract gives proportions only (39.9% vs 39.0%, P = 0.86); the primary analysis is per-protocol"
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "36171582"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "needs_full_text"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -22089,6 +22672,25 @@
    "note": "BICARICU-2: sodium bicarbonate in severe metabolic acidosis with AKI; 90-day death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT04010630",
+     "trial": "BICARICU-2",
+     "pmid": "41159812",
+     "paper": "JAMA 2025",
+     "outcome": "death",
+     "horizon": "90 days",
+     "measure": "RD (percentage points)",
+     "value": 0.4,
+     "ci": [
+      -7.2,
+      8.0
+     ],
+     "ci_level": 95,
+     "contrast": "bicarbonate vs control",
+     "population": "627 analysed",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [
      "41159812"
@@ -22096,7 +22698,7 @@
     "pubmed_rct_pmids": [
      "41159812"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -23458,6 +24060,7 @@
    "note": "MetCOVID: methylprednisolone vs placebo in COVID; 28-day death. COVID admissions to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -23585,6 +24188,7 @@
    "note": "CAN-COVID: canakinumab; survival without ventilation. COVID admissions and use to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": {
      "outcome": "Participants Who Survived Without Requiring Invasive Mechanical Ventilation From Day 3 to Day 29, Primary Analysis",
      "param_type": "Odds Ratio (OR)",
@@ -23669,6 +24273,7 @@
    "note": "EMPACTA: tocilizumab in COVID; death or ventilation by day 28. COVID admissions to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -23952,6 +24557,7 @@
    "note": "HOT-COVID: oxygenation target; days alive without organ support",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "38990335",
@@ -24083,6 +24689,7 @@
    "note": "Anakinra in COVID cytokine storm; no ventilation by day 15. COVID admissions to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -24691,6 +25298,7 @@
    "note": "NICOVID-REA: nicotine patches in ventilated COVID; 28-day death. COVID admissions to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -24922,6 +25530,7 @@
    "note": "MEDEAS: methylprednisolone vs dexamethasone in COVID pneumonia; survival. COVID admissions in MIMIC-IV 3.1 to check",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -26844,12 +27453,31 @@
    "note": "RSI: ketamine vs etomidate for emergency intubation; 28-day in-hospital death",
    "reference": {
     "verified": null,
+    "extracted": {
+     "nct_id": "NCT05277896",
+     "trial": "RSI",
+     "pmid": "41369227",
+     "paper": "N Engl J Med 2026",
+     "outcome": "in-hospital death",
+     "horizon": "by day 28",
+     "measure": "RD (percentage points, adjusted for site)",
+     "value": -0.8,
+     "ci": [
+      -4.5,
+      2.9
+     ],
+     "ci_level": 95,
+     "contrast": "ketamine vs etomidate",
+     "population": "trial population, 2359 with outcome",
+     "status": "extracted",
+     "verified_by": null
+    },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "41369227"
     ],
-    "s2_status": "to extract and check"
+    "s2_status": "extracted"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -27833,6 +28461,7 @@
    "note": "CLASSIC sub-study: restrictive fluid strategy; time to lactate resolution",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "35709019"
@@ -28246,6 +28875,7 @@
    "note": "Midodrine vs none in septic shock; death (horizon to confirm in the paper)",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
@@ -29729,6 +30359,7 @@
    "note": "Esmolol in sepsis: the primary outcome's horizon is not stated in the registry",
    "reference": {
     "verified": null,
+    "extracted": null,
     "registry_estimate": null,
     "registry_result_pmids": [
      "38240494"

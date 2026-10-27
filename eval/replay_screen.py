@@ -462,6 +462,8 @@ def coverage_select(primary: list[dict], cap: int = 30) -> tuple[list[str], dict
 def main() -> None:
     named = json.loads(NAMED.read_text(encoding="utf-8"))
     pubmed = json.loads(PUBMED.read_text(encoding="utf-8"))["links"]
+    values = {v["nct_id"]: v for v in json.loads(
+        (REF / "replay_reference_values.json").read_text(encoding="utf-8"))["values"]}  # fmt: skip
     parity = {t["nct_id"]: t for t in json.loads(
         (REF / "replay_trials.json").read_text(encoding="utf-8"))["trials"]}  # fmt: skip
     wave1 = {s["nct_id"]: s for s in json.loads(SEARCH.read_text("utf-8"))["studies"]}
@@ -500,13 +502,16 @@ def main() -> None:
         if rec["status"] != "excluded":
             pub = parity.get(i, {}).get("published_primary_result") or {}
             ok = pub.get("verification") == "verified" and bool(pub.get("ci95"))
+            value = values.get(i)
             rec["reference"] = {
                 "verified": pub if ok else None,
+                "extracted": value,
                 "registry_estimate": registry_estimate(s),
                 "registry_result_pmids": s.get("result_refs", []),
                 "pubmed_rct_pmids": pubmed.get(i, []),
-                "s2_status": "verified" if ok else "to extract and check",
-            }
+                "s2_status": "verified" if ok or (value and value.get("verified_by"))
+                else value["status"] if value else "to extract and check",
+            }  # fmt: skip
             rec["s8"] = "pending (Data Support Gate counts on Hellbender)"
             if rec["status"] == "primary":
                 rec["features"] = FEATURES.get(i, [])

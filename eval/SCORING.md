@@ -356,3 +356,17 @@ These are named now, and each is fully specified in this changelog before it run
        - or an uncertain or conditional trial resolved.
 
        Every recomputation is logged here.
+  10. **S2 extraction** (2026-10-27, before any MIMIC estimate; `eval/reference/replay_reference_values.json`).
+      - **What was done:** Claude extracted the primary estimate from PubMed abstracts for the 30 selected trials. Each value awaits the user's check against the full paper and a second person (R3).
+      - **Result:**
+
+        | Status | Trials | Which |
+        |---|---|---|
+        | 95% CI found | 21 | — |
+        | CI at another level | 2 | PREVENT CLOT 96.2%, PRATO-ACS-2 90% |
+        | No estimate in the abstract | 4 | VISEP, VANCS II, AKIKI, NCT03872011 |
+        | No primary results paper | 3 | DISCO (pilot only), ALBIOSS-BALANCED, NCT01223690 |
+
+      - **Proposed rule, for the user to confirm:** when a paper reports its primary CI at a level other than 95%, R4 takes the standard error from that interval with the matching normal quantile (2.075 for 96.2%, 1.645 for 90%). Nothing is converted to another measure.
+      - **Correction:** the registry links HYDRAREA (NCT01636089) to an outpatient CT trial (PMID 32065601). The matching paper is PMID 28181941, pending the user's confirmation.
+      - **What happens next:** trials confirmed as *not_found*, or still without an estimate after the full-text check, leave the primary set. The selection is then recomputed (item 9).
