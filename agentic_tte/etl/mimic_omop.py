@@ -21,8 +21,10 @@ is checked against the loaded vocabulary: a standard, valid concept is used; one
 longer standard is followed through 'Maps to'; one that is missing is rejected. All are
 reported, and the map rows used go into ``source_to_concept_map``. Chart and procedure items
 without a curated map are not converted, and are counted by item in the report.
-labevents and inputevents have no curated map: they are converted through reviewed item
-maps (``item_maps``; agentic_tte/etl/item_maps.py), approved per item. Not converted: the ED
+labevents use the OHDSI MIMIC-IV ETL's lab-to-LOINC map the same way (``ohdsi_mimic``, a
+checkout of github.com/OHDSI/MIMIC, Apache-2.0; ``custom_mapping_csv/gcpt_meas_lab_loinc_mod.csv``),
+with reviewed overrides. inputevents have no curated map: they are converted through reviewed
+item maps (``item_maps``; agentic_tte/etl/item_maps.py), approved per item. Not converted: the ED
 and note modules (not in this copy of the release).
 
 MIMIC specifics, stated in ``cdm_source`` and the report:
@@ -198,6 +200,7 @@ class EtlConfig(BaseModel):
     memory_limit: str | None = None  # e.g. "100GB"
     temp_directory: str | None = None  # node-local scratch for spills
     concept_map: Path | None = None  # mimic-code mimic-iv/concepts/concept_map (SSSOM)
+    ohdsi_mimic: Path | None = None  # OHDSI/MIMIC checkout: the curated lab-to-LOINC map
     item_maps: list[Path] = Field(default_factory=list)  # reviewed maps (labs, inputs)
 
 
@@ -497,13 +500,6 @@ def build(cfg: EtlConfig, *, git_commit: str | None = None) -> EtlReport:
     return rep
 
 
-# Curated MIT-LCP maps: source table, map file, home domain, start and end time columns.
-ITEM_MAPS = {
-    "chartevents": ("chartevents_to_omop.csv", "Measurement", "charttime", None),
-    "procedureevents": ("procedureevents_to_omop.csv", "Procedure", "starttime", "endtime"),
-}
-
-
 def _checked_map(con, name: str, raw_select: str) -> None:
     """``map_<name>`` from rows (itemid, label, predicate, curated_id, reviewer): a target is
     used if standard and valid, followed through 'Maps to' if it is no longer standard, and
@@ -560,9 +556,30 @@ EVENTS = {
                     "TRY_CAST(e.amount AS DOUBLE), e.amountuom, e.amount", "hadm", "d_items"),
 }  # fmt: skip
 
-# Curated MIT-LCP maps (SSSOM) for the sources that have one.
-ITEM_MAPS = {"chartevents": "chartevents_to_omop.csv",
-             "procedureevents": "procedureevents_to_omop.csv"}
+# Curated maps for the sources that have one: the EtlConfig field holding the directory, and
+# the file in it. chartevents/procedureevents: MIT-LCP SSSOM files (mimic-code concept_map).
+# labevents: the OHDSI MIMIC-IV ETL's lab-to-LOINC map (one row per itemid).
+ITEM_MAPS = {"chartevents": ("concept_map", "chartevents_to_omop.csv"),
+             "procedureevents": ("concept_map", "procedureevents_to_omop.csv"),
+             "labevents": ("ohdsi_mimic", "custom_mapping_csv/gcpt_meas_lab_loinc_mod.csv")}
+
+
+def curated_select(source: str, root: Path) -> str:
+    """Rows (itemid, label, predicate, curated_id, reviewer) of a source's curated map."""
+    field, file = ITEM_MAPS[source]
+    path = (Path(root) / file).as_posix()
+    if field == "ohdsi_mimic":
+        return f"""SELECT TRY_CAST(concept_code AS BIGINT) AS itemid, concept_name AS label,
+                   relationship_id AS predicate,
+                   TRY_CAST(target_concept_id AS INTEGER) AS curated_id, '' AS reviewer
+            FROM read_csv('{path}', header = true, all_varchar = true)
+            WHERE coalesce(target_concept_id, '') NOT IN ('', '0')"""  # fmt: skip
+    return f"""SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
+               subject_label AS label, predicate_id AS predicate,
+               TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
+               coalesce(reviewer_id, '') AS reviewer
+        FROM read_csv('{path}', header = true, all_varchar = true)
+        WHERE object_id LIKE 'omop:%'"""  # fmt: skip
 
 
 def _convert_events(con, cfg: EtlConfig, rep: EtlReport, source: str, how: str) -> None:
@@ -636,45 +653,43 @@ def _reviewed_rows(con, kind: str, m) -> tuple[list[tuple], list[int]]:
 
 
 def _item_events(con, cfg: EtlConfig, rep: EtlReport, reviewed: dict) -> None:
-    """chartevents and procedureevents: the curated MIT-LCP maps, with reviewed decisions
+    """chartevents, procedureevents and labevents: the curated maps, with reviewed decisions
     overriding them item by item (approve/replace: the reviewed concept; reject/unmappable:
-    the curated mapping is turned off; undecided: the curated map stands)."""
-    for source, file in ITEM_MAPS.items():
+    the curated mapping is turned off; undecided: the curated map stands). Without the
+    curated map, only approved items are converted."""
+    for source, (field, file) in ITEM_MAPS.items():
         rev = reviewed.get(source)
-        if cfg.concept_map is None and rev is None:
-            rep.notes.append(f"{source} not converted: no concept_map or reviewed map given")
+        root = getattr(cfg, field)
+        if root is None and rev is None:
+            rep.notes.append(f"{source} not converted: no {field} or reviewed map given")
             continue
         parts, approved, decided = [], [], []
         if rev is not None:
             approved, decided = _reviewed_rows(con, source, rev[1])
-        if cfg.concept_map is not None:
-            path = (cfg.concept_map / file).as_posix()
+        if root is not None:
             keep = (f"WHERE itemid NOT IN ({', '.join(str(int(i)) for i in decided)})"
                     if decided else "")  # fmt: skip
-            parts.append(f"""SELECT * FROM (
-                SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
-                       subject_label AS label, predicate_id AS predicate,
-                       TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
-                       coalesce(reviewer_id, '') AS reviewer
-                FROM read_csv('{path}', header = true, all_varchar = true)
-                WHERE object_id LIKE 'omop:%') {keep}""")  # fmt: skip
+            parts.append(f"SELECT * FROM ({curated_select(source, root)}) {keep}")
         if rev is not None:
             parts.append(f"SELECT itemid, label, 'reviewed' AS predicate, curated_id, reviewer "
                          f"FROM rev_{source}")
         _checked_map(con, source, " UNION ALL ".join(parts))
-        names = " + ".join(x for x in (file if cfg.concept_map else None,
+        names = " + ".join(x for x in (Path(file).name if root else None,
                                        rev[0] if rev else None) if x)  # fmt: skip
         _map_report(con, rep, source, names)
         if rev is not None:
             rep.item_maps[source]["overrides"] = len(decided)
             rep.item_maps[source]["reviewers"] = sorted({a[3] for a in approved if a[3]})
-        how = "a curated or reviewed map" if rev is not None else "a curated map"
+            rep.item_maps[source]["not_reviewed"] = sum(e.status in ("proposed", "no_match")
+                                                        for e in rev[1].entries)  # fmt: skip
+        how = ("an approved item map" if root is None else
+               "a curated or reviewed map" if rev is not None else "a curated map")  # fmt: skip
         _convert_events(con, cfg, rep, source, how)
 
 
 def _reviewed_events(con, cfg: EtlConfig, rep: EtlReport, reviewed: dict) -> None:
-    """labevents and inputevents through reviewed item maps (agentic_tte.etl.item_maps)."""
-    for kind in ("labevents", "inputevents"):
+    """inputevents through reviewed item maps (agentic_tte.etl.item_maps)."""
+    for kind in ("inputevents",):
         if kind not in reviewed:
             rep.notes.append(f"{kind} not converted: no reviewed item map given")
             continue

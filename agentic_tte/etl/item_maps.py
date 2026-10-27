@@ -38,7 +38,7 @@ Status = Literal["proposed", "no_match", "approved", "rejected", "unmappable"]
 DOMAINS = {"labevents": ("Measurement",), "inputevents": ("Drug",),
            "chartevents": ("Measurement", "Observation"),
            "procedureevents": ("Procedure", "Observation", "Device")}  # fmt: skip
-CURATED = ("chartevents", "procedureevents")  # kinds with an MIT-LCP curated map
+CURATED = ("chartevents", "procedureevents", "labevents")  # kinds with a curated map
 
 # Specimen words in MIMIC's d_labitems.fluid, and the words LOINC names use for them.
 _SPECIMEN = {"blood": ("blood", "serum", "plasma"), "urine": ("urine",),
@@ -275,19 +275,13 @@ def item_counts(con, kind: Kind, source_sql: str, dictionary_sql: str,
     return items, total
 
 
-def curated_status(con, concept_map: Path, kind: str) -> dict[int, tuple[str, int, str]]:
+def curated_status(con, root: Path, kind: str) -> dict[int, tuple[str, int, str]]:
     """The curated map's targets checked against the loaded vocabulary, as the ETL checks them:
-    {itemid: (label, curated concept_id, status)}, status accepted, remapped or a rejection."""
-    from agentic_tte.etl.mimic_omop import ITEM_MAPS, _checked_map
+    {itemid: (label, curated concept_id, status)}, status accepted, remapped or a rejection.
+    ``root``: the concept_map directory, or the OHDSI/MIMIC checkout for labevents."""
+    from agentic_tte.etl.mimic_omop import _checked_map, curated_select
 
-    path = (Path(concept_map) / ITEM_MAPS[kind]).as_posix()
-    _checked_map(con, f"curated_{kind}", f"""
-        SELECT TRY_CAST(replace(subject_id, 'mimic:', '') AS BIGINT) AS itemid,
-               subject_label AS label, predicate_id AS predicate,
-               TRY_CAST(replace(object_id, 'omop:', '') AS INTEGER) AS curated_id,
-               coalesce(reviewer_id, '') AS reviewer
-        FROM read_csv('{path}', header = true, all_varchar = true)
-        WHERE object_id LIKE 'omop:%'""")  # fmt: skip
+    _checked_map(con, f"curated_{kind}", curated_select(kind, root))
     rows = con.execute(f"SELECT itemid, label, curated_id, status FROM map_curated_{kind}"
                        ).fetchall()  # fmt: skip
     con.execute(f"DROP TABLE map_curated_{kind}")
@@ -296,7 +290,7 @@ def curated_status(con, concept_map: Path, kind: str) -> dict[int, tuple[str, in
 
 def with_curated(items: list[dict], all_counts: dict[int, int], labels: dict[int, str],
                  curated: dict[int, tuple[str, int, str]]) -> list[dict]:  # fmt: skip
-    """For chartevents/procedureevents: drop items whose curated map works (nothing to review)
+    """For curated kinds: drop items whose curated map works (nothing to review)
     and always list items whose curated target was rejected, whatever their count."""
     out = [it for it in items if curated.get(it["itemid"], ("", 0, "none"))[2]
            not in ("accepted", "remapped")]  # fmt: skip

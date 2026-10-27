@@ -4,6 +4,7 @@
 #   sbatch -p "$SLURM_CPU_PARTITION" hpc/etl_mimic.sbatch                          # 1% pilot
 #   sbatch -p "$SLURM_CPU_PARTITION" --export=ALL,ATTE_ETL_SAMPLE=full hpc/etl_mimic.sbatch
 # Reviewed lab/input item maps: --export=ALL,ATTE_ITEM_MAPS="/path/labs.json /path/inputs.json"
+# Labs use the OHDSI curated lab map when ATTE_OHDSI_MIMIC is set (hpc/env.example.sh).
 #
 # Space (all inside the ~/data quota): the 1% pilot writes about 1-2 GB, mostly the vocabulary.
 # The full CDM is expected at 20-40 GB; the pilot's size gives the estimate. DuckDB spills go to
@@ -39,6 +40,9 @@ else
   SAMPLE_ARGS=(--sample-percent "$SAMPLE")
 fi
 ITEM_ARGS=()
+if [ -n "${ATTE_OHDSI_MIMIC:-}" ]; then
+  ITEM_ARGS+=(--ohdsi-mimic "$ATTE_OHDSI_MIMIC")
+fi
 for m in ${ATTE_ITEM_MAPS:-}; do
   ITEM_ARGS+=(--item-map "$m")
 done

@@ -290,3 +290,65 @@ def test_lab_queries_match_plurals_and_skip_count():
     assert _other_number("ph") == "ph" and _other_number("24") == "24"
     variants = query_variants("Platelet Count", Domain.MEASUREMENT)
     assert "platelet" in [v.lower() for v in variants]
+
+
+def made_up_ohdsi_map(root: Path) -> Path:
+    """The OHDSI MIMIC-IV ETL's lab-to-LOINC map, in its own format, for the made-up items:
+    lactate to a valid concept, creatinine to one the vocabulary lacks."""
+    f = root / "custom_mapping_csv" / "gcpt_meas_lab_loinc_mod.csv"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "concept_name,source_concept_id,source_vocabulary_id,source_domain_id,"
+        "source_concept_class_id,standard_concept,concept_code,valid_start_date,valid_end_date,"
+        "invalid_reason,target_concept_id,relationship_id,reverse_relationship_id,"
+        "relationship_valid_start_date,relationship_end_date,invalid_reason_cr\n"
+        f"Lactate|Blood|Blood Gas,2000051013,mimiciv_meas_lab_loinc,Measurement,Lab Test,,"
+        f"{LACTATE},1970-01-01,2099-12-31,,9000030,Maps to,Mapped from,1970-01-01,2099-12-31,\n"
+        f"Creatinine|Blood|Chemistry,2000051100,mimiciv_meas_lab_loinc,Measurement,Lab Test,,"
+        f"{CREATININE},1970-01-01,2099-12-31,,123,Maps to,Mapped from,1970-01-01,2099-12-31,\n",
+        encoding="utf-8")  # fmt: skip
+    return root
+
+
+def test_the_ohdsi_lab_map_converts_labs_and_reviews_override_it(setup, tmp_path):
+    mimic, con = setup
+    ohdsi = made_up_ohdsi_map(tmp_path / "ohdsi-mimic")
+    rep = build(EtlConfig(source=mimic, vocab=VOCAB, out=tmp_path / "a.duckdb",
+                          ohdsi_mimic=ohdsi))  # fmt: skip
+    m = rep.item_maps["labevents"]
+    assert m["accepted"] == 1 and m["rejected"] == [[CREATININE, "Creatinine|Blood|Chemistry",
+                                                     123, "not in the vocabulary"]]
+    assert (rep.mapping["labevents"]["rows"], rep.mapping["labevents"]["mapped"]) == (15, 13)
+    assert "labevents: items without a curated map are not converted" in " ".join(rep.notes)
+    # A reviewer replaces the rejected creatinine target; lactate keeps the curated one.
+    labs = apply_decisions(_labs(mimic, con), {"reviewer": "Dr A", "decisions": {
+        str(CREATININE): {"action": "replace", "concept_id": 9000135}}})
+    f = tmp_path / "labs.json"
+    f.write_text(labs.model_dump_json(), encoding="utf-8")
+    rep = build(EtlConfig(source=mimic, vocab=VOCAB, out=tmp_path / "b.duckdb",
+                          ohdsi_mimic=ohdsi, item_maps=[f]))  # fmt: skip
+    m = rep.item_maps["labevents"]
+    assert m["accepted"] == 2 and m["rejected"] == [] and m["overrides"] == 1
+    assert m["predicates"] == {"Maps to": 1, "reviewed": 1} and m["reviewers"] == ["Dr A"]
+    assert rep.mapping["labevents"]["mapped"] == 14
+
+
+def test_cli_lab_proposals_skip_items_the_ohdsi_map_covers(setup, tmp_path):
+    mimic, _ = setup
+    ohdsi = made_up_ohdsi_map(tmp_path / "ohdsi-mimic")
+    rev = tmp_path / "review"
+    r = CliRunner().invoke(app, [
+        "etl", "items", "propose", "--source", str(mimic), "--vocab", str(VOCAB),
+        "--kind", "labevents", "-o", str(rev), "--min-rows", "1",
+        "--ohdsi-mimic", str(ohdsi)])  # fmt: skip
+    assert r.exit_code == 0, r.output
+    m = ItemMap.model_validate_json((rev / "map.json").read_text(encoding="utf-8"))
+    # Lactate is mapped by the curated map; creatinine's target was rejected, so it is listed.
+    assert {e.itemid for e in m.entries} == {CREATININE, MADE_UP}
+    assert next(e for e in m.entries if e.itemid == CREATININE).curated == \
+        "123 (not in the vocabulary)"  # fmt: skip
+    r = CliRunner().invoke(app, [
+        "etl", "mimic", "--source", str(mimic), "--vocab", str(VOCAB), "--out",
+        str(tmp_path / "c.duckdb"), "--ohdsi-mimic", str(ohdsi)])  # fmt: skip
+    assert r.exit_code == 0, r.output
+    assert f"ohdsi_mimic={ohdsi}" in (tmp_path / "c.manifest.txt").read_text(encoding="utf-8")

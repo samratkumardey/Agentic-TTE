@@ -54,5 +54,7 @@ export ATTE_MIMIC_SOURCE="$ATTE_LAB_DIR/mimic-source/mimic-iv-3.1"
 # older S07 copy lacks those three: do not use it for MIMIC.
 export ATTE_VOCAB="$ATTE_LAB_DIR/athena/v5-2026-08-29"
 export ATTE_MIMIC_CONCEPT_MAP="/cluster/pixstor/data/$USER/mimic-code/mimic-iv/concepts/concept_map"
+# OHDSI MIMIC-IV ETL checkout (github.com/OHDSI/MIMIC, ~3 MB): its curated lab-to-LOINC map.
+export ATTE_OHDSI_MIMIC="/cluster/pixstor/data/$USER/ohdsi-mimic"
 export ATTE_OMOP_DIR="$ATTE_LAB_DIR/omop"
 export ATTE_ITEM_MAPS="${ATTE_ITEM_MAPS:-}"   # reviewed item maps (space-separated paths)

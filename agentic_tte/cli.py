@@ -151,8 +151,10 @@ def etl_mimic(
     temp_directory: str = typer.Option(None, help="Node-local scratch for spills."),
     concept_map: Path = typer.Option(None, help="mimic-code mimic-iv/concepts/concept_map: "
                                                 "curated chartevents and procedureevents maps."),
-    item_map: list[Path] = typer.Option(None, help="Reviewed item map (labevents or "
-                                                   "inputevents); repeat for each."),
+    ohdsi_mimic: Path = typer.Option(None, help="OHDSI/MIMIC checkout: the curated "
+                                                "labevents-to-LOINC map."),
+    item_map: list[Path] = typer.Option(None, help="Reviewed item map (labevents, inputevents, "
+                                                   "chartevents, procedureevents); repeat."),
 ):
     """MIMIC-IV -> OMOP CDM 5.4. Writes the CDM, a manifest and a suppressed report next to
     it; only the report and manifest may leave the cluster."""
@@ -171,15 +173,17 @@ def etl_mimic(
                     diagnosis_time=diagnosis_time, death_followup_days=death_followup_days,
                     threads=threads, memory_limit=memory_limit,
                     temp_directory=temp_directory, concept_map=concept_map,
-                    item_maps=item_map or [])  # fmt: skip
-    map_commit = None
-    if concept_map is not None:
+                    ohdsi_mimic=ohdsi_mimic, item_maps=item_map or [])  # fmt: skip
+
+    def checkout_commit(path):
+        if path is None:
+            return None
         try:
-            map_commit = subprocess.run(["git", "-C", str(concept_map), "rev-parse", "HEAD"],
-                                        capture_output=True, text=True,
-                                        check=True).stdout.strip()  # fmt: skip
+            return subprocess.run(["git", "-C", str(path), "rev-parse", "HEAD"],
+                                  capture_output=True, text=True, check=True).stdout.strip()
         except Exception:  # noqa: BLE001 - not a git checkout
-            map_commit = "unknown"
+            return "unknown"
+
     rep = build(cfg, git_commit=commit)
     stem = out.with_suffix("")
     Path(f"{stem}.report.md").write_text(rep.to_markdown(), encoding="utf-8")
@@ -190,7 +194,9 @@ def etl_mimic(
         "source_sha256sums_digest": sha256sums_digest(source),
         "vocabulary": str(vocab), "vocabulary_version": rep.vocabulary_version,
         "concept_map": str(concept_map) if concept_map else None,
-        "concept_map_commit": map_commit,
+        "concept_map_commit": checkout_commit(concept_map),
+        "ohdsi_mimic": str(ohdsi_mimic) if ohdsi_mimic else None,
+        "ohdsi_mimic_commit": checkout_commit(ohdsi_mimic),
         "item_maps": ",".join(str(x) for x in item_map or []) or None,
         "duckdb": rep.duckdb_version, "options": cfg.model_dump_json(),
         "started": rep.started_at.isoformat(), "finished": rep.finished_at.isoformat(),
@@ -218,6 +224,8 @@ def items_propose(
     concept_map: Path = typer.Option(None, help="chartevents/procedureevents: the curated "
                                                 "maps, so working ones are skipped and "
                                                 "rejected ones listed."),
+    ohdsi_mimic: Path = typer.Option(None, help="labevents: the OHDSI/MIMIC checkout (curated "
+                                                "lab-to-LOINC map), used the same way."),
 ):
     """Propose a standard concept per item from the vocabulary search on its label. Writes
     map.json, review.md and decisions.json; keep them on the cluster."""
@@ -238,8 +246,10 @@ def items_propose(
         typer.echo("kind must be labevents, inputevents, chartevents or procedureevents",
                    err=True)  # fmt: skip
         raise typer.Exit(2)
-    if kind in CURATED and concept_map is None:
-        typer.echo("note: without --concept-map every frequent item is listed, including those "
+    curated_root, flag = ((ohdsi_mimic, "--ohdsi-mimic") if kind == "labevents"
+                          else (concept_map, "--concept-map"))  # fmt: skip
+    if kind in CURATED and curated_root is None:
+        typer.echo(f"note: without {flag} every frequent item is listed, including those "
                    "the curated map already maps", err=True)  # fmt: skip
     module, dictionary = ("hosp", "d_labitems") if kind == "labevents" else ("icu", "d_items")
     for f in (source / module / f"{kind}.csv.gz", source / module / f"{dictionary}.csv.gz"):
@@ -261,10 +271,10 @@ def items_propose(
     events = csv(module, kind)
     every, total = item_counts(con, kind, events, csv(module, dictionary), min_rows=1)
     items = [it for it in every if it["rows"] >= min_rows]
-    if kind in CURATED and concept_map is not None:
+    if kind in CURATED and curated_root is not None:
         items = with_curated(items, {it["itemid"]: it["rows"] for it in every},
                              {it["itemid"]: it["label"] for it in every},
-                             curated_status(con, concept_map, kind))  # fmt: skip
+                             curated_status(con, curated_root, kind))  # fmt: skip
     if top is not None:
         rest = sorted((it for it in items if not it.get("curated")),
                       key=lambda it: (-it["rows"], it["itemid"]))  # fmt: skip
