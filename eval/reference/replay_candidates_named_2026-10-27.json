@@ -1,0 +1,1218 @@
+{
+ "_about": "Parity trials and PLAN.md 17.3 named candidates, fetched from CT.gov API v2 on 2026-10-27 (same fields as the search)",
+ "named": [
+  "NCT01448109",
+  "NCT00625209",
+  "NCT01728558",
+  "NCT01739933",
+  "NCT02467621",
+  "NCT03392376",
+  "NCT03509350",
+  "NCT03680274",
+  "NCT02568722",
+  "NCT02444988",
+  "NCT01485315",
+  "NCT00220987"
+ ],
+ "studies": {
+  "NCT01448109": {
+   "nct_id": "NCT01448109",
+   "title": "ADjunctive coRticosteroid trEatment iN criticAlly ilL Patients With Septic Shock",
+   "acronym": "ADRENAL",
+   "conditions": [
+    "Septic Shock"
+   ],
+   "phases": [
+    "PHASE4"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 3800,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2017-11-20",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Hydrocortisone"
+    },
+    {
+     "type": "DRUG",
+     "name": "Sterile air filled vial"
+    }
+   ],
+   "arms": [
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Hydrocortisone"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Sterile air filled vial"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "All cause mortality at 90 days after randomisation",
+     "time_frame": "90 days after randomisation"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT00625209": {
+   "nct_id": "NCT00625209",
+   "title": "Activated Protein C and Corticosteroids for Human Septic Shock",
+   "acronym": "APROCCHS",
+   "conditions": [
+    "Septic Shock"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "FACTORIAL",
+   "enrollment": 1241,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2016-07",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "placebos"
+    },
+    {
+     "type": "DRUG",
+     "name": "hydrocortisone and fludrocortisone and placebo"
+    },
+    {
+     "type": "DRUG",
+     "name": "recombinant human activated protein C and placebos"
+    },
+    {
+     "type": "DRUG",
+     "name": "recombinant human activated protein C and hydrocortisone and fludrocortisone"
+    }
+   ],
+   "arms": [
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "1"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "2"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "3"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "4"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "90-day mortality",
+     "time_frame": "90 day"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": [
+    "23525934"
+   ]
+  },
+  "NCT01728558": {
+   "nct_id": "NCT01728558",
+   "title": "Early Goal-Directed Sedation Compared With Standard Care in Mechanically Ventilated Critically Ill Patients",
+   "acronym": "SPICE III RCT",
+   "conditions": [
+    "Critical Illness and Mechanical Ventilation"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 4000,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2018-12",
+   "interventions": [
+    {
+     "type": "OTHER",
+     "name": "Early goal Directed Sedation"
+    },
+    {
+     "type": "OTHER",
+     "name": "Standard care sedation"
+    }
+   ],
+   "arms": [
+    {
+     "type": "OTHER",
+     "label": "Early Goal Directed Sedation"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Standard care Sedation Arm"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Mortality",
+     "time_frame": "Day 90 post randomisation"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT01739933": {
+   "nct_id": "NCT01739933",
+   "title": "The MENDS2 Study, Maximizing the Efficacy of Sedation and Reducing Neurological Dysfunction and Mortality in Septic Patients With Acute Respiratory Failure",
+   "acronym": "MENDS2",
+   "conditions": [
+    "Sepsis",
+    "Delirium",
+    "Impaired Cognition"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 438,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2019-07",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Dexmedetomidine"
+    },
+    {
+     "type": "DRUG",
+     "name": "Propofol"
+    }
+   ],
+   "arms": [
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Dexmedetomidine"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Propofol"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Delirium/Coma Free Days (DCFDs)",
+     "time_frame": "14 days"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT02467621": {
+   "nct_id": "NCT02467621",
+   "title": "Stress Ulcer Prophylaxis in the Intensive Care Unit",
+   "acronym": "SUP-ICU",
+   "conditions": [
+    "Gastrointestinal Bleeding",
+    "Stress Ulcers"
+   ],
+   "phases": [
+    "PHASE4"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 3350,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2018-01-21",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Pantoprazole"
+    },
+    {
+     "type": "OTHER",
+     "name": "Saline (0.9%)"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Proton pump inhibitor (PPI)"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Normal saline"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Mortality",
+     "time_frame": "90 days"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT03392376": {
+   "nct_id": "NCT03392376",
+   "title": "Agents Intervening Against Delirium in Intensive Care Unit",
+   "acronym": "AID-ICU",
+   "conditions": [
+    "Delirium"
+   ],
+   "phases": [
+    "PHASE4"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 1000,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2023-07",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Haloperidol Injection"
+    },
+    {
+     "type": "OTHER",
+     "name": "Saline (0,9%)"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Haloperidol injection"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Normal Saline"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Days alive out of the hospital within 90 days post-randomization",
+     "time_frame": "90 days"
+    },
+    {
+     "measure": "90-day mortality",
+     "time_frame": "90 days"
+    },
+    {
+     "measure": "Hospital Length of Stay",
+     "time_frame": "90 days"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT03509350": {
+   "nct_id": "NCT03509350",
+   "title": "Vitamin C, Thiamine, and Steroids in Sepsis",
+   "acronym": "VICTAS",
+   "conditions": [
+    "Sepsis"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 501,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2020-01-29",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Vitamin C"
+    },
+    {
+     "type": "DRUG",
+     "name": "Thiamine"
+    },
+    {
+     "type": "DRUG",
+     "name": "Hydrocortisone"
+    },
+    {
+     "type": "DRUG",
+     "name": "Vitamin C Placebo"
+    },
+    {
+     "type": "DRUG",
+     "name": "Thiamine Placebo"
+    },
+    {
+     "type": "DRUG",
+     "name": "Hydrocortisone Placebo"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Treatment Protocol"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Control Protocol"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Vasopressor and Ventilator-free Days (VVFD)",
+     "time_frame": "Up to Day 30"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT03680274": {
+   "nct_id": "NCT03680274",
+   "title": "Lessening Organ Dysfunction With VITamin C",
+   "acronym": "LOVIT",
+   "conditions": [
+    "Sepsis",
+    "Vitamin C",
+    "Intensive Care Unit",
+    "COVID-19",
+    "Pandemic",
+    "Coronavirus"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 872,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2022-01-24",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Vitamin C"
+    },
+    {
+     "type": "OTHER",
+     "name": "Control"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Vitamin C"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Control"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Number of deceased participants or with persistent organ dysfunction",
+     "time_frame": "Both assessed at 28 days"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT02568722": {
+   "nct_id": "NCT02568722",
+   "title": "Standard vs. Accelerated Initiation of RRT in Acute Kidney Injury (STARRT-AKI: Principal Trial)",
+   "acronym": null,
+   "conditions": [
+    "Acute Kidney Injury"
+   ],
+   "phases": [
+    "NA"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 3019,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2019-12",
+   "interventions": [
+    {
+     "type": "OTHER",
+     "name": "Standard RRT initiation"
+    },
+    {
+     "type": "OTHER",
+     "name": "Accelerated RRT initiation"
+    }
+   ],
+   "arms": [
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Standard RRT initiation"
+    },
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Accelerated RRT initiation"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "All-cause Mortality.",
+     "time_frame": "90 days following study randomization."
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT02444988": {
+   "nct_id": "NCT02444988",
+   "title": "Isotonic Solutions and Major Adverse Renal Events Trial in the Medical Intensive Care Unit",
+   "acronym": "SMART-MED",
+   "conditions": [
+    "Critical Illness",
+    "Acute Kidney Injury"
+   ],
+   "phases": [
+    "NA"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 5381,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2017-06-30",
+   "interventions": [
+    {
+     "type": "OTHER",
+     "name": "0.9% Saline"
+    },
+    {
+     "type": "OTHER",
+     "name": "Physiologically-balanced isotonic crystalloid"
+    }
+   ],
+   "arms": [
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "0.9% Saline"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Physiologically-balanced"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Major Adverse Kidney Event Within 30 Days",
+     "time_frame": "30 days after enrollment censored at hospital discharge"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [
+    {
+     "outcome": "Major Adverse Kidney Event Within 30 Days",
+     "time_frame": "30 days after enrollment censored at hospital discharge",
+     "param_type": "Odds Ratio (OR)",
+     "value": "0.87",
+     "ci_pct": "95",
+     "ci_lower": "0.77",
+     "ci_upper": "0.99",
+     "p": "<0.05",
+     "groups": [
+      "OG000",
+      "OG001"
+     ],
+     "groups_desc": null
+    }
+   ],
+   "result_refs": []
+  },
+  "NCT01485315": {
+   "nct_id": "NCT01485315",
+   "title": "Transfusion-requirements in Septic Shock Trial",
+   "acronym": "TRISS",
+   "conditions": [
+    "Septic Shock"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 1005,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2014-04",
+   "interventions": [
+    {
+     "type": "BIOLOGICAL",
+     "name": "SAGM (Saline-Adenine-Glucose-Mannitol) blood transfusion"
+    },
+    {
+     "type": "BIOLOGICAL",
+     "name": "SAGM (Saline-Adenine-Glucose-Mannitol) blood transfusion"
+    }
+   ],
+   "arms": [
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Liberal blood transfusion"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Restrictive blood transfusion"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Mortality",
+     "time_frame": "90 day"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": [
+    "25270275"
+   ]
+  },
+  "NCT00220987": {
+   "nct_id": "NCT00220987",
+   "title": "Normoglycaemia in Intensive Care Evaluation and Survival Using Glucose Algorithm Regulation (NICE - SUGAR STUDY)",
+   "acronym": null,
+   "conditions": [
+    "Hyperglycemia",
+    "Critical Illness"
+   ],
+   "phases": [
+    "PHASE4"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 6104,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2008-11",
+   "interventions": [
+    {
+     "type": "OTHER",
+     "name": "Intensive Insulin Therapy"
+    },
+    {
+     "type": "OTHER",
+     "name": "Conventional Insulin therapy"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Intensive Insulin therapy"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Conventional Therapy"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "all-cause mortality",
+     "time_frame": "90 days"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT00475852": {
+   "nct_id": "NCT00475852",
+   "title": "A Study Testing the Effectiveness of Nesiritide in Patients With Acute Decompensated Heart Failure",
+   "acronym": null,
+   "conditions": [
+    "Heart Decompensation"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 7141,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2011-03",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Nesiritide"
+    },
+    {
+     "type": "DRUG",
+     "name": "Placebo"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "001"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "002"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Composite of Rehospitalization Due to Heart Failure and All-Cause Mortality",
+     "time_frame": "Randomization to Day 30"
+    },
+    {
+     "measure": "Dyspnea Self-Assessment at 6 Hours After Initiation of Study Drug",
+     "time_frame": "6 hours after initiation of study drug"
+    },
+    {
+     "measure": "Dyspnea Self-Assessment at 24 Hours After Initiation of Study Drug",
+     "time_frame": "24 hours after study drug initiation"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [
+    {
+     "outcome": "Composite of Rehospitalization Due to Heart Failure and All-Cause Mortality",
+     "time_frame": "Randomization to Day 30",
+     "param_type": "Risk Difference (RD)",
+     "value": "-0.7",
+     "ci_pct": "95",
+     "ci_lower": "-2.1",
+     "ci_upper": "0.7",
+     "p": "0.313",
+     "groups": [
+      "OG000",
+      "OG001"
+     ],
+     "groups_desc": null
+    },
+    {
+     "outcome": "Dyspnea Self-Assessment at 6 Hours After Initiation of Study Drug",
+     "time_frame": "6 hours after initiation of study drug",
+     "param_type": null,
+     "value": null,
+     "ci_pct": null,
+     "ci_lower": null,
+     "ci_upper": null,
+     "p": "0.030",
+     "groups": [
+      "OG000",
+      "OG001"
+     ],
+     "groups_desc": null
+    },
+    {
+     "outcome": "Dyspnea Self-Assessment at 24 Hours After Initiation of Study Drug",
+     "time_frame": "24 hours after study drug initiation",
+     "param_type": null,
+     "value": null,
+     "ci_pct": null,
+     "ci_lower": null,
+     "ci_upper": null,
+     "p": "0.007",
+     "groups": [
+      "OG000",
+      "OG001"
+     ],
+     "groups_desc": null
+    }
+   ],
+   "result_refs": []
+  },
+  "NCT02856698": {
+   "nct_id": "NCT02856698",
+   "title": "MIdazolam Versus MOrphine in Acute Pulmonary Edema (MIMO Trial)",
+   "acronym": "MIMO",
+   "conditions": [
+    "Acute Pulmonary Edema"
+   ],
+   "phases": [
+    "PHASE4"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 111,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2020-12-31",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Midazolam"
+    },
+    {
+     "type": "DRUG",
+     "name": "Morphine"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "midazolam"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "morphine"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "In-hospital Mortality",
+     "time_frame": "28 days after of the hospitalization"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT03872011": {
+   "nct_id": "NCT03872011",
+   "title": "Vitamin C, Thiamine and Hydrocortisone for the Treatment of Septic Shock",
+   "acronym": null,
+   "conditions": [
+    "Septic Shock"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 408,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2021-09-20",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Vitamin C,thiamine,hydrocortisone"
+    },
+    {
+     "type": "DRUG",
+     "name": "Placebo"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Vitamin C,thiamine,hydrocortisone"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Placebo"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "90-day mortality",
+     "time_frame": "90 days after randomization"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT04134403": {
+   "nct_id": "NCT04134403",
+   "title": "Steroids, Thiamine and Ascorbic Acid in Septic Shock",
+   "acronym": "STASIS",
+   "conditions": [
+    "Septic Shock"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 80,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2020-12-01",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "STASIS"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Arm 1: Intervention"
+    },
+    {
+     "type": "NO_INTERVENTION",
+     "label": "Arm 2: Usual care"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "In-hospital or 28-day mortality rate",
+     "time_frame": "28 days or discharge (whichever comes first)"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT06091982": {
+   "nct_id": "NCT06091982",
+   "title": "Renal Replacement Therapy and In-Hospital Mortality Incidence in Cardiac Surgery Associated Acute Kidney Injury",
+   "acronym": null,
+   "conditions": [
+    "Acute Kidney Injury"
+   ],
+   "phases": [],
+   "model": null,
+   "enrollment": 1113,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2024-06-30",
+   "interventions": [
+    {
+     "type": "PROCEDURE",
+     "name": "Renal Replacement Therapy (RRT)"
+    }
+   ],
+   "arms": [
+    {
+     "type": null,
+     "label": "AKI-RRT"
+    },
+    {
+     "type": null,
+     "label": "AKI non RRT"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Mortality",
+     "time_frame": "From ICU admission postoperative until the death date during hospital care, assessed up to 3 months"
+    }
+   ],
+   "has_results": true,
+   "primary_analyses": [
+    {
+     "outcome": "Mortality",
+     "time_frame": "From ICU admission postoperative until the death date during hospital care, assessed up to 3 months",
+     "param_type": "Odds Ratio (OR)",
+     "value": "10.6",
+     "ci_pct": "95",
+     "ci_lower": "7.0",
+     "ci_upper": "16.2",
+     "p": "<0.0001",
+     "groups": [
+      "OG000",
+      "OG001"
+     ],
+     "groups_desc": "Bivariable analysis of both groups"
+    },
+    {
+     "outcome": "Mortality",
+     "time_frame": "From ICU admission postoperative until the death date during hospital care, assessed up to 3 months",
+     "param_type": "Odds Ratio, log",
+     "value": "3.4",
+     "ci_pct": "95",
+     "ci_lower": "2.0",
+     "ci_upper": "6.1",
+     "p": "<0.0001",
+     "groups": [
+      "OG000"
+     ],
+     "groups_desc": "Multivariable analysis"
+    }
+   ],
+   "result_refs": []
+  },
+  "NCT03258684": {
+   "nct_id": "NCT03258684",
+   "title": "Hydrocortisone, Vitamin C, and Thiamine for the Treatment of Sepsis and Septic Shock",
+   "acronym": "HYVCTTSSS",
+   "conditions": [
+    "Sepsis"
+   ],
+   "phases": [
+    "NA"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 80,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2019-02-02",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Hydrocortisone, Vitamin C, and Thiamine"
+    },
+    {
+     "type": "OTHER",
+     "name": "Normal saline"
+    }
+   ],
+   "arms": [
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "vitamin C\u3001hydrocortisone\u3001thiamine"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "normal saline"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "hospital survival",
+     "time_frame": "Up to Day 14"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT03592693": {
+   "nct_id": "NCT03592693",
+   "title": "Vitamin C, Hydrocortisone and Thiamine for Septic Shock",
+   "acronym": "CORVICTES",
+   "conditions": [
+    "Shock, Septic"
+   ],
+   "phases": [
+    "PHASE2"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 24,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2023-01-16",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Combined Vitamin C and Stress-Dose Hydrocortisone"
+    },
+    {
+     "type": "DRUG",
+     "name": "Placebo plus placebo"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "Vitamin-Steroid"
+    },
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Control"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Hospital Mortality",
+     "time_frame": "90 days"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT01560650": {
+   "nct_id": "NCT01560650",
+   "title": "Effect of the Intensity of Continuous Renal Replacement Therapy in Patients With Acute Kidney Injury",
+   "acronym": null,
+   "conditions": [
+    "Acute Kidney Injury"
+   ],
+   "phases": [
+    "PHASE4"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 211,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2015-08",
+   "interventions": [
+    {
+     "type": "DEVICE",
+     "name": "CRRT"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "high dose (35ml/kg/h)"
+    },
+    {
+     "type": "EXPERIMENTAL",
+     "label": "low dose (25ml/kg/h)"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "death from any cause",
+     "time_frame": "14, 28 ,90 and 365 days after randomization"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT01223690": {
+   "nct_id": "NCT01223690",
+   "title": "Clarithromycin as Immunomodulator for the Management of Sepsis",
+   "acronym": null,
+   "conditions": [
+    "Sepsis",
+    "Severe Sepsis",
+    "Septic Shock"
+   ],
+   "phases": [
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 600,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2011-04",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Clarithromycin"
+    },
+    {
+     "type": "DRUG",
+     "name": "Dextrose 5%"
+    }
+   ],
+   "arms": [
+    {
+     "type": "PLACEBO_COMPARATOR",
+     "label": "Placebo"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Clarithromycin"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Effect of clarithromycin in mortality and risk for death by severe sepsis/shock and multiple organ dysfunction compared with placebo",
+     "time_frame": "28 days"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  },
+  "NCT00953303": {
+   "nct_id": "NCT00953303",
+   "title": "The Effects of Glucocorticoids on Mortality and Renal Function in Patients With Acute Decompensated Heart Failure",
+   "acronym": null,
+   "conditions": [
+    "Heart Failure"
+   ],
+   "phases": [
+    "PHASE2",
+    "PHASE3"
+   ],
+   "model": "PARALLEL",
+   "enrollment": 102,
+   "min_age_years": 18.0,
+   "std_ages": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "completion": "2012-01",
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "glucocorticoid"
+    },
+    {
+     "type": "DRUG",
+     "name": "standard care"
+    }
+   ],
+   "arms": [
+    {
+     "type": "EXPERIMENTAL",
+     "label": "glucocorticoid"
+    },
+    {
+     "type": "ACTIVE_COMPARATOR",
+     "label": "Standard care"
+    }
+   ],
+   "primary_outcomes": [
+    {
+     "measure": "Cardiovascular mortality in the 30 days following randomization.",
+     "time_frame": "30 days following randomization"
+    }
+   ],
+   "has_results": false,
+   "primary_analyses": [],
+   "result_refs": []
+  }
+ }
+}

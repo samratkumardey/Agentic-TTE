@@ -291,3 +291,19 @@ These are named now, and each is fully specified in this changelog before it run
 ## Phase 3 changelog
 
 - 2026-10-27: initial version.
+- 2026-10-27, after the registry search and **before any MIMIC estimate**: how R3 is applied (`eval/replay_search.py`, `eval/replay_screen.py`; log in `eval/reference/replay_selection.json`).
+  1. **Search run once** (2026-10-27, 1,184 hits, saved as `eval/reference/replay_search_2026-10-27.json`). The registry lists `NCT06091982`, an EmulatRx parity trial, without a randomized design.
+  2. **Stage A, automatic, search hits only:**
+     - S1 fails unless the design model is parallel, factorial or crossover;
+     - S3 fails if the minimum age is under 18 or not given;
+     - S4 fails if no intervention is a drug, biological, procedure, dietary supplement or combination product;
+     - S2 fails if the record links no result publication and posts no primary analysis with a CI.
+
+     The S2 screen uses only what the registry links, so trials with unlinked papers are missed. The named candidates and parity trials skip stage A for that reason.
+  3. **Stage B, judged from the registry record:** S1–S7 for the 114 search hits left after stage A, the 10 parity trials and the 12 named candidates.
+     - Investigational agents never used in US practice fail S4.
+     - Items marked unmappable in the 2026-10-27 MIMIC item reviews (LR, blood components, enteral formulas, IV amino acids, delirium assessments, patient position) make the dependent trials fail S4 or S6. Revisiting those items is a data change, recorded here.
+     - Status *uncertain* names the one criterion still to check.
+  4. **Who screened:** Claude (AI), 2026-10-27. Every decision is to be checked by the user before any trial enters a set.
+     - S2 values are extracted from the primary paper and checked by a second person.
+     - S8 comes from Data Support Gate counts on Hellbender.
