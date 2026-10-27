@@ -532,6 +532,21 @@ No OMOP version of MIMIC exists yet. The user confirmed the data use agreement a
 - **Full CDM expected:** about 25–35 GB with labs and drips, in well under an hour.
 - **Next:** Pilot B with the reviewed item maps, then the full run.
 
+**Item reviews done (2026-10-27, reviewer Samrat Kumar Dey; reviewed maps in `$ATTE_OMOP_DIR/review/*.reviewed.json`, not in git).** Proposals pre-checked item by item; every hand-chosen concept confirmed by name against the vocabulary before the full run.
+- **labevents:** OHDSI curated map (1,402 items) + 24 reviewed (small duplicate panels, eGFR CKD-EPI 2021, HIV screen, H. pylori stool Ag, Lyme) + 103 unmappable (tube holds, H/L/I indices, cancelled-specimen flags, coded comment and PCR-component items).
+- **inputevents:** 193 mapped (RxNorm ingredients; clinical drug forms for pip/tazo, amp/sulbactam, SMX/TMP, insulin 70/30) + 114 unmappable (enteral formulas, TPN and lipids, blood components, carrier fluids, OR/PACU totals, LR: no LR concept in this release).
+- **chartevents:** 23 reviewed (GCS ×3, FiO2, O2 flow, PEEP, tidal and minute volume, respiratory rates, heart rhythm, CVP, Braden, pupils, pain level, ventilator type) + 177 unmappable (nursing documentation, alarms; chart-charted labs left to labevents to avoid double counting). RASS and peak inspiratory pressure not found yet.
+- **procedureevents:** Invasive Ventilation → 37158404, Chest Tube Placed → 40489839; ports and unplanned line removals unmappable.
+- **Lesson:** a pasted lookup lost the first digit of a concept ID (45775571 → 5775571), which the vocabulary check caught. A clipped ID that exists would not be caught, so hand-chosen IDs are now confirmed by name before a run.
+
+**Pilot B (job 19365411, 2026-10-27, 1%):** 6 minutes, 4.1 GB memory, 1.2 GB CDM; the four maps in use, 0 rejected targets after the glycopyrronium fix.
+
+**Full CDM built (job 19365483, 2026-10-27, commit 9cad08c; `$ATTE_OMOP_DIR/mimiciv-3.1-cdm54-19365483.duckdb`, 4.7 GB).** 9 minutes on 16 CPUs, 83 GB peak memory (of 96 GB).
+- **Persons:** 223,452 with an admission (141,175 without, left out; together the release's 364,627); 546,028 visits, 94,458 ICU stays, 36,882 deaths.
+- **Rows:** measurement 229.4M, drug_exposure 28.5M, condition 6.1M, procedure 1.6M, observation 2.5M.
+- **Mapped:** labevents 93.2%, procedureevents 99.6%, inputevents 74.6%, chartevents 21.0% (by design), diagnoses 92.6%, ICD procedures 99.9%, prescriptions 86.1%. 0 map targets rejected.
+- **Left out:** 2,872 Episode-domain and 98 Specimen-domain records (no table); 21,890 prescriptions without a start time.
+
 **Reviewed overrides for chartevents and procedureevents: built (2026-10-26;** `tests/test_item_overrides.py`).
 - **Proposals:** `etl items propose --kind chartevents|procedureevents --concept-map <maps>` checks each curated target against the loaded vocabulary, as the ETL does.
   - Items whose curated map works are skipped.

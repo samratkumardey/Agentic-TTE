@@ -71,8 +71,14 @@ Reports now need sign-off (status `signed_off` or `returned`). Batch benchmarks 
 
 Concept search expands abbreviations only from the protocol's own text and from reviewer-approved list entries. The shipped seed list (`omop/resources/abbreviations.json`) is unapproved: never mark its entries approved on a person's behalf.
 
+**MIMIC-IV 3.1 is in OMOP CDM 5.4** (2026-10-27, job 19365483; `$ATTE_OMOP_DIR/mimiciv-3.1-cdm54-19365483.duckdb`, results in PLAN.md §16).
+- Labs start from the OHDSI MIMIC-IV lab-to-LOINC map (`--ohdsi-mimic`, `ATTE_OHDSI_MIMIC`).
+- All four item reviews were done by the user (reviewer Samrat Kumar Dey). The reviewed maps live in `$ATTE_OMOP_DIR/review/`.
+- Confirm any hand-chosen concept ID by name against the vocabulary before a run: a pasted ID once lost its first digit.
+
 Next:
-- Phase 3: MIMIC-IV to OMOP on Hellbender (plan: PLAN.md §16).
+- Short-term goal (user, 2026-10-26): an agentic Replay of CREST-2 on the user's Oracle Health EHR (OMOP), building on their Protocol2TTE paper. Oracle details are still to come from the user.
+- The MIMIC trial benchmark (the rest of PLAN.md §16) is paused, not dropped.
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.
