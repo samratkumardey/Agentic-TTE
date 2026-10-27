@@ -492,6 +492,9 @@ def main() -> None:
         elif i in JUDGED:
             status, failed, note = JUDGED[i]
             rec.update(status=status, failed=failed, stage="B", note=note)
+            if values.get(i, {}).get("s2") == "fail":  # the user's full-text check (item 12)
+                rec.update(status="excluded", failed="S2", stage="S2 check",
+                           note=f"{note}. S2: {values[i]['status']}: {values[i].get('note', '')}")
         elif set(sources[i]) <= only_search and not outcome_rule_b1(s):
             rec.update(status="excluded", failed="S6", stage="B1",
                        note="outcome rule B1: the primary outcome is not death or a structured "
@@ -529,11 +532,18 @@ def main() -> None:
     chosen, coverage = coverage_select(primary)
     for r in primary:
         r["selected"] = r["nct_id"] in chosen
+    # Core set (changelog item 11a): selected trials with a user-verified S2 estimate, cap 12.
+    verified = [r for r in primary if r["selected"] and values.get(r["nct_id"], {}).get("s2") == "pass"]
+    core, core_coverage = coverage_select(verified, cap=12)
+    for r in primary:
+        r["core"] = r["nct_id"] in core
     flow: dict[str, int] = {"candidates": len(out)}
     for r in out:
         key = f"excluded_{r['failed']}" if r["status"] == "excluded" else r["status"]
         flow[key] = flow.get(key, 0) + 1
     flow["primary_selected"] = len(chosen)
+    flow["selected_s2_verified"] = len(verified)
+    flow["core"] = len(core)
     doc = {
         "_about": "Screening of Replay candidates against eval/SCORING.md R3 (S1-S8).",
         "pre_registration": "eval/SCORING.md, section Phase 3 Replay (commit 77bbc85), "
@@ -562,6 +572,7 @@ def main() -> None:
         ],
         "flow": flow,
         "coverage": coverage,
+        "core_coverage": core_coverage,
         "candidates": out,
     }
     (REF / "replay_selection.json").write_text(json.dumps(doc, indent=1, ensure_ascii=False),

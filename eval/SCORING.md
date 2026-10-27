@@ -416,3 +416,22 @@ These are named now, and each is fully specified in this changelog before it run
       - **User:** verify about 12 estimates (about 2 hours); write 12 reference protocols from a template (about 30–45 minutes each).
       - **Clinician:** about 2–3 hours of adjudication and audit.
       - **CREST-2,** with the user's existing clinician-adjudicated reference, stays the one fully clinician-validated case (PLAN.md §17, after MIMIC).
+  12. **The user's S2 check and the final lists** (2026-10-27, before any MIMIC estimate; `eval/reference/replay_reference_values.json`, `replay_selection.json`).
+      - **Verified by SKD:** 22 estimates. Corrections from the full texts:
+        - HYDRAREA (NCT01636089) is PMID 28181941, which states the registration; its population is modified ITT (307 of 320).
+        - NCT03872011's value is the ITT HR 1.08 (0.80–1.46). The paper does not name per-protocol as primary; the per-protocol HR is 1.07 (0.79–1.46).
+      - **Fail S2,** leave the primary set, and are reported in the manuscript:
+        - **No estimate with a CI:** VISEP (arm rates only), VANCS II and AKIKI (no estimate with a CI found).
+        - **No primary results paper:** DISCO (pilot only), ALBIOSS-BALANCED, NCT01223690.
+        - **Primary CI not at 95%:** PREVENT CLOT (96.2%) and PRATO-ACS-2 (90%). The user chose to drop them rather than rescale (the item-10 proposal is withdrawn).
+      - **Selection recomputed (item 9):** 29 primary trials remain, all selected (cap 30). 22 have a verified estimate.
+      - **Core set (item 11a, rule applied to the 22):** CHEST, ADRENAL, SUP-ICU, STARRT-AKI, CRISTAL, RSI, SOAP II, VIOLET, LOVIT, ECLS-SHOCK, BICAR-ICU, HYDRAREA.
+      - **Core coverage:**
+
+        | Met (3 or more) | Below target |
+        |---|---|
+        | F1 (6), F2 (5), F7 (6) | F3 (2), F4 (1), F5 (2), F6 (1) |
+
+        The trials that would fill F3–F6 failed S2 (AKIKI, DISCO, PRATO-ACS-2) or are conditional on unmapped items (SMART, PROTection). This is reported as a finding.
+      - **Breadth set:** the other 17 selected trials (10 with verified estimates).
+      - **Still open:** the second-person check of R3.

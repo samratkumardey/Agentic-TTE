@@ -18,37 +18,39 @@
   "candidates": 2309,
   "excluded_S1": 95,
   "excluded_S3": 286,
-  "excluded_S2": 523,
+  "excluded_S2": 531,
   "excluded_S6": 463,
   "excluded_S4": 842,
   "exploratory": 19,
-  "primary": 37,
   "uncertain": 34,
+  "primary": 29,
   "secondary": 2,
   "excluded_S7": 1,
   "conditional": 7,
-  "primary_selected": 30
+  "primary_selected": 29,
+  "selected_s2_verified": 22,
+  "core": 12
  },
  "coverage": {
   "F1": {
    "name": "placebo or usual-care comparator (not treated)",
-   "trials": 17,
+   "trials": 19,
    "met": true
   },
   "F2": {
    "name": "active comparator (drug vs drug)",
-   "trials": 10,
+   "trials": 8,
    "met": true
   },
   "F3": {
    "name": "procedure intervention",
-   "trials": 4,
-   "met": true
+   "trials": 2,
+   "met": false
   },
   "F4": {
    "name": "timing strategy with a grace period",
-   "trials": 3,
-   "met": true
+   "trials": 2,
+   "met": false
   },
   "F5": {
    "name": "composite outcome from structured data",
@@ -57,12 +59,49 @@
   },
   "F6": {
    "name": "lab-defined outcome",
-   "trials": 2,
+   "trials": 1,
    "met": false
   },
   "F7": {
    "name": "mortality horizon other than 28 days",
-   "trials": 16,
+   "trials": 15,
+   "met": true
+  }
+ },
+ "core_coverage": {
+  "F1": {
+   "name": "placebo or usual-care comparator (not treated)",
+   "trials": 6,
+   "met": true
+  },
+  "F2": {
+   "name": "active comparator (drug vs drug)",
+   "trials": 5,
+   "met": true
+  },
+  "F3": {
+   "name": "procedure intervention",
+   "trials": 2,
+   "met": false
+  },
+  "F4": {
+   "name": "timing strategy with a grace period",
+   "trials": 1,
+   "met": false
+  },
+  "F5": {
+   "name": "composite outcome from structured data",
+   "trials": 2,
+   "met": false
+  },
+  "F6": {
+   "name": "lab-defined outcome",
+   "trials": 1,
+   "met": false
+  },
+  "F7": {
+   "name": "mortality horizon other than 28 days",
+   "trials": 6,
    "met": true
   }
  },
@@ -958,41 +997,10 @@
     "search"
    ],
    "enrollment": 600,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "VISEP: hydroxyethyl starch vs crystalloid (the volume comparison); 28-day death. The insulin comparison is a glucose target (S5)",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT00135473",
-     "trial": "VISEP",
-     "pmid": "18184958",
-     "paper": "N Engl J Med 2008",
-     "outcome": "death",
-     "horizon": "28 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
-     "contrast": "pentastarch (HES) vs Ringer's lactate",
-     "population": null,
-     "status": "needs_full_text",
-     "verified_by": null,
-     "note": "The abstract reports the HES comparison only for renal outcomes"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "18184958"
-    ],
-    "s2_status": "needs_full_text"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F1"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "VISEP: hydroxyethyl starch vs crystalloid (the volume comparison); 28-day death. The insulin comparison is a glucose target (S5). S2: no_ci: Full text gives only arm death rates: 70/262 (HES) vs 66/274 (Ringer's lactate), P = 0.48; no effect estimate with a CI"
   },
   {
    "nct_id": "NCT00135876",
@@ -1142,7 +1150,8 @@
      "contrast": "norepinephrine + dobutamine vs epinephrine",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
@@ -1151,13 +1160,14 @@
     "pubmed_rct_pmids": [
      "17720019"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT00148642",
@@ -2454,8 +2464,9 @@
      "contrast": "cisatracurium vs placebo",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null,
-     "note": "Adjusted HR is the primary analysis; the crude difference was not significant (P = 0.08)"
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "note": "Adjusted HR is the primary analysis; the crude difference was not significant (P = 0.08)",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
@@ -2463,14 +2474,15 @@
      "27894328",
      "20843245"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT00304382",
@@ -2542,20 +2554,22 @@
      "contrast": "dopamine vs norepinephrine",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "20200382"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT00314990",
@@ -2627,7 +2641,8 @@
      "contrast": "colloids vs crystalloids",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
@@ -2637,13 +2652,14 @@
      "28988172",
      "24108515"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT00320099",
@@ -4789,7 +4805,8 @@
      "contrast": "hydrocortisone + fludrocortisone vs placebo",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
@@ -4800,14 +4817,15 @@
      "29490185",
      "23525934"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT00626028",
@@ -6522,7 +6540,8 @@
      "contrast": "hydroxyethyl starch vs saline",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
@@ -6530,14 +6549,15 @@
      "27324967",
      "23075127"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT00939900",
@@ -7943,41 +7963,10 @@
     "parity"
    ],
    "enrollment": 600,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "Parity: clarithromycin vs placebo; 28-day death",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT01223690",
-     "trial": "Clarithromycin as immunomodulator in sepsis (parity)",
-     "pmid": null,
-     "paper": null,
-     "outcome": "death",
-     "horizon": "28 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
-     "contrast": "clarithromycin vs placebo",
-     "population": null,
-     "status": "not_found",
-     "verified_by": null,
-     "note": "Only sub-studies are on PubMed; the 2008 VAP trial (PMID 18444850) predates this registration"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "28274246"
-    ],
-    "s2_status": "not_found"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F1"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "Parity: clarithromycin vs placebo; 28-day death. S2: not_found: Only sub-studies are on PubMed; the 2008 VAP trial (PMID 18444850) predates this registration. Confirmed by the user"
   },
   {
    "nct_id": "NCT01225094",
@@ -8361,21 +8350,23 @@
      "contrast": "hydrocortisone vs placebo",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null,
-     "note": "The abstract says 'day 28 survival ... HR 0.80': check that the HR is for death, and whether the primary outcome is 28- or 60-day mortality"
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "note": "The abstract says 'day 28 survival ... HR 0.80': check that the HR is for death, and whether the primary outcome is 28- or 60-day mortality",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "27741949"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT01292031",
@@ -9044,21 +9035,23 @@
      "contrast": "hydrocortisone vs placebo",
      "population": "ITT (3658 with known status)",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "29347874"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT01449721",
@@ -9139,7 +9132,8 @@
     "F4",
     "F7"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT01457248",
@@ -10224,24 +10218,26 @@
      ],
      "ci_level": 95,
      "contrast": "saline vs bicarbonate (as reported: saline 33.3%, bicarbonate 35.1%)",
-     "population": "ITT",
+     "population": "modified ITT (307 of 320 randomized)",
      "status": "extracted",
-     "verified_by": null,
-     "note": "The registry linked a different trial (PMID 32065601, outpatient CT). This paper matches by design and size (n = 307) but its abstract does not cite the NCT number: confirm it is NCT01636089. Orientation is saline minus bicarbonate"
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "note": "Registry linked a different trial (PMID 32065601). The full text of PMID 28181941 states registration NCT01636089; sponsor (Caen), dates (2012-2015) and primary outcome match. Value and direction match Table 2 (saline minus bicarbonate)",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
      "32065601"
     ],
     "pubmed_rct_pmids": [],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2",
     "F6"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT01640925",
@@ -10602,41 +10598,10 @@
     "search"
    ],
    "enrollment": 250,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "VANCS II: vasopressin vs norepinephrine in cancer patients with septic shock; 28-day death",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT01718613",
-     "trial": "VANCS II",
-     "pmid": "31609774",
-     "paper": "Crit Care Med 2019",
-     "outcome": "death",
-     "horizon": "28 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
-     "contrast": "vasopressin vs norepinephrine",
-     "population": "250 randomized",
-     "status": "needs_full_text",
-     "verified_by": null,
-     "note": "The abstract gives counts only: 71/125 (56.8%) vs 66/125 (52.8%), P = 0.52"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "31609774"
-    ],
-    "s2_status": "needs_full_text"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F2"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "VANCS II: vasopressin vs norepinephrine in cancer patients with septic shock; 28-day death. S2: no_ci: User: no estimate with a CI found (the abstract gives counts only: 71/125 vs 66/125, P = 0.52)"
   },
   {
    "nct_id": "NCT01721239",
@@ -10875,8 +10840,9 @@
      "contrast": "dexmedetomidine vs no dexmedetomidine",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null,
-     "note": "Co-primary with ventilator-free days"
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "note": "Co-primary with ventilator-free days",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
@@ -10884,13 +10850,14 @@
      "32778146",
      "28322414"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT01768650",
@@ -11468,45 +11435,10 @@
     "search"
    ],
    "enrollment": 760,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "PRATO-ACS-2: rosuvastatin vs atorvastatin in ACS before angiography; contrast AKI at 72 h",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT01870804",
-     "trial": "PRATO-ACS-2",
-     "pmid": "32434204",
-     "paper": "Cardiorenal Med 2020",
-     "outcome": "contrast AKI",
-     "horizon": "72 hours",
-     "measure": "RD (percentage points)",
-     "value": 0.54,
-     "ci": [
-      -3.9,
-      2.8
-     ],
-     "ci_level": 90,
-     "contrast": "rosuvastatin vs atorvastatin (as reported)",
-     "population": "non-inferiority",
-     "status": "non_95_ci",
-     "verified_by": null,
-     "note": "The abstract's point estimate (0.54) lies outside its own CI (-3.9 to 2.8), and 8.2% vs 7.6% gives +0.6: check the sign and the CI in the full text"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "32434204"
-    ],
-    "s2_status": "non_95_ci"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F2",
-    "F6"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "PRATO-ACS-2: rosuvastatin vs atorvastatin in ACS before angiography; contrast AKI at 72 h. S2: non_95_ci: The abstract's point estimate (0.54) lies outside its own CI (-3.9 to 2.8), and 8.2% vs 7.6% gives +0.6: check the sign and the CI in the full text"
   },
   {
    "nct_id": "NCT01886053",
@@ -11708,45 +11640,10 @@
     "search"
    ],
    "enrollment": 620,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "AKIKI: early vs delayed RRT; 60-day survival",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT01932190",
-     "trial": "AKIKI",
-     "pmid": "27181456",
-     "paper": "N Engl J Med 2016",
-     "outcome": "death",
-     "horizon": "60 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
-     "contrast": "early vs delayed RRT",
-     "population": "619 analysed",
-     "status": "needs_full_text",
-     "verified_by": null,
-     "note": "The abstract gives Kaplan-Meier mortality only: 48.5% vs 49.7%, P = 0.79"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "29351007",
-     "27181456",
-     "25902813"
-    ],
-    "s2_status": "needs_full_text"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F3",
-    "F4",
-    "F7"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "AKIKI: early vs delayed RRT; 60-day survival. S2: no_ci: User: no estimate with a CI found in a results publication (the NEJM 2016 abstract gives Kaplan-Meier mortality only, P = 0.79)"
   },
   {
    "nct_id": "NCT01933789",
@@ -13863,43 +13760,10 @@
     "search-wave2"
    ],
    "enrollment": 1003,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "DISCO: immediate vs deferred coronary angiography after cardiac arrest; 30-day survival",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT02309151",
-     "trial": "DISCO",
-     "pmid": null,
-     "paper": null,
-     "outcome": "survival",
-     "horizon": "30 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
-     "contrast": "immediate vs deferred coronary angiography",
-     "population": null,
-     "status": "not_found",
-     "verified_by": null,
-     "note": "Only the 79-patient pilot (PMID 31028826) and the design paper are on PubMed"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "31028826"
-    ],
-    "s2_status": "not_found"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F3",
-    "F4",
-    "F7"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "DISCO: immediate vs deferred coronary angiography after cardiac arrest; 30-day survival. S2: not_found: Only the 79-patient pilot (PMID 31028826) and the design paper are on PubMed. Confirmed by the user"
   },
   {
    "nct_id": "NCT02318355",
@@ -14602,7 +14466,8 @@
      "contrast": "pantoprazole vs placebo",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
@@ -14613,14 +14478,15 @@
      "30354950",
      "27093939"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT02468063",
@@ -14718,21 +14584,23 @@
      "contrast": "bicarbonate vs control",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
      "29910040"
     ],
     "pubmed_rct_pmids": [],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F5"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT02479152",
@@ -14916,7 +14784,8 @@
      "contrast": "early cisatracurium vs usual care",
      "population": "ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": {
      "outcome": "Hospital Mortality to Day 90",
@@ -14933,14 +14802,15 @@
      "31112383",
      "27779896"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT02511470",
@@ -15012,7 +14882,8 @@
      "contrast": "hydrocortisone vs placebo",
      "population": "795 analysed (stopped early)",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
@@ -15022,13 +14893,14 @@
      "36942789",
      "32876689"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT02518087",
@@ -15309,12 +15181,13 @@
      "contrast": "accelerated vs standard RRT initiation",
      "population": "modified ITT",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -15322,7 +15195,8 @@
     "F4",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT02577211",
@@ -15376,7 +15250,8 @@
    "features": [
     "F1"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT02582957",
@@ -15669,8 +15544,9 @@
      "contrast": "etomidate vs ketamine",
      "population": "791 analysed",
      "status": "extracted",
-     "verified_by": null,
-     "note": "A difference in survival, not death: the emulation must report the same orientation"
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "note": "A difference in survival, not death: the emulation must report the same orientation",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
@@ -15679,14 +15555,15 @@
     "pubmed_rct_pmids": [
      "34904190"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT02643472",
@@ -16871,7 +16748,8 @@
     "F2",
     "F7"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT02858596",
@@ -17590,44 +17468,10 @@
     "search-wave2"
    ],
    "enrollment": 12424,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "PREVENT CLOT: aspirin vs LMWH after orthopaedic trauma (inpatients); 90-day death",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT02984384",
-     "trial": "PREVENT CLOT",
-     "pmid": "36652352",
-     "paper": "N Engl J Med 2023",
-     "outcome": "death",
-     "horizon": "90 days",
-     "measure": "RD (percentage points)",
-     "value": 0.05,
-     "ci": [
-      -0.27,
-      0.38
-     ],
-     "ci_level": 96.2,
-     "contrast": "aspirin vs LMWH",
-     "population": "12211 randomized (non-inferiority)",
-     "status": "non_95_ci",
-     "verified_by": null
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [],
-    "pubmed_rct_pmids": [
-     "36652352"
-    ],
-    "s2_status": "non_95_ci"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F2",
-    "F7"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "PREVENT CLOT: aspirin vs LMWH after orthopaedic trauma (inpatients); 90-day death. S2: non_95_ci: "
   },
   {
    "nct_id": "NCT02987218",
@@ -18318,21 +18162,23 @@
      "contrast": "vitamin D3 vs placebo",
      "population": "confirmed vitamin D deficiency (25-OH-D < 20 ng/mL), 1078",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "31826336"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT03097692",
@@ -19329,7 +19175,8 @@
     "F1",
     "F7"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT03260478",
@@ -19708,7 +19555,8 @@
    "features": [
     "F1"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT03339505",
@@ -19782,7 +19630,8 @@
    "features": [
     "F1"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT03347201",
@@ -21119,7 +20968,8 @@
      "contrast": "ECLS vs usual care",
      "population": "417 analysed",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
@@ -21128,7 +20978,7 @@
      "40139846",
      "37634145"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
@@ -21136,7 +20986,8 @@
     "F3",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT03640949",
@@ -21231,46 +21082,10 @@
     "search"
    ],
    "enrollment": 1319,
-   "status": "primary",
-   "failed": null,
-   "stage": "B",
-   "note": "ALBIOSS-BALANCED: albumin factorial; 90-day death. The balanced-solution factor needs LR, unmapped",
-   "reference": {
-    "verified": null,
-    "extracted": {
-     "nct_id": "NCT03654001",
-     "trial": "ALBIOSS-BALANCED",
-     "pmid": null,
-     "paper": null,
-     "outcome": "death",
-     "horizon": "90 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
-     "contrast": "albumin vs no albumin",
-     "population": null,
-     "status": "not_found",
-     "verified_by": null,
-     "note": "The registry links papers of the earlier ALBIOS trial (NCT00707122) and of SMART"
-    },
-    "registry_estimate": null,
-    "registry_result_pmids": [
-     "24635772",
-     "20924555",
-     "25099709",
-     "29768150",
-     "23984731"
-    ],
-    "pubmed_rct_pmids": [],
-    "s2_status": "not_found"
-   },
-   "s8": "pending (Data Support Gate counts on Hellbender)",
-   "features": [
-    "F1",
-    "F7"
-   ],
-   "selected": true
+   "status": "excluded",
+   "failed": "S2",
+   "stage": "S2 check",
+   "note": "ALBIOSS-BALANCED: albumin factorial; 90-day death. The balanced-solution factor needs LR, unmapped. S2: not_found: The registry links papers of the earlier ALBIOS trial (NCT00707122) and of SMART. Confirmed by the user"
   },
   {
    "nct_id": "NCT03667690",
@@ -21368,7 +21183,8 @@
      "contrast": "vitamin C vs placebo",
      "population": "863 analysed",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
@@ -21377,14 +21193,15 @@
      "39774855",
      "35704292"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F5"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT03680963",
@@ -22218,29 +22035,34 @@
      "paper": "Crit Care 2022",
      "outcome": "death",
      "horizon": "90 days",
-     "measure": null,
-     "value": null,
-     "ci": null,
-     "ci_level": null,
+     "measure": "HR",
+     "value": 1.08,
+     "ci": [
+      0.8,
+      1.46
+     ],
+     "ci_level": 95,
      "contrast": "intervention vs placebo",
-     "population": "per-protocol primary (408); ITT 426",
-     "status": "needs_full_text",
-     "verified_by": null,
-     "note": "The abstract gives proportions only (39.9% vs 39.0%, P = 0.86); the primary analysis is per-protocol"
+     "population": "ITT (426); per-protocol HR 1.07 (0.79-1.46)",
+     "status": "extracted",
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "note": "Full text: the paper does not name per-protocol as primary, so the ITT value is used (correcting the earlier note)",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "36171582"
     ],
-    "s2_status": "needs_full_text"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT03872154",
@@ -22689,7 +22511,8 @@
      "contrast": "bicarbonate vs control",
      "population": "627 analysed",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [
@@ -22698,14 +22521,15 @@
     "pubmed_rct_pmids": [
      "41159812"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F1",
     "F7"
    ],
-   "selected": true
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT04012008",
@@ -27470,20 +27294,22 @@
      "contrast": "ketamine vs etomidate",
      "population": "trial population, 2359 with outcome",
      "status": "extracted",
-     "verified_by": null
+     "verified_by": "SKD (Samrat Kumar Dey), 2026-10-27",
+     "s2": "pass"
     },
     "registry_estimate": null,
     "registry_result_pmids": [],
     "pubmed_rct_pmids": [
      "41369227"
     ],
-    "s2_status": "extracted"
+    "s2_status": "verified"
    },
    "s8": "pending (Data Support Gate counts on Hellbender)",
    "features": [
     "F2"
    ],
-   "selected": true
+   "selected": true,
+   "core": true
   },
   {
    "nct_id": "NCT05283733",
@@ -28887,7 +28713,8 @@
    "features": [
     "F1"
    ],
-   "selected": false
+   "selected": true,
+   "core": false
   },
   {
    "nct_id": "NCT05781243",
