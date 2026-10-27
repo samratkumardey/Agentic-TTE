@@ -767,9 +767,25 @@ The count is not the contribution. Each new agent gets an ablation (run without 
        - 2,309 candidates; 37 tentatively primary, 30 selected;
        - coverage met for F1–F4 and F7; F5 and F6 have 2 trials each.
      - Next: extract and verify S2 estimates (primary papers), then S8 counts on Hellbender.
-2. Build the Clinician (RAG), Supervisor and Protocol Auditor, with tests on synthetic OMOP.
-3. Run the first real Replay (NCT04134403) on the full CDM, end to end, with reviews. Then the other 9.
-4. Select and add the further trials by the rule, and verify their registry results.
-5. Make the gold annotation (user and clinician) for parsing F1.
-6. Run the full benchmark, ablations (without Auditor, without Clinician, direct LLM-SQL instead of the compiler) and model comparisons.
-7. Write up. Then CREST-2 on Oracle (the user's next goal), with the same pipeline.
+2. **Design adopted 2026-10-27:** a core set plus stage-wise correctness and fault injection (SCORING.md Phase 3 changelog item 11).
+   - The contribution is a pipeline shown correct stage by stage, not a trial count.
+   - **Core set:** 12 trials with user-verified estimates. It is the primary agreement set.
+   - **Breadth set:** the rest, reported on pipeline endpoints only.
+   - **Endpoints:**
+     - E1 fault injection: 10 fault types, ground truth by construction;
+     - E2 cohort checks without hand-built cohorts: mimic-code validated concepts, metamorphic tests, differential testing;
+     - E3 reference protocols written by the user, with a clinician audit;
+     - E4 synthetic data;
+     - E5 agreement with attribution by substitution;
+     - E6 breadth.
+3. **User:** verify the S2 estimates of the 30 selected trials (full papers). The core set of 12 then follows by rule.
+4. **Build:**
+   - the bootstrap CIs (R4);
+   - the Protocol Auditor and the fault injector (E1);
+   - the metamorphic and differential cohort tests (E2), and the mimic-code comparison on the Postgres build;
+   - then the Clinician (RAG) and Supervisor.
+
+   Tests on synthetic OMOP first.
+5. **User:** write the 12 reference protocols from a template (E3), blind to model outputs; a clinician adjudicates the uncertain items and audits 20%.
+6. Run the core set end to end on the full CDM (S8 counts first), with E1–E5 and the ablations; then the breadth set (E6).
+7. Write up. Then CREST-2 on Oracle (the user's next goal), with the same pipeline and the user's clinician-adjudicated reference.

@@ -370,3 +370,49 @@ These are named now, and each is fully specified in this changelog before it run
       - **Proposed rule, for the user to confirm:** when a paper reports its primary CI at a level other than 95%, R4 takes the standard error from that interval with the matching normal quantile (2.075 for 96.2%, 1.645 for 90%). Nothing is converted to another measure.
       - **Correction:** the registry links HYDRAREA (NCT01636089) to an outpatient CT trial (PMID 32065601). The matching paper is PMID 28181941, pending the user's confirmation.
       - **What happens next:** trials confirmed as *not_found*, or still without an estimate after the full-text check, leave the primary set. The selection is then recomputed (item 9).
+  11. **Core set, stage-wise correctness and fault injection** (2026-10-27, adopted by the user, **before any MIMIC estimate**).
+      - **Why:** the contribution is a pipeline shown correct stage by stage, not a trial count.
+      - **Constraint:** clinician time is scarce. Every endpoint below either needs no human reference, or needs only the user plus a small clinician audit.
+
+      **11a. Core set (the primary agreement set from now on).** Taken from the 30 selected trials (item 9) by an outcome-blind rule:
+      1. Keep only trials whose S2 estimate the user has verified against the full paper.
+      2. Apply the item-8 coverage rule with a cap of **12**: up to 3 per feature, then by enrolment.
+
+      The other selected trials form the **breadth set**. It is run end to end and reported on the R5 pipeline endpoints only, with no agreement claim. R4's primary endpoints are computed on the core set.
+
+      **11b. Stage-wise endpoints.**
+
+      | # | Stage | Reference (who makes it) | Metrics |
+      |---|---|---|---|
+      | E1 | Design checks: Protocol Auditor and review gates | **Fault injection** (by construction, no human) | Sensitivity per fault type; false alarms on the unmodified protocols; bias each fault causes in the estimate |
+      | E2 | Cohort (compiler) | No hand-built cohorts: (a) independent validated definitions, (b) metamorphic tests, (c) differential testing (no clinician) | Concept-level agreement (κ, patient overlap counts, suppressed); share of metamorphic tests passed; patient-set Jaccard and adjudicated causes of difference |
+      | E3 | Protocol (Trialist) | A reference protocol per core trial, written by the user from the trial paper with a fixed template, blind to model outputs. A clinician adjudicates only the items the user marks uncertain, plus a random 20% audit of fields | The 7 TTE elements scored as in Phase 0 part C. Reported as *investigator-written with clinician audit*, never as clinician gold |
+      | E4 | Estimation | Synthetic data with known marginal truth (no human) | Bias, coverage, including clone-censor-weight and the E1 faults |
+      | E5 | End to end | The published estimates (user-verified) | R4 metrics on the core set, plus attribution (11d) |
+      | E6 | Breadth | None | R5 pipeline endpoints on the breadth set |
+
+      **E2 references, in detail:**
+      - (a) For criteria with a validated community definition, the compiled cohort is compared with MIT-LCP `mimic-code` derived concepts on the native-schema Postgres build: sepsis-3, KDIGO AKI, SOFA, ventilation, vasopressors.
+      - (b) Metamorphic tests: dropping an inclusion criterion never shrinks the cohort; adding an exclusion never grows it; shifting all times leaves the cohort unchanged; criterion order does not matter.
+      - (c) Differential testing against an independent implementation: LLM-written SQL as in EmulatRx, on the same OMOP data. The user adjudicates the causes of disagreement on aggregate counts only.
+
+      **11c. Fault catalogue for E1, fixed now.** Each fault is applied to every core protocol where it is applicable:
+      - F-a immortal time: treatment defined after time zero with no grace-period handling;
+      - F-b look-ahead: an eligibility criterion uses data after time zero;
+      - F-c time zero after treatment start;
+      - F-d comparator swapped (active ↔ placebo or not treated);
+      - F-e outcome horizon different from the trial's;
+      - F-f prevalent users: prior treatment not excluded;
+      - F-g death treated as censoring for an all-cause mortality outcome;
+      - F-h a confounder measured after time zero;
+      - F-i a timing strategy without a grace period;
+      - F-j a concept set from the wrong drug class or condition.
+
+      Ground truth is known by construction. Unmodified protocols measure false alarms.
+
+      **11d. Attribution of disagreement by substitution.** For each core trial, the estimate is recomputed with the reference protocol (E3) substituted for the agent's. If agreement with the trial changes, the cause is placed in the protocol stage. Otherwise it lies in the cohort, confounding or the data.
+
+      **Human budget:**
+      - **User:** verify about 12 estimates (about 2 hours); write 12 reference protocols from a template (about 30–45 minutes each).
+      - **Clinician:** about 2–3 hours of adjudication and audit.
+      - **CREST-2,** with the user's existing clinician-adjudicated reference, stays the one fully clinician-validated case (PLAN.md §17, after MIMIC).
