@@ -64,9 +64,16 @@ echo "[atte] $(date -u +%FT%TZ) starting Postgres on socket $SOCK, port $PORT (n
 "$PGBIN/pg_ctl" -D "$PGDATA" -l "$RUN_DIR/postgres.log" -w \
   -o "-p $PORT -k $SOCK -c listen_addresses=''" start
 
-PSQL=("$PGBIN/psql" -h "$SOCK" -p "$PORT" -v ON_ERROR_STOP=1 -X -q)
+# -w: never prompt for a password (a batch job cannot answer). The build asks for one: put it
+# in ~/.pgpass (mode 600), a line "*:5433:*:<user>:<password>" (hpc/HELLBENDER.md).
+PSQL=("$PGBIN/psql" -h "$SOCK" -p "$PORT" -w -v ON_ERROR_STOP=1 -X -q)
+if ! DBS=$("${PSQL[@]}" -d postgres -Atc "SELECT datname FROM pg_database WHERE NOT datistemplate"); then
+  echo "[atte] could not log in to Postgres as ${PGUSER:-${USER:-$(id -un)}}. If it asks for a" \
+       "password, add it to ~/.pgpass (chmod 600) as: *:$PORT:*:${PGUSER:-${USER:-$(id -un)}}:<password>" >&2
+  exit 3
+fi
 DB=""
-for d in $("${PSQL[@]}" -d postgres -Atc "SELECT datname FROM pg_database WHERE NOT datistemplate"); do
+for d in $DBS; do
   if [ "$("${PSQL[@]}" -d "$d" -Atc "SELECT count(*) FROM information_schema.schemata WHERE schema_name = 'mimiciv_derived'")" = "1" ]; then
     DB="$d"
     break
