@@ -19,6 +19,7 @@
 #SBATCH --output=logs/export-derived-%j.out
 
 set -euo pipefail
+umask 077   # patient-level exports: only the user can read them, whatever the parent's mode
 cd "${SLURM_SUBMIT_DIR:-.}"
 source "${ATTE_ENV:-hpc/env.sh}"
 
