@@ -196,6 +196,11 @@ def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
     linked on the data side; only counts come out."""
     ours, ref = omop_flags(con, concepts), reference_flags(derived)
     m = ours.merge(ref, on="person_id", suffixes=("_omop", "_ref"))
+    tables = {r[0].lower() for r in con.execute(
+        "SELECT table_name FROM information_schema.tables").fetchall()}  # fmt: skip
+    # The compiler expands concept sets through concept_ancestor; the breakdown must too
+    # (prescriptions map to clinical drugs, descendants of the ingredient).
+    expand = "concept_ancestor" in tables
     icu = pd.read_csv(derived / "icustay_detail.csv.gz", parse_dates=["icu_intime"])
     first = icu.sort_values(["subject_id", "icu_intime", "stay_id"]).groupby("subject_id").head(1)
     first = first.rename(columns={"subject_id": "person_id"})[["person_id", "stay_id",
@@ -205,6 +210,13 @@ def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
     def group(k, ours_value, ref_value):
         sel = m[(m[f"{k}_omop"] == ours_value) & (m[f"{k}_ref"] == ref_value)]
         return first[first.person_id.isin(set(sel.person_id))]
+
+    def concept_in(col: str, cid: int) -> str:
+        """The concept or any of its descendants, as the compiler matches it."""
+        if not expand:
+            return f"r.{col} = {int(cid)}"
+        return (f"(r.{col} = {int(cid)} OR r.{col} IN (SELECT descendant_concept_id FROM "
+                f"concept_ancestor WHERE ancestor_concept_id = {int(cid)}))")
 
     def records(table, cid_col, time_col, src_col, cid, people, extra="", more=""):
         """Rows of one concept for these patients. Date-only rows are placed at midnight, as
@@ -216,7 +228,7 @@ def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
                 coalesce(r.{time_col}, CAST(r.{date_col} AS TIMESTAMP)) AS t,
                 r.{time_col} IS NULL AS date_only, r.{src_col} AS src, p.icu_intime{more}
                 FROM {table} r JOIN _p p USING (person_id)
-                WHERE r.{cid_col} = {int(cid)} {extra}""").df()  # fmt: skip
+                WHERE {concept_in(cid_col, cid)} {extra}""").df()  # fmt: skip
         finally:
             con.unregister("_p")
 

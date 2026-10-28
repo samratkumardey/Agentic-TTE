@@ -553,3 +553,11 @@ These are named now, and each is fully specified in this changelog before it run
       - **Lactate:** the source explanation named in item 18 is refuted. Every disagreeing patient's value is lab item 50813, mimic-code's own item, so the gap lies in mimic-code's blood-gas selection. A second breakdown checks it.
       - **Ventilation:** explained by timing (episodes that began before ICU admission) and by source (procedureevents vs ventilator settings). For trials that need ventilation, the concept review should consider the charted ventilator settings.
       - **Norepinephrine:** the first breakdown missed date-only records; fixed, together with the breakdown, which now places them at midnight like the compiler and labels them.
+  21. **Second breakdown** (job 19374198).
+      - **Lactate, explained:**
+        - 3,817 of the 5,269 qualifying values have no hadm_id (emergency-department blood gases before admission);
+        - 3,753 lie only in the 6 hours before ICU admission;
+        - mimic-code's lactate_max is missing for 3,613 of the patients and <= 2 for 1,656.
+
+        mimic-code counts only labs linked to the admission; our ETL keeps labs without one (PLAN.md §16). This is a definition choice, reported as such.
+      - **Norepinephrine:** the breakdown matched the ingredient only, while the compiler also matches descendants (prescriptions map to clinical drugs). The breakdown now expands concept sets the same way.

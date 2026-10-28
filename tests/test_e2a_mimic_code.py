@@ -19,6 +19,7 @@ _spec.loader.exec_module(e2a)
 C = e2a.CONCEPTS
 T = pd.Timestamp("2150-01-01 10:00")
 H = pd.Timedelta(hours=1)
+CLINICAL_DRUG = 40000001  # a made-up clinical drug under the norepinephrine ingredient
 
 
 def _cdm():
@@ -65,12 +66,16 @@ def _cdm():
 
     t["procedure_occurrence"] = pd.DataFrame([vent(1, T + H), vent(2, T + 30 * H),
                                               vent(3, T + 2 * H)])
+    # Patient 2: a date-only prescription mapped to a clinical drug, a descendant of the
+    # norepinephrine ingredient (as NDC -> RxNorm maps them).
     t["drug_exposure"] = pd.DataFrame([
-        {"person_id": p, "drug_concept_id": C["norepinephrine"],
+        {"person_id": p, "drug_concept_id": C["norepinephrine"] if p == 1 else CLINICAL_DRUG,
          "drug_exposure_start_datetime": T + 3 * H if p == 1 else pd.NaT,
          "drug_exposure_start_date": (T + 3 * H).normalize() + (pd.Timedelta(0) if p == 1
                                                                 else pd.Timedelta(days=1)),
          "drug_source_value": src} for p, src in ((1, "221906"), (2, "Norepinephrine"))])
+    t["concept_ancestor"] = pd.DataFrame({"ancestor_concept_id": [C["norepinephrine"]],
+                                          "descendant_concept_id": [CLINICAL_DRUG]})
     return so.write_duckdb(t)
 
 

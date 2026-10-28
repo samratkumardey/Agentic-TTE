@@ -64,3 +64,21 @@ between data sources, not compiler errors, and they are the kind a concept revie
   - Mimic-code only: mostly ventilated patients with no procedureevents "Invasive Ventilation" entry at all (2,547), or one starting before ICU admission (709).
   - **Consequence for the core trials that need ventilation (ACURASYS, ROSE):** procedureevents alone misses patients that ventilator settings show. Their concept review should consider the charted ventilator settings (PEEP set, tidal volume, already mapped) as evidence of invasive ventilation.
 - **Norepinephrine: the breakdown undercounted** (49 of 732 classified). The other patients' day-1 records are date-only, mostly prescriptions. The compiler places those at midnight, but the first breakdown read only datetimes. Fixed: date-only records are placed at midnight as the compiler places them, and labelled. A prescription dated the day of ICU admission counts as day-1 exposure from midnight, which can precede the actual start: a timing limitation of date-only records, to be reported.
+
+## Second breakdown (job 19374198, 2026-10-28)
+
+| Definition | Group | Category | Patients |
+|---|---|---|---|
+| lact2 | ours only | mimic-code lactate_max missing (no blood gas counted) | 3613 |
+| lact2 | ours only | mimic-code lactate_max present and <= 2 | 1656 |
+| lact2 | ours only | qualifying value only before ICU admission (-6 to 0 h) | 3753 |
+| lact2 | ours only | qualifying value outside a hospital admission (no hadm_id) | 3817 |
+| lact2 | ours only | patients in group (all from lab item 50813) | 5269 |
+| norepi24 | ours only | day-1 records from ICU item 221906 | 49 (of 732) |
+
+- **Lactate: explained.** For 3,817 of the 5,269 patients, the qualifying lactate has no hospital admission (no hadm_id): an emergency-department blood gas drawn before admission. For 3,753, it lies only in the 6 hours before ICU admission.
+  - mimic-code's blood-gas tables count only results linked to the admission: lactate_max is missing for 3,613 of these patients and <= 2 for 1,656.
+  - Our ETL keeps labs without an admission (joined on the patient, by design: PLAN.md §16), so the compiled criterion sees them.
+  - This is a definition choice, not an error. Clinically, an ED lactate hours before ICU admission is a valid pre-ICU value, so ours is the more complete definition of "lactate in the 6 h before to 24 h after ICU admission".
+  - Trials whose eligibility is a lactate threshold should state which they mean at concept review.
+- **Norepinephrine: the breakdown still under-counted.** It matched the ingredient concept only. The compiler also matches its descendants (concept_ancestor), and prescriptions map through NDC to clinical drugs, which are descendants. The breakdown now expands concept sets as the compiler does; tested with a clinical-drug prescription. To rerun.
