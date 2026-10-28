@@ -57,4 +57,9 @@ export ATTE_MIMIC_CONCEPT_MAP="/cluster/pixstor/data/$USER/mimic-code/mimic-iv/c
 # OHDSI MIMIC-IV ETL checkout (github.com/OHDSI/MIMIC, ~3 MB): its curated lab-to-LOINC map.
 export ATTE_OHDSI_MIMIC="/cluster/pixstor/data/$USER/ohdsi-mimic"
 export ATTE_OMOP_DIR="$ATTE_LAB_DIR/omop"
+# Native Postgres build of MIMIC-IV with the mimic-code derived concepts (E2 (a) reference):
+# data directory, the conda env with the Postgres binaries, and where the export goes.
+export ATTE_MIMIC_PG="$ATTE_LAB_DIR/mimic-postgres"
+export ATTE_MIMIC_PG_ENV="/cluster/pixstor/data/$USER/conda_envs/mimic-pg"
+export ATTE_MIMIC_DERIVED="$ATTE_LAB_DIR/mimic-derived"
 export ATTE_ITEM_MAPS="${ATTE_ITEM_MAPS:-}"   # reviewed item maps (space-separated paths)

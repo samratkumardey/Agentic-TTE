@@ -508,3 +508,20 @@ These are named now, and each is fully specified in this changelog before it run
         - A compiler with one predicate negated is caught by both kinds of check (`tests/test_cohort_checks.py`).
       - **(a) The mimic-code comparison is not built yet.** It needs the derived-concepts schema of the native Postgres build. Its 2026-10-26 build was attempted but not checked (`hpc/HELLBENDER.md`), so the user first confirms that the schema exists.
       - **On MIMIC:** E2 runs per core trial once its protocol and concept sets are reviewed, on Hellbender. Only the suppressed counts come back.
+  17. **E2 (a) built** (2026-10-28, before any MIMIC estimate; `eval/e2a_mimic_code.py`, `hpc/export_mimic_derived.sbatch`).
+      - **The reference exists:** the user's mimic-code derived-concepts build finished with 0 errors.
+      - **Five definitions, fixed now, for each patient's first ICU stay:**
+        - age >= 65;
+        - creatinine > 2.0 mg/dL on day 1;
+        - lactate > 2.0 mmol/L on day 1;
+        - invasive ventilation started on day 1;
+        - norepinephrine started on day 1.
+
+        Each is written as a compiled OMOP criterion (time zero at ICU admission, or ICU admission + 24 h, with mimic-code's first-day windows) and compared with `icustay_detail`, `first_day_lab`, `first_day_bg`, `ventilation` and `norepinephrine`.
+      - **Metrics per definition:** both, ours only, mimic-code only, neither, and Cohen's κ, plus the patients with a time zero on one side only.
+      - **Expected sources of disagreement, named before the run:**
+        - anchor-based age at hospital admission vs our ICU-admission age;
+        - procedureevents vs ventilator settings;
+        - prescriptions counted in our norepinephrine;
+        - deaths in the first 24 hours.
+      - **Checked** on a made-up MIMIC-shaped database (`tests/test_e2a_mimic_code.py`).
