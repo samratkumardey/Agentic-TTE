@@ -801,7 +801,8 @@ The count is not the contribution. Each new agent gets an ablation (run without 
      - **E2 (a) run 2026-10-28** (`eval/results/e2a_mimic_code.md`; changelog items 17–18).
        - Creatinine agrees exactly with mimic-code (κ 1.0).
        - Age, lactate, norepinephrine and ventilation differ only in the directions their data sources predict (κ 0.72–0.98).
-       - Next: a by-source breakdown of the lactate and ventilation gaps;
+       - **Every gap traced** (changelog items 19–22): age = anchor year; lactate = ED blood gases without a hospital admission; norepinephrine = prescriptions; ventilation = timing and procedureevents vs ventilator settings. None comes from the compiler.
+       - For the ventilation, lactate and vasopressor concepts of the core trials, the concept review must say which sources count;
    - then the Clinician (RAG) and Supervisor.
 
    Tests on synthetic OMOP first.

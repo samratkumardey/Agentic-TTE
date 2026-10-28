@@ -82,3 +82,28 @@ between data sources, not compiler errors, and they are the kind a concept revie
   - This is a definition choice, not an error. Clinically, an ED lactate hours before ICU admission is a valid pre-ICU value, so ours is the more complete definition of "lactate in the 6 h before to 24 h after ICU admission".
   - Trials whose eligibility is a lactate threshold should state which they mean at concept review.
 - **Norepinephrine: the breakdown still under-counted.** It matched the ingredient concept only. The compiler also matches its descendants (concept_ancestor), and prescriptions map through NDC to clinical drugs, which are descendants. The breakdown now expands concept sets as the compiler does; tested with a clinical-drug prescription. To rerun.
+
+## Norepinephrine, with descendant concepts (job 19374310, 2026-10-28)
+
+| Definition | Group | Category | Patients |
+|---|---|---|---|
+| norepi24 | ours only | day-1 records from prescriptions | 683 |
+| norepi24 | ours only | day-1 records from ICU item 221906 + prescriptions | 31 |
+| norepi24 | ours only | day-1 records from ICU item 221906 | 18 |
+| norepi24 | ours only | patients in group | 732 |
+
+- **Norepinephrine: explained.** 714 of the 732 patients have a day-1 norepinephrine prescription, which mimic-code's infusion table does not count. 18 have only an infusion (item 221906) that mimic-code's `norepinephrine` table does not list on day 1, plausibly rows its rate and unit filters drop. That is under 0.03% of the 64,703 patients compared.
+
+## Summary of E2 (a)
+
+Every disagreement between the compiled OMOP criteria and mimic-code is now traced to a named cause. None is a compiler error.
+
+| Definition | Kappa | Cause of disagreement |
+|---|---|---|
+| creat2 | 1.0 | none |
+| age65 | 0.976 | anchor-based whole-year age vs exact age at ICU admission |
+| norepi24 | 0.95 | prescriptions (ours) vs infusions only (mimic-code) |
+| lact2 | 0.82 | emergency-department blood gases without a hospital admission (ours keeps them) |
+| ivent24 | 0.715 | episodes begun before ICU admission; procedureevents vs ventilator settings |
+
+**For concept review:** the definitions of ventilation, lactate and vasopressor exposure must say which sources count. The trials that depend on them (ACURASYS and ROSE, ventilation; lactate thresholds; vasopressor arms) are reviewed with these numbers in hand.

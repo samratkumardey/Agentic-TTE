@@ -561,3 +561,7 @@ These are named now, and each is fully specified in this changelog before it run
 
         mimic-code counts only labs linked to the admission; our ETL keeps labs without one (PLAN.md §16). This is a definition choice, reported as such.
       - **Norepinephrine:** the breakdown matched the ingredient only, while the compiler also matches descendants (prescriptions map to clinical drugs). The breakdown now expands concept sets the same way.
+  22. **E2 (a) closed** (job 19374310).
+      - **Norepinephrine:** 714 of the 732 patients positive by ours only have a day-1 prescription; 18 have only an infusion that mimic-code does not list.
+      - **Every E2 (a) disagreement is traced to a named data-source or definition difference; none to the compiler** (`eval/results/e2a_mimic_code.md`, summary).
+      - **For concept review:** the ventilation, lactate and vasopressor definitions of the core trials are reviewed with these numbers.
