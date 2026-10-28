@@ -10,7 +10,10 @@ Menu:
   propensity-score matching when the plan says ``psm`` (an ATT, with pair-clustered SEs);
 - always: the crude Cox HR, IPTW as a secondary estimate, covariate balance (SMD before and
   after weighting), the proportional-hazards test, IPTW-weighted Kaplan-Meier risks at the
-  horizon and the E-value of the primary estimate.
+  horizon and the E-value of the primary estimate;
+- with ``n_bootstrap`` (eval/SCORING.md R4: 500): risks under each strategy at the horizon, by
+  the primary method's weighting (clone-censor-weight or IPTW), with the RR, OR and RD and
+  bootstrap CIs that refit the weights (``agentic_tte.stats.bootstrap``).
 
 Runs where the data are; only aggregates come out. Patients with a missing confounder are left
 out (complete case), and the number is reported. No estimate is made when an arm has fewer than
@@ -34,6 +37,7 @@ from agentic_tte.stats import (
     ph_test,
     propensity_scores,
     risk_difference,
+    risk_measures,
     smd,
 )
 
@@ -61,6 +65,7 @@ class AnalysisResult(BaseModel):
     smd_before: dict[str, float] = Field(default_factory=dict)
     smd_after: dict[str, float] = Field(default_factory=dict)
     risks: dict[str, float] = Field(default_factory=dict)
+    risk_measures: dict | None = None  # RiskMeasures with bootstrap CIs (R4)
     ph_p: float | None = None
     evalue: dict[str, float] = Field(default_factory=dict)
     horizon_days: float | None = None
@@ -93,6 +98,21 @@ class AnalysisResult(BaseModel):
                          f"{worst:.3f} after weighting "
                          f"({'balanced' if worst < SMD_THRESHOLD else 'IMBALANCED'}; "
                          f"threshold {SMD_THRESHOLD}).")
+        rm = self.risk_measures
+        if rm:
+            ci = rm.get("ci") or {}
+
+            def fmt(k, v, scale=1.0, sign=""):
+                lo_hi = ci.get(k)
+                c = f" ({scale * lo_hi[0]:{sign}.3f} to {scale * lo_hi[1]:{sign}.3f})" if lo_hi \
+                    else " (no CI)"  # fmt: skip
+                return f"{scale * v:{sign}.3f}{c}" if v is not None else "undefined"
+            lines.append(f"Risks at {rm['horizon_days']:g} days ({rm['method']} weighting): "
+                         f"treatment {100 * rm['risk_treated']:.1f}%, comparator "
+                         f"{100 * rm['risk_untreated']:.1f}%. RR {fmt('rr', rm['rr'])}; "
+                         f"OR {fmt('or_', rm['or_'])}; RD {fmt('rd', rm['rd'], 100, '+')} "
+                         f"points; 95% percentile bootstrap, {rm['n_bootstrap']} resamples "
+                         f"(seed {rm['seed']}), {rm['failed']} dropped.")  # fmt: skip
         if self.ph_p is not None:
             lines.append(f"Proportional hazards test (crude model): p = {self.ph_p:.3g}.")
         if self.evalue:
@@ -110,7 +130,7 @@ def _est(hr, method: str) -> Estimate:
 
 
 def analyze(frame: pd.DataFrame, protocol: TargetTrialProtocol, *, confounders: list[str],
-            horizon_days: float | None = None) -> AnalysisResult:  # fmt: skip
+            horizon_days: float | None = None, n_bootstrap: int = 0) -> AnalysisResult:  # fmt: skip
     """Estimate the treatment effect in an analysis frame (``treated``, ``treat_start``,
     ``time``, ``event`` and the confounder columns)."""
     d = frame.dropna(subset=confounders).reset_index(drop=True)
@@ -182,6 +202,16 @@ def analyze(frame: pd.DataFrame, protocol: TargetTrialProtocol, *, confounders: 
         res.notes.append(f"PH test failed: {e}")
     p = res.primary
     res.evalue = evalue_hr(p.hr, p.lower, p.upper)
+    if n_bootstrap and horizon_days and confounders:
+        method = "ccw" if res.primary_method == "clone-censor-weight" else "iptw"
+        if res.primary_method == "psm":
+            res.notes.append("risk measures use IPTW weighting (the PSM estimand is the ATT)")
+        try:
+            res.risk_measures = risk_measures(
+                d, horizon_days, method=method, covariates=confounders, grace=grace_days,
+                n_bootstrap=n_bootstrap).model_dump(mode="json")  # fmt: skip
+        except Exception as e:  # noqa: BLE001 - reported; the HR results stand
+            res.notes.append(f"risk measures failed: {e}")
     if res.smd_after and max(res.smd_after.values()) >= SMD_THRESHOLD:
         res.notes.append("residual imbalance after weighting: interpret with caution")
     return res

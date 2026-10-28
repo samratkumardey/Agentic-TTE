@@ -223,7 +223,7 @@ def test_cli_replay_resumes_from_checkpoints(tmp_path, nct03872011_study):
     out, run = tmp_path / "run", CliRunner().invoke
 
     r = run(app, ["replay", "start", "-o", str(out), "--db", str(db), "--protocol", str(proto),
-                  "--classification", "synthetic"])  # fmt: skip
+                  "--classification", "synthetic", "--bootstrap", "0"])  # fmt: skip
     assert r.exit_code == 0, r.output
     assert "waiting for the design review" in r.output
     r = run(app, ["replay", "resume", "-o", str(out)])  # design.json has no reviewer yet
@@ -285,11 +285,12 @@ def test_cli_auto_approve_policy(tmp_path):
     out = tmp_path / "run"
     r = CliRunner().invoke(app, ["replay", "start", "-o", str(out), "--db", str(db),
                                  "--protocol", str(proto), "--classification", "synthetic",
-                                 "--auto", str(policy)])  # fmt: skip
+                                 "--auto", str(policy), "--bootstrap", "20"])  # fmt: skip
     assert r.exit_code == 0, r.output
     assert "AUTO-APPROVE" in r.output and "run auto_approved" in r.output
     report = (out / "report.md").read_text(encoding="utf-8")
     assert "AUTO-APPROVED BENCHMARK RUN" in report and not (out / "pending.txt").exists()
+    assert json.loads((out / "run.json").read_text("utf-8"))["bootstrap"] == 20  # R4 setting
 
 
 def _to_audit(con, study):

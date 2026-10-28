@@ -788,7 +788,7 @@ The count is not the contribution. Each new agent gets an ablation (run without 
    - **8 trials failed S2** and are reported.
    - **Core coverage below target:** F3 (procedure), F4 (timing), F5 (composite), F6 (lab-defined).
 4. **Build:**
-   - the bootstrap CIs (R4);
+   - **done 2026-10-27:** the bootstrap CIs (R4; `stats/bootstrap.py`; changelog item 15);
    - **done 2026-10-27:** the Protocol Auditor (`agents/auditor.py`, checks A-a to A-j) and the fault injector (`faults.py`, F-a to F-j).
      - On synthetic data, 10 of 10 faults are caught, with no alarm on the correct design (`eval/results/fault_injection_synthetic.md`; changelog item 14).
      - **Wired into the Replay graph (2026-10-27):** compile → audit → gate.

@@ -477,3 +477,15 @@ These are named now, and each is fully specified in this changelog before it run
       - **What this does and does not show:**
         - It shows that each guard works on a design where the truth is known.
         - It does not show the false-alarm rate on real protocols. That is measured on the core trials' reference protocols (E3) and the Trialist drafts before any claim. A-f in particular will flag every protocol without an explicit new-user exclusion.
+  15. **R4 bootstrap built** (2026-10-27, before any MIMIC estimate; `agentic_tte/stats/bootstrap.py`).
+      - **Risks:** the risks under each strategy at the trial's horizon come from the primary method's weighting:
+        - clone-censor-weight: weighted KM on each arm's clones, in counting-process form;
+        - otherwise IPTW: weighted KM per arm, stabilized ATE weights.
+      - **Measures:** RR, OR of the cumulative risks, and RD.
+      - **CIs:**
+        - nonparametric bootstrap over patients, refitting the weights in every resample;
+        - 500 resamples, seed 20261027 (the `replay start` default);
+        - percentile intervals, with ratios taken on the log scale.
+      - **Failed resamples:** a resample where a measure is undefined (no event in an arm) or a refit fails is dropped and counted. If more than 10% are dropped, that measure gets no CI rather than a biased one.
+      - **Check on synthetic data** (n = 1,500, 100 resamples): the CIs cover the sample's potential-outcome truth for RR and RD, with IPTW (treatment at time zero) and with clone-censor-weight (3-day grace period).
+      - **PSM:** a PSM primary analysis reports these measures with IPTW weighting, and says so, because PSM's estimand is the ATT.

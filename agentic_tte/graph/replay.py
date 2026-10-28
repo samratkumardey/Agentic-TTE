@@ -156,11 +156,14 @@ def _record(stage: str, answer: dict, auto: bool, decision: str) -> dict:
 
 def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = None,
                  design_hr: float | None = None, checkpointer=None,
-                 auto: AutoApprove | None = None, abbreviations=None):  # fmt: skip
+                 auto: AutoApprove | None = None, abbreviations=None,
+                 n_bootstrap: int = 0):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
-    ``AbbreviationList`` whose approved entries the concept search may expand."""
+    ``AbbreviationList`` whose approved entries the concept search may expand.
+    ``n_bootstrap``: resamples for the risk-measure CIs (eval/SCORING.md R4: 500 for scored
+    runs; 0 skips them)."""
     context = context or DataContext()
 
     def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
@@ -358,7 +361,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         frame = con.execute(cc.frame_sql).df()  # stays here; only aggregates go to the state
         confounders = [c for c in cc.frame_columns[1:]
                        if c not in ("treated", "treat_start", "time", "event", "end_reason")]
-        res = analyze(frame, _p(state), confounders=confounders, horizon_days=cc.horizon_days)
+        res = analyze(frame, _p(state), confounders=confounders, horizon_days=cc.horizon_days,
+                      n_bootstrap=n_bootstrap)  # fmt: skip
         p = res.primary
         msg = f"primary {res.primary_method}: HR {p.hr:.3f} ({p.lower:.3f}-{p.upper:.3f})" \
             if p else "no estimate"  # fmt: skip

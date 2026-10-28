@@ -480,6 +480,7 @@ def _replay_graph(run: dict, llm=None):
     auto = AutoApprove.model_validate(run["auto"]) if run.get("auto") else None
     graph = build_replay(con, llm=llm, ctgov=_ctgov() if llm else None, context=ctx,
                          design_hr=run.get("design_hr"), checkpointer=saver, auto=auto,
+                         n_bootstrap=run.get("bootstrap", 0),
                          abbreviations=_abbreviations(run.get("abbreviations")))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
@@ -540,6 +541,8 @@ def replay_start(
                                          "report says so."),
     abbreviations: Path = typer.Option(None, help="Abbreviation list; only its approved "
                                                   "entries are expanded in concept search."),
+    bootstrap: int = typer.Option(500, help="Bootstrap resamples for the RR/OR/RD CIs "
+                                            "(eval/SCORING.md R4); 0 skips them."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -559,7 +562,8 @@ def replay_start(
     run = {"out": str(out), "db": str(db), "vocab": str(vocab) if vocab else None,
            "classification": classification, "approved": approved, "design_hr": design_hr,
            "auto": policy.model_dump(mode="json") if policy else None,
-           "abbreviations": str(abbreviations) if abbreviations else None}
+           "abbreviations": str(abbreviations) if abbreviations else None,
+           "bootstrap": bootstrap}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}

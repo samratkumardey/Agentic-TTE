@@ -87,5 +87,6 @@ Next (user, 2026-10-27): finish the Replay on MIMIC first, at parity with Emulat
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.
-- Open: a Monte Carlo over seeds, bootstrap CIs, a doubly robust estimator.
+- Open: a Monte Carlo over seeds and a doubly robust estimator.
+- Done: bootstrap CIs for RR, OR and RD (`stats/bootstrap.py`, R4). Scored runs use 500 resamples (the CLI default).
 - This PC's `.venv` sits in OneDrive, which can lock files during `uv add`. If it does, rerun once the lock clears; Hellbender is unaffected.

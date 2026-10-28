@@ -9,6 +9,7 @@ from agentic_tte.stats.balance import (
     propensity_scores,
     smd,
 )
+from agentic_tte.stats.bootstrap import RiskMeasures, risk_measures
 from agentic_tte.stats.ccw import ccw_hr, clone_censor_weight
 from agentic_tte.stats.design import evalue_hr, sample_size, schoenfeld_events
 from agentic_tte.stats.survival import (
@@ -25,6 +26,7 @@ __all__ = [
     "SMD_THRESHOLD",
     "HazardRatio",
     "MatchResult",
+    "RiskMeasures",
     "ccw_hr",
     "clone_censor_weight",
     "cox_hr",
@@ -36,6 +38,7 @@ __all__ = [
     "ph_test",
     "propensity_scores",
     "risk_difference",
+    "risk_measures",
     "sample_size",
     "schoenfeld_events",
     "smd",
