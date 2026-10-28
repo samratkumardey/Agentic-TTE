@@ -798,7 +798,10 @@ The count is not the contribution. Each new agent gets an ablation (run without 
        - Sets approved as surrogates are exempt from the A-j name check.
      - Still to do: measure the Auditor's false alarms on real protocols. A-f fires on the qwen3:32b draft of NCT03872011, which has no new-user exclusion;
    - **done 2026-10-28:** the metamorphic and differential cohort tests (E2 (b), (c); `omop/cohort_checks.py`, `agentic-tte cohort check`; changelog item 16).
-     - **E2 (a) built 2026-10-28** (`eval/e2a_mimic_code.py`; export `hpc/export_mimic_derived.sbatch`; changelog item 17): 5 first-day definitions against mimic-code. To run on Hellbender;
+     - **E2 (a) run 2026-10-28** (`eval/results/e2a_mimic_code.md`; changelog items 17–18).
+       - Creatinine agrees exactly with mimic-code (κ 1.0).
+       - Age, lactate, norepinephrine and ventilation differ only in the directions their data sources predict (κ 0.72–0.98).
+       - Next: a by-source breakdown of the lactate and ventilation gaps;
    - then the Clinician (RAG) and Supervisor.
 
    Tests on synthetic OMOP first.

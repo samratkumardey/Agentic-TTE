@@ -525,3 +525,16 @@ These are named now, and each is fully specified in this changelog before it run
         - prescriptions counted in our norepinephrine;
         - deaths in the first 24 hours.
       - **Checked** on a made-up MIMIC-shaped database (`tests/test_e2a_mimic_code.py`).
+  18. **E2 (a) result on MIMIC-IV** (2026-10-28, job 19373181; `eval/results/e2a_mimic_code.md`). This is a cohort check: no effect estimate was computed.
+      - **creat2:** agreement is exact (κ = 1.0, 64,703 patients).
+      - **The other disagreements match their named sources:**
+
+        | Definition | κ | Disagreement |
+        |---|---|---|
+        | age65 | 0.976 | 773 positive by mimic-code only (anchor age) |
+        | lact2 | 0.82 | 5,269 positive by ours only (more lactate sources) |
+        | norepi24 | 0.95 | 732 positive by ours only (prescriptions) |
+        | ivent24 | 0.715 | both directions (procedureevents vs ventilator settings) |
+
+      - **No day-1 time zero:** 663 patients, who died or left before ICU admission + 24 h.
+      - **Planned follow-up:** a by-source breakdown of the lactate and ventilation disagreements, as aggregate counts. It is reported as an adjudication; no definition is tuned to agree.
