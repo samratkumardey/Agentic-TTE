@@ -134,6 +134,41 @@ def _abbreviations(path):
     return lst
 
 
+cohort_app = typer.Typer(no_args_is_help=True, help="Checks on compiled cohorts (E2).")
+app.add_typer(cohort_app, name="cohort")
+
+
+@cohort_app.command("check")
+def cohort_check(
+    db: Path = typer.Option(..., help="OMOP CDM database (DuckDB file); opened read-only."),
+    protocol: Path = typer.Option(..., help="Reviewed protocol (JSON)."),
+    spec: Path = typer.Option(..., help="Compile spec with the reviewed concept sets (JSON)."),
+    out: Path = typer.Option(..., "--out", "-o", help="Directory for the report."),
+):
+    """Metamorphic relations and the differential test for one design (eval/SCORING.md,
+    Phase 3 changelog item 16). Counts only, small cells suppressed in the JSON."""
+    import duckdb
+
+    from agentic_tte.omop.cohort_checks import check_cohort
+    from agentic_tte.omop.compiler import CompileSpec
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    s = CompileSpec.model_validate_json(spec.read_text(encoding="utf-8"))
+    con = duckdb.connect(str(db), read_only=True)
+    try:
+        rep = check_cohort(con, p, s, db_path=db)
+    finally:
+        con.close()
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "cohort_checks.md").write_text(rep.to_markdown(), encoding="utf-8")
+    (out / "cohort_checks.json").write_text(json.dumps(rep.public(), indent=2), "utf-8")
+    held = sum(r.held for r in rep.relations)
+    bad = sum(d.disagree > 0 for d in rep.differential)
+    typer.echo(f"{held} of {len(rep.relations)} relations held; {bad} criteria disagree with "
+               f"the reference evaluator -> {out}/cohort_checks.md", err=True)
+
+
 etl_app = typer.Typer(no_args_is_help=True, help="Convert source data to OMOP CDM 5.4.")
 app.add_typer(etl_app, name="etl")
 

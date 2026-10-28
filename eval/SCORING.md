@@ -489,3 +489,22 @@ These are named now, and each is fully specified in this changelog before it run
       - **Failed resamples:** a resample where a measure is undefined (no event in an arm) or a refit fails is dropped and counted. If more than 10% are dropped, that measure gets no CI rather than a biased one.
       - **Check on synthetic data** (n = 1,500, 100 resamples): the CIs cover the sample's potential-outcome truth for RR and RD, with IPTW (treatment at time zero) and with clone-censor-weight (3-day grace period).
       - **PSM:** a PSM primary analysis reports these measures with IPTW weighting, and says so, because PSM's estimand is the ATT.
+  16. **E2 (b) and (c) built** (2026-10-28, before any MIMIC estimate; `agentic_tte/omop/cohort_checks.py`, `agentic-tte cohort check`).
+      - **(b) Metamorphic relations, fixed now:**
+        - dropping any compiled criterion gives a superset;
+        - reversing the criteria gives the same cohort;
+        - repeating a criterion gives the same cohort;
+        - doubling a look-back window: superset for an inclusion, subset for an exclusion;
+        - a measurement threshold 10% stricter: subset for an inclusion, superset for an exclusion;
+        - moving every date by 400 years (a whole Gregorian cycle): the same cohort and the same frame totals.
+
+        The metric is the number of patients who move the wrong way, which must be 0.
+      - **(c) Differential testing, change of implementation:**
+        - The independent implementation is a Python reference evaluator. It re-derives time zero, the index population and every compiled criterion from the raw OMOP tables, following the compiler's documented semantics, and is compared patient by patient.
+        - Criteria it does not cover (anchors other than time zero, cumulative durations) are reported as not compared, never as agreeing.
+        - LLM-written SQL as in EmulatRx stays planned as a second implementation. It needs the GPU (Hellbender).
+      - **Checks of the checks:**
+        - On synthetic data, 13 of 13 relations hold and 0 patients disagree on 6 criteria. On the compiler's hand-built edge cases (date-only records, the latest lab in the look-back, death before time zero, a minor), 0 disagree.
+        - A compiler with one predicate negated is caught by both kinds of check (`tests/test_cohort_checks.py`).
+      - **(a) The mimic-code comparison is not built yet.** It needs the derived-concepts schema of the native Postgres build. Its 2026-10-26 build was attempted but not checked (`hpc/HELLBENDER.md`), so the user first confirms that the schema exists.
+      - **On MIMIC:** E2 runs per core trial once its protocol and concept sets are reviewed, on Hellbender. Only the suppressed counts come back.
