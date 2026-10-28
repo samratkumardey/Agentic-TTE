@@ -49,7 +49,7 @@ def _cdm():
     def meas(p, concept, when, v, src):
         return {"person_id": p, "measurement_concept_id": concept, "measurement_datetime": when,
                 "measurement_date": when.normalize(), "value_as_number": v,
-                "measurement_source_value": src}
+                "measurement_source_value": src, "visit_occurrence_id": 200 + p}
 
     t["measurement"] = pd.DataFrame([
         meas(1, C["creatinine"], T + 2 * H, 2.5, "50912"),
@@ -67,7 +67,9 @@ def _cdm():
                                               vent(3, T + 2 * H)])
     t["drug_exposure"] = pd.DataFrame([
         {"person_id": p, "drug_concept_id": C["norepinephrine"],
-         "drug_exposure_start_datetime": T + 3 * H, "drug_exposure_start_date": T.normalize(),
+         "drug_exposure_start_datetime": T + 3 * H if p == 1 else pd.NaT,
+         "drug_exposure_start_date": (T + 3 * H).normalize() + (pd.Timedelta(0) if p == 1
+                                                                else pd.Timedelta(days=1)),
          "drug_source_value": src} for p, src in ((1, "221906"), (2, "Norepinephrine"))])
     return so.write_duckdb(t)
 
@@ -117,12 +119,14 @@ def test_public_output_suppresses_small_counts(derived):
 def test_breakdown_names_the_source_of_each_disagreement(derived):
     rows = e2a.breakdown(_cdm(), derived)
     got = {(r["definition"], r["group"], r["category"]): r["patients"] for r in rows}
-    assert got[("lact2", "ours only", "qualifying values from: chartevents item 225668")] == 1
+    assert got[("lact2", "ours only", "qualifying values from: ICU item 225668")] == 1
+    assert got[("lact2", "ours only", "mimic-code lactate_max present and <= 2")] == 1
     assert got[("ivent24", "ours only",
                 "mimic-code invasive episode already running at ICU admission")] == 1
     assert got[("ivent24", "mimic-code only",
                 "our invasive ventilation starts after 24 h")] == 1
     assert got[("ivent24", "mimic-code only", "no invasive ventilation record of ours")] == 0
-    assert got[("norepi24", "ours only", "day-1 records from: prescriptions")] == 1
+    assert got[("norepi24", "ours only",
+                "day-1 records from: prescriptions (date only: placed at midnight)")] == 1
     md = e2a.breakdown_markdown(rows)
-    assert "| lact2 | ours only | qualifying values from: chartevents item 225668 | <11 |" in md
+    assert "| lact2 | ours only | qualifying values from: ICU item 225668 | <11 |" in md

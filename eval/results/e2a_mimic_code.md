@@ -41,3 +41,26 @@ suppressed.
 Where the source matches, the compiler is exact. The other gaps are differences of definition
 between data sources, not compiler errors, and they are the kind a concept review must decide
 (which lactate, which ventilation source). They are reported, not tuned away.
+
+## Breakdown of the disagreements (job 19374062, 2026-10-28)
+
+| Definition | Group | Category | Patients |
+|---|---|---|---|
+| lact2 | ours only | qualifying values from labevents item 50813 | 5269 |
+| ivent24 | ours only | mimic-code invasive episode already running at ICU admission | 1952 |
+| ivent24 | ours only | mimic-code invasive episode starting after 24 h | 130 |
+| ivent24 | ours only | mimic-code tracheostomy on day 1 | 15 |
+| ivent24 | ours only | mimic-code other support only on day 1 (NIV, HFNC, oxygen) | 1705 |
+| ivent24 | ours only | no mimic-code ventilation row for the stay | 451 |
+| ivent24 | ours only | other | 133 |
+| ivent24 | mimic-code only | our invasive ventilation starts before ICU admission | 709 |
+| ivent24 | mimic-code only | our invasive ventilation starts after 24 h | 228 |
+| ivent24 | mimic-code only | no invasive ventilation record of ours | 2547 |
+| norepi24 | ours only | day-1 records from ICU item 221906 (inputevents) | 49 |
+
+- **Lactate: the predicted explanation was wrong.** All 5,269 patients positive by us only have their qualifying value from lab item 50813, the same blood-gas item mimic-code uses. The gap is not about sources: it is in how mimic-code's `bg` / `first_day_bg` select blood gases. A second breakdown splits it: is mimic-code's lactate_max missing or <= 2, is our value only before ICU admission, and is it outside a hospital admission (no hadm_id)?
+- **Ventilation: explained by timing and source.**
+  - Ours only: mostly patients whose invasive episode, by mimic-code, began before ICU admission (1,952: intubated in the OR or ED, with the procedureevents entry made on arrival), or who are classified by mimic-code's ventilator settings as non-invasive support only (1,705).
+  - Mimic-code only: mostly ventilated patients with no procedureevents "Invasive Ventilation" entry at all (2,547), or one starting before ICU admission (709).
+  - **Consequence for the core trials that need ventilation (ACURASYS, ROSE):** procedureevents alone misses patients that ventilator settings show. Their concept review should consider the charted ventilator settings (PEEP set, tidal volume, already mapped) as evidence of invasive ventilation.
+- **Norepinephrine: the breakdown undercounted** (49 of 732 classified). The other patients' day-1 records are date-only, mostly prescriptions. The compiler places those at midnight, but the first breakdown read only datetimes. Fixed: date-only records are placed at midnight as the compiler places them, and labelled. A prescription dated the day of ICU admission counts as day-1 exposure from midnight, which can precede the actual start: a timing limitation of date-only records, to be reported.

@@ -549,3 +549,7 @@ These are named now, and each is fully specified in this changelog before it run
       - **norepi24, ours only:** the sources of the day-1 records.
 
       Counts only, small cells suppressed.
+  20. **E2 (a) breakdown result** (job 19374062; `eval/results/e2a_mimic_code.md`).
+      - **Lactate:** the source explanation named in item 18 is refuted. Every disagreeing patient's value is lab item 50813, mimic-code's own item, so the gap lies in mimic-code's blood-gas selection. A second breakdown checks it.
+      - **Ventilation:** explained by timing (episodes that began before ICU admission) and by source (procedureevents vs ventilator settings). For trials that need ventilation, the concept review should consider the charted ventilator settings.
+      - **Norepinephrine:** the first breakdown missed date-only records; fixed, together with the breakdown, which now places them at midnight like the compiler and labels them.

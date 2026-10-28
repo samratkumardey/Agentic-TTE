@@ -180,7 +180,7 @@ def to_markdown(rows: list[dict]) -> str:
 
 # --- by-source breakdown of the disagreements (changelog item 19) -----------------------------
 
-CHART_ITEMS = 220000  # MIMIC-IV item IDs from 220000 are chartevents/icu items; 5xxxx are labs
+ICU_ITEMS = 220000  # MIMIC-IV item IDs from 220000 are ICU items (chart, input, procedure)
 
 
 def _source(itemid: str | None) -> str:
@@ -188,7 +188,7 @@ def _source(itemid: str | None) -> str:
     if itemid is None or not str(itemid).isdigit():
         return "prescriptions"
     i = int(itemid)
-    return f"chartevents item {i}" if i >= CHART_ITEMS else f"labevents item {i}"
+    return f"ICU item {i}" if i >= ICU_ITEMS else f"labevents item {i}"
 
 
 def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
@@ -206,11 +206,16 @@ def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
         sel = m[(m[f"{k}_omop"] == ours_value) & (m[f"{k}_ref"] == ref_value)]
         return first[first.person_id.isin(set(sel.person_id))]
 
-    def records(table, cid_col, time_col, src_col, cid, people, extra=""):
+    def records(table, cid_col, time_col, src_col, cid, people, extra="", more=""):
+        """Rows of one concept for these patients. Date-only rows are placed at midnight, as
+        the compiler places them; ``date_only`` says which ones were."""
+        date_col = time_col.replace("datetime", "date")
         con.register("_p", people[["person_id", "icu_intime"]])
         try:
-            return con.execute(f"""SELECT r.person_id, r.{time_col} AS t, r.{src_col} AS src,
-                p.icu_intime FROM {table} r JOIN _p p USING (person_id)
+            return con.execute(f"""SELECT r.person_id,
+                coalesce(r.{time_col}, CAST(r.{date_col} AS TIMESTAMP)) AS t,
+                r.{time_col} IS NULL AS date_only, r.{src_col} AS src, p.icu_intime{more}
+                FROM {table} r JOIN _p p USING (person_id)
                 WHERE r.{cid_col} = {int(cid)} {extra}""").df()  # fmt: skip
         finally:
             con.unregister("_p")
@@ -219,15 +224,29 @@ def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
         rows.append({"definition": definition, "group": grp, "category": category,
                      "patients": int(n)})  # fmt: skip
 
-    # lactate > 2, ours only: which sources gave our qualifying values?
+    # lactate > 2, ours only: which sources gave our qualifying values, and why mimic-code's
+    # first_day_bg did not count them
     g = group("lact2", True, False)
     r = records("measurement", "measurement_concept_id", "measurement_datetime",
-                "measurement_source_value", concepts["lactate"], g, "AND r.value_as_number > 2")
+                "measurement_source_value", concepts["lactate"], g, "AND r.value_as_number > 2",
+                ", r.visit_occurrence_id IS NULL AS no_admission")  # fmt: skip
     lag = (r["t"] - r["icu_intime"]).dt.total_seconds() / 3600
     r = r[(lag >= -6) & (lag <= 24)].assign(source=lambda x: x["src"].map(_source))
     per = r.groupby("person_id")["source"].agg(lambda s: " + ".join(sorted(set(s))))
     for cat, n in per.value_counts().items():
         add("lact2", "ours only", f"qualifying values from: {cat}", n)
+    lab = pd.read_csv(derived / "first_day_bg.csv.gz").groupby("stay_id")["lactate_max"].max()
+    ref_max = g.set_index("person_id")["stay_id"].map(lab)
+    add("lact2", "ours only", "mimic-code lactate_max missing (no blood gas counted)",
+        int(ref_max.isna().sum()))
+    add("lact2", "ours only", "mimic-code lactate_max present and <= 2",
+        int((ref_max <= 2).sum()))
+    early = set(r.loc[lag[r.index] < 0, "person_id"])
+    late = set(r.loc[lag[r.index] >= 0, "person_id"])
+    add("lact2", "ours only", "qualifying value only before ICU admission (-6 to 0 h)",
+        len(early - late))
+    add("lact2", "ours only", "qualifying value outside a hospital admission (no hadm_id)",
+        len(set(r.loc[r["no_admission"], "person_id"])))
     add("lact2", "ours only", "patients in group", len(g))
 
     # invasive ventilation, ours only: what mimic-code's ventilation table says for that stay
@@ -276,7 +295,9 @@ def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
     r = records("drug_exposure", "drug_concept_id", "drug_exposure_start_datetime",
                 "drug_source_value", concepts["norepinephrine"], g)
     hrs = (r["t"] - r["icu_intime"]).dt.total_seconds() / 3600
-    r = r[(hrs >= 0) & (hrs <= 24)].assign(source=lambda x: x["src"].map(_source))
+    r = r[(hrs >= 0) & (hrs <= 24)].assign(
+        source=lambda x: x["src"].map(_source) + x["date_only"].map(
+            {True: " (date only: placed at midnight)", False: ""}))
     per = r.groupby("person_id")["source"].agg(lambda s: " + ".join(sorted(set(s))))
     for cat, n in per.value_counts().items():
         add("norepi24", "ours only", f"day-1 records from: {cat}", n)
