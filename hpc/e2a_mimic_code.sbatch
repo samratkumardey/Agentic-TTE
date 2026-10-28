@@ -3,6 +3,8 @@
 # eval/SCORING.md, Phase 3 changelog item 17). Run after hpc/export_mimic_derived.sbatch, from
 # the repository root after `source hpc/env.sh`:
 #   sbatch -p "$SLURM_CPU_PARTITION" hpc/e2a_mimic_code.sbatch
+# By-source breakdown of the disagreements (changelog item 19):
+#   sbatch -p "$SLURM_CPU_PARTITION" --export=ALL,ATTE_E2A_BREAKDOWN=1 hpc/e2a_mimic_code.sbatch
 # Reads the OMOP CDM read-only and the exports in $ATTE_MIMIC_DERIVED; writes only aggregate
 # counts (small cells suppressed) to runs/e2a-<job>/.
 #SBATCH --job-name=atte-e2a
@@ -33,7 +35,11 @@ for f in icustay_detail first_day_lab first_day_bg ventilation norepinephrine; d
 done
 
 echo "[atte] $(date -u +%FT%TZ) E2 (a) on $CDM"
-uv run python eval/e2a_mimic_code.py --db "$CDM" --derived "$ATTE_MIMIC_DERIVED" -o "$OUT"
+EXTRA=()
+if [ "${ATTE_E2A_BREAKDOWN:-0}" = "1" ]; then
+  EXTRA=(--breakdown)
+fi
+uv run python eval/e2a_mimic_code.py --db "$CDM" --derived "$ATTE_MIMIC_DERIVED" -o "$OUT" ${EXTRA[@]+"${EXTRA[@]}"}
 {
   echo "job=$JOB"
   echo "node=$(hostname)"
@@ -42,4 +48,4 @@ uv run python eval/e2a_mimic_code.py --db "$CDM" --derived "$ATTE_MIMIC_DERIVED"
   echo "derived=$ATTE_MIMIC_DERIVED"
   echo "finished=$(date -u +%FT%TZ)"
 } > "$OUT/manifest.txt"
-echo "[atte] done: $OUT/e2a_mimic_code.md"
+echo "[atte] done: report in $OUT/"

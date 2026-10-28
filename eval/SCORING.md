@@ -538,3 +538,14 @@ These are named now, and each is fully specified in this changelog before it run
 
       - **No day-1 time zero:** 663 patients, who died or left before ICU admission + 24 h.
       - **Planned follow-up:** a by-source breakdown of the lactate and ventilation disagreements, as aggregate counts. It is reported as an adjudication; no definition is tuned to agree.
+  19. **E2 (a) breakdown built** (2026-10-28; `eval/e2a_mimic_code.py --breakdown`). Within each disagreeing group it counts patients per source category, from each OMOP row's source value (the MIMIC item ID, or a drug name for prescriptions):
+      - **lact2, ours only:** the items that gave our qualifying values.
+      - **ivent24, ours only:** what mimic-code's ventilation table holds for the stay:
+        - an invasive episode already running at ICU admission, or one starting after 24 h;
+        - tracheostomy on day 1;
+        - other support only;
+        - no row.
+      - **ivent24, mimic-code only:** whether our invasive-ventilation record starts before ICU admission, starts after 24 h, or is absent.
+      - **norepi24, ours only:** the sources of the day-1 records.
+
+      Counts only, small cells suppressed.

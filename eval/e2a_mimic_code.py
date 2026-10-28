@@ -178,6 +178,121 @@ def to_markdown(rows: list[dict]) -> str:
               "only (e.g. death in the first 24 hours, or no first-day table)."]
     return "\n".join(lines) + "\n"
 
+# --- by-source breakdown of the disagreements (changelog item 19) -----------------------------
+
+CHART_ITEMS = 220000  # MIMIC-IV item IDs from 220000 are chartevents/icu items; 5xxxx are labs
+
+
+def _source(itemid: str | None) -> str:
+    """Where an OMOP row came from, by its source value (the MIMIC item ID, or a drug name)."""
+    if itemid is None or not str(itemid).isdigit():
+        return "prescriptions"
+    i = int(itemid)
+    return f"chartevents item {i}" if i >= CHART_ITEMS else f"labevents item {i}"
+
+
+def breakdown(con, derived: Path, concepts: dict = CONCEPTS) -> list[dict]:
+    """For each disagreeing group, how many patients fall in each source category. Patients are
+    linked on the data side; only counts come out."""
+    ours, ref = omop_flags(con, concepts), reference_flags(derived)
+    m = ours.merge(ref, on="person_id", suffixes=("_omop", "_ref"))
+    icu = pd.read_csv(derived / "icustay_detail.csv.gz", parse_dates=["icu_intime"])
+    first = icu.sort_values(["subject_id", "icu_intime", "stay_id"]).groupby("subject_id").head(1)
+    first = first.rename(columns={"subject_id": "person_id"})[["person_id", "stay_id",
+                                                                "icu_intime"]]  # fmt: skip
+    rows: list[dict] = []
+
+    def group(k, ours_value, ref_value):
+        sel = m[(m[f"{k}_omop"] == ours_value) & (m[f"{k}_ref"] == ref_value)]
+        return first[first.person_id.isin(set(sel.person_id))]
+
+    def records(table, cid_col, time_col, src_col, cid, people, extra=""):
+        con.register("_p", people[["person_id", "icu_intime"]])
+        try:
+            return con.execute(f"""SELECT r.person_id, r.{time_col} AS t, r.{src_col} AS src,
+                p.icu_intime FROM {table} r JOIN _p p USING (person_id)
+                WHERE r.{cid_col} = {int(cid)} {extra}""").df()  # fmt: skip
+        finally:
+            con.unregister("_p")
+
+    def add(definition, grp, category, n):
+        rows.append({"definition": definition, "group": grp, "category": category,
+                     "patients": int(n)})  # fmt: skip
+
+    # lactate > 2, ours only: which sources gave our qualifying values?
+    g = group("lact2", True, False)
+    r = records("measurement", "measurement_concept_id", "measurement_datetime",
+                "measurement_source_value", concepts["lactate"], g, "AND r.value_as_number > 2")
+    lag = (r["t"] - r["icu_intime"]).dt.total_seconds() / 3600
+    r = r[(lag >= -6) & (lag <= 24)].assign(source=lambda x: x["src"].map(_source))
+    per = r.groupby("person_id")["source"].agg(lambda s: " + ".join(sorted(set(s))))
+    for cat, n in per.value_counts().items():
+        add("lact2", "ours only", f"qualifying values from: {cat}", n)
+    add("lact2", "ours only", "patients in group", len(g))
+
+    # invasive ventilation, ours only: what mimic-code's ventilation table says for that stay
+    vent = pd.read_csv(derived / "ventilation.csv.gz", parse_dates=["starttime", "endtime"])
+    g = group("ivent24", True, False)
+    v = vent.merge(g[["stay_id", "icu_intime"]], on="stay_id")
+    h0 = (v["starttime"] - v["icu_intime"]).dt.total_seconds() / 3600
+    h1 = (v["endtime"] - v["icu_intime"]).dt.total_seconds() / 3600
+    inv = v["ventilation_status"] == "InvasiveVent"
+    day1 = (h0 >= 0) & (h0 <= 24)
+    cats = {
+        "mimic-code invasive episode already running at ICU admission": set(
+            v.loc[inv & (h0 < 0) & (h1 > 0), "stay_id"]),
+        "mimic-code invasive episode starting after 24 h": set(v.loc[inv & (h0 > 24), "stay_id"]),
+        "mimic-code tracheostomy on day 1": set(
+            v.loc[(v["ventilation_status"] == "Tracheostomy") & day1, "stay_id"]),
+        "mimic-code other support only on day 1 (NIV, HFNC, oxygen)": set(
+            v.loc[~inv & (v["ventilation_status"] != "Tracheostomy") & day1, "stay_id"]),
+    }  # fmt: skip
+    seen: set = set()
+    for cat, stays in cats.items():
+        add("ivent24", "ours only", cat, len(stays - seen))
+        seen |= stays
+    add("ivent24", "ours only", "no mimic-code ventilation row for the stay",
+        len(set(g.stay_id) - set(v.stay_id)))
+    add("ivent24", "ours only", "other", len(set(g.stay_id) - seen - (set(g.stay_id)
+                                                                      - set(v.stay_id))))
+    add("ivent24", "ours only", "patients in group", len(g))
+
+    # invasive ventilation, mimic-code only: what our procedure records say
+    g = group("ivent24", False, True)
+    r = records("procedure_occurrence", "procedure_concept_id", "procedure_datetime",
+                "procedure_source_value", concepts["invasive_ventilation"], g)
+    hrs = (r["t"] - r["icu_intime"]).dt.total_seconds() / 3600
+    before = set(r.loc[hrs < 0, "person_id"])
+    after = set(r.loc[hrs > 24, "person_id"]) - before
+    add("ivent24", "mimic-code only", "our invasive ventilation starts before ICU admission",
+        len(before))
+    add("ivent24", "mimic-code only", "our invasive ventilation starts after 24 h", len(after))
+    add("ivent24", "mimic-code only", "no invasive ventilation record of ours",
+        len(set(g.person_id) - set(r.person_id)))
+    add("ivent24", "mimic-code only", "patients in group", len(g))
+
+    # norepinephrine, ours only: which sources
+    g = group("norepi24", True, False)
+    r = records("drug_exposure", "drug_concept_id", "drug_exposure_start_datetime",
+                "drug_source_value", concepts["norepinephrine"], g)
+    hrs = (r["t"] - r["icu_intime"]).dt.total_seconds() / 3600
+    r = r[(hrs >= 0) & (hrs <= 24)].assign(source=lambda x: x["src"].map(_source))
+    per = r.groupby("person_id")["source"].agg(lambda s: " + ".join(sorted(set(s))))
+    for cat, n in per.value_counts().items():
+        add("norepi24", "ours only", f"day-1 records from: {cat}", n)
+    add("norepi24", "ours only", "patients in group", len(g))
+    return rows
+
+
+def breakdown_markdown(rows: list[dict]) -> str:
+    lines = ["## E2 (a): where the disagreements come from", "",
+             "Patients per source category within each disagreeing group; counts below 11 "
+             "suppressed.", "", "| Definition | Group | Category | Patients |",
+             "|---|---|---|---|"]  # fmt: skip
+    lines += [f"| {r['definition']} | {r['group']} | {r['category']} | "
+              f"{suppress(r['patients']) if r['patients'] else 0} |" for r in rows]
+    return "\n".join(lines) + "\n"
+
 
 def main() -> None:
     import duckdb
@@ -186,11 +301,20 @@ def main() -> None:
     db, derived = Path(a[a.index("--db") + 1]), Path(a[a.index("--derived") + 1])
     out = Path(a[a.index("-o") + 1])
     con = duckdb.connect(str(db), read_only=True)
+    out.mkdir(parents=True, exist_ok=True)
     try:
+        if "--breakdown" in a:  # changelog item 19
+            rows = breakdown(con, derived)
+            md = breakdown_markdown(rows)
+            (out / "e2a_breakdown.md").write_text(md, encoding="utf-8")
+            pub = [{**r, "patients": suppress(r["patients"]) if r["patients"] else 0}
+                   for r in rows]
+            (out / "e2a_breakdown.json").write_text(json.dumps(pub, indent=2), "utf-8")
+            print(md)
+            return
         rows = compare(omop_flags(con), reference_flags(derived))
     finally:
         con.close()
-    out.mkdir(parents=True, exist_ok=True)
     (out / "e2a_mimic_code.md").write_text(to_markdown(rows), encoding="utf-8")
     (out / "e2a_mimic_code.json").write_text(json.dumps(public(rows), indent=2), "utf-8")
     print(to_markdown(rows))
