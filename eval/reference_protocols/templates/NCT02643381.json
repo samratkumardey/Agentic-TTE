@@ -1,0 +1,163 @@
+{
+  "protocol_id": "NCT02643381-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT02643381",
+    "title": "Etomidate Versus Ketamine for Emergency Endotracheal Intubation: a Prospective Randomized Clinical Trial",
+    "record_sha256": "1ecc4e1ad154ed559f02b1b6365756d8a1f6f54f474a4590787001b737d3aad4"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Adult patient (male or female) requiring emergency endotracheal intubation.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Children (<18 years old).",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Women who are known to be pregnant.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Any patient who has been previously randomized in the EvK Trial.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients who require endotracheal intubation without sedative medication. For example, patients in full cardiac arrest.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Patients with a known allergy to ketamine or etomidate.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Any individual wearing a MedAlert bracelet indicating that he/she has formally opted out of the EvK Trial.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Etomidate",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients randomized to this group will receive etomidate immediately prior to emergency endotracheal intubation.",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Ketamine",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients randomized to this group will receive ketamine immediately prior to emergency endotracheal intubation.",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": null,
+    "offset": null,
+    "rationale": null,
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Survival at Day 7",
+      "primary": true,
+      "time_frame": "Day 7",
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "Etomidate",
+        "interventions": [
+          "Etomidate: Patients randomized to this group will receive etomidate immediately prior to emergency endotracheal intubation.",
+          "Emergency Endotracheal Intubation: Patients enrolled in the study will be endotracheally intubated. (A breathing tube will be placed into the patient's mouth and trachea). This procedure is being done as part of standard emergency care. Standard endotracheal tubes will be used. Our hospital uses primarily Mallinckrodt (TM) brand endotracheal tubes.",
+          "Mechanical Ventilation: Patients enrolled in the study will be mechanically ventilated, using a standard ventilator used in our hospital. The mechanical ventilator is attached to the patient's endotracheal tube and helps sustain the patient's life. Our hospital uses several brands of mechanical ventilators."
+        ]
+      },
+      {
+        "label": "Ketamine",
+        "interventions": [
+          "Ketamine: Patients randomized to this group will receive ketamine immediately prior to emergency endotracheal intubation.",
+          "Emergency Endotracheal Intubation: Patients enrolled in the study will be endotracheally intubated. (A breathing tube will be placed into the patient's mouth and trachea). This procedure is being done as part of standard emergency care. Standard endotracheal tubes will be used. Our hospital uses primarily Mallinckrodt (TM) brand endotracheal tubes.",
+          "Mechanical Ventilation: Patients enrolled in the study will be mechanically ventilated, using a standard ventilator used in our hospital. The mechanical ventilator is attached to the patient's endotracheal tube and helps sustain the patient's life. Our hospital uses several brands of mechanical ventilators."
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=7.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": "Critically ill individuals who require emergency endotracheal intubation (placement of a breathing tube in the patient's mouth) usually require sedation or anesthesia to make this process tolerable. There are several medication choices for anesthesia, including medications like etomidate, ketamine and propofol. Of these, etomidate and ketamine are frequently used for critically ill patients because they have minimal effects on the patient's vital signs (blood pressure and heart rate). Both etomidate and ketamine are standard-of-care medications, locally and nationally, and both are frequently used to sedate a patient for this procedure. Both etomidate and ketamine have potential side effects. One of the potential side effects of etomidate is suppression of adrenal gland function. It is not known if this affects patients' outcomes in significant ways. One of the potential side effects of ketamine is a slight increase in patients' heart rates. It is not known if this affects patients' outcomes in significant ways.\n\nThe EvK Trial will be conducted at Parkland Memorial Hospital by investigators in the Departments of Anesthesiology, Emergency Medicine, Medicine / Critical Care Medicine, Surgery, and Pharmacy. The study will randomize critically ill patients who require emergency endotracheal intubation to one of two groups: Etomidate or Ketamine. We will observe the patients' outcomes. The only study intervention involves randomizing individual patients to one medication or the other. All study follow-up beyond that point is done by review of medical records.\n\nBecause of the nature of this study - an emergency procedure on a critically ill patient - the study will require institutional review board permission not to obtain written informed consent from the patient prior to randomization of study drug for administration for endotracheal tube placement. Prior to enrollment of patients the study team will carry out a comprehensive Community Consultation Plan, which is designed to inform the community about the research study. This is in accordance with rules set forth by the U.S. Food and Drug Administration (FDA 21 CFR 50.24)."
+  }
+}

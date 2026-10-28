@@ -807,5 +807,9 @@ The count is not the contribution. Each new agent gets an ablation (run without 
 
    Tests on synthetic OMOP first.
 5. **User:** write the 12 reference protocols from a template (E3), blind to model outputs; a clinician adjudicates the uncertain items and audits 20%.
+   - **Ready 2026-10-28:**
+     - the templates: `eval/reference_protocols/templates/`, from the registry only;
+     - the check: `eval/make_reference_templates.py --check`;
+     - the core drafting job: `hpc/core_draft_submit.sh`, qwen3:32b, 2 replicates (changelog item 23).
 6. Run the core set end to end on the full CDM (S8 counts first), with E1–E5 and the ablations; then the breadth set (E6).
 7. Write up. Then CREST-2 on Oracle (the user's next goal), with the same pipeline and the user's clinician-adjudicated reference.

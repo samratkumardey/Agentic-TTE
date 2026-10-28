@@ -565,3 +565,13 @@ These are named now, and each is fully specified in this changelog before it run
       - **Norepinephrine:** 714 of the 732 patients positive by ours only have a day-1 prescription; 18 have only an infusion that mimic-code does not list.
       - **Every E2 (a) disagreement is traced to a named data-source or definition difference; none to the compiler** (`eval/results/e2a_mimic_code.md`, summary).
       - **For concept review:** the ventilation, lactate and vasopressor definitions of the core trials are reviewed with these numbers.
+  23. **Core drafting and E3 templates** (2026-10-28, before any MIMIC estimate).
+      - **Drafts** (`hpc/core_draft_submit.sh`):
+        - the 12 core trials, read from `replay_selection.json`;
+        - qwen3:32b with think off (R1), 2 replicates;
+        - the Phase 0 scored settings: OLLAMA_NUM_PARALLEL=1, a restart per replicate, the model unloaded per trial, a fresh cache per replicate;
+        - tag `core`, written to `runs/exit-<GPU>-core/`.
+
+        Replicate 2 checks determinism only.
+      - **E3 templates** (`eval/make_reference_templates.py` → `eval/reference_protocols/templates/`): protocol skeletons in our schema, built from the registry record only.
+      - **Blinding:** the investigator writes each reference from the trial paper before opening that trial's draft. The README states this, and the references record who wrote them. A reference must pass `--check` (valid and complete) before E3 or the attribution analysis uses it.

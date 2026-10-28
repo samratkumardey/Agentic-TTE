@@ -1,0 +1,232 @@
+{
+  "protocol_id": "NCT03637205-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT03637205",
+    "title": "Prospective Randomized Multicenter Study Comparing Extracorporeal Life Support Plus Optimal Medical Care Versus Optimal Medical Care Alone in Patients With Acute Myocardial Infarction Complicated by Cardiogenic Shock Undergoing Revascularization",
+    "record_sha256": "13bc6923ebec8c0b57a871f882051df80f5b1838b57d5c4afd64e0ae15aa9b48"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Cardiogenic shock complicating AMI (STEMI or NSTEMI) plus obligatory:",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Planned revascularization (PCI or alternatively CABG)",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Systolic blood pressure <90 mmHg >30 min or catecholamines required to maintain pressure >90 mmHg during Systole",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Signs of impaired organ perfusion with at least one of the following criteria a) Altered mental Status, b) Cold, clammy skin and extremities, c) Oliguria with urine output <30 ml/h",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "Arterial lactate >3 mmol/l",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I6",
+      "kind": "inclusion",
+      "text": "Informed consent",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Resuscitation >45 minutes",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Mechanical cause of cardiogenic shock",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Onset of shock >12 h",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Severe peripheral artery disease with impossibility to insert ECLS cannulae",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Age <18 years or age >75 years",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Shock of other cause (bradycardia, sepsis, hypovolemia, etc.)",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Other severe concomitant disease with limited life expectancy <6 months",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Pregnancy",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Participation in another trial",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "ECLS",
+      "arm_type": "EXPERIMENTAL",
+      "description": "PCI (or CABG) plus medical treatment + ECLS",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "No ECLS",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "PCI (or CABG) plus medical treatment",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": null,
+    "offset": null,
+    "rationale": null,
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "30-day mortality",
+      "primary": true,
+      "time_frame": "30 days",
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "ECLS",
+        "interventions": [
+          "ECLS insertion: After diagnostic angiography the culprit lesion should be identified and revascularization (preferably by PCI, alternatively CABG) should be planned. ECLS insertion should be performed preferably before revascularization",
+          "Revascularisation and optimal medical treatment: After diagnostic angiography the culprit lesion should be identified and revascularization (preferably by PCI, alternatively CABG) should be planned."
+        ]
+      },
+      {
+        "label": "No ECLS",
+        "interventions": [
+          "Revascularisation and optimal medical treatment: After diagnostic angiography the culprit lesion should be identified and revascularization (preferably by PCI, alternatively CABG) should be planned."
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=30.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": null
+  }
+}

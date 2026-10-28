@@ -1,0 +1,160 @@
+{
+  "protocol_id": "NCT00299650-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT00299650",
+    "title": "Systematic Early Use of Neuromuscular Blocking Agents in ARDS Patients",
+    "record_sha256": "4210e09da935b0efc894d1110f6280a80b8fac6e77ec5308084a80de068b5166"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "ARDS with a PaO2 / FiO2 < 150 with a PEEP > 5 since less than 48 hrs",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "informed consent",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "NMBA allergy",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Continuous administration of NMBA for ARDS prior inclusion",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Age < 18 yrs",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "SAPS II > 70",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Persistent air leak",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "A",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": null,
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "B",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": null,
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": null,
+    "offset": null,
+    "rationale": null,
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Reduction of the mortality rate of ARDS patients at d90",
+      "primary": true,
+      "time_frame": "36 months",
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "A",
+        "interventions": [
+          "Placebo: physiological serum infusion"
+        ]
+      },
+      {
+        "label": "B",
+        "interventions": [
+          "cisatracurium: None",
+          "Cisatracurium besilate: Cisatracurium besilate infusion (900mg/day)"
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=36.0 unit='month'",
+      null,
+      null
+    ],
+    "detailed_description": "The use of neuromuscular blocking agents (NMBA) in ARDS patients has not been extensively investigated. It has been recently demonstrated that a systematic 48-h infusion of NMBA is associated with a significant improvement in oxygenation as compared with a control group (Gainnier et al., Crit Care Med 2004). Moreover, a trend towards a reduction in the mortality rate has been observed. The aim of the study is to show a reduction of the mortality rate of ARDS patients."
+  }
+}

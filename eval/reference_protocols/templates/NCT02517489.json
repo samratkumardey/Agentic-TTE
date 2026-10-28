@@ -1,0 +1,384 @@
+{
+  "protocol_id": "NCT02517489-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT02517489",
+    "title": "Effects of Low-dose Corticosteroids on Survival of Severe Community-acquired Pneumonia",
+    "record_sha256": "52215f53b9596fcffbf26f6234c78069cf77e3514d8c797652ac39018a57d365"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Age ≥ 18 years",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Patients affiliated to social security scheme",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Admission to an Intensive Care Unit (ICU) or intermediate care unit participating to the trial",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Diagnosis of Community- Acquired Pneumonia (CAP) suggested by at least two of the following: cough, purulent sputum, chest pain and dyspnea",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "Focal shadowing/infiltrate on chest X-ray or CT-scan",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I6",
+      "kind": "inclusion",
+      "text": "Diagnosis of Community- Acquired Pneumonia (CAP) during the 48 hours post-hospital admission",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I7",
+      "kind": "inclusion",
+      "text": "Study drug infusion initiated no longer than 24 hours post first severity criterion",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I8",
+      "kind": "inclusion",
+      "text": "Severity defined by at least one of the following: Pneumonia Severity Index (PSI) > 130 (Fine class V); Patient placed on mechanical ventilation (invasive or not) for acute respiratory failure, with a PEEP level of 5 cm of water or more; Patient treated by high-flow oxygen therapy with a FiO2 of 50% or more and a P/F ratio less than 300; Patient treated by oxygen therapy with a partial rebreathing-mask with a reservoir bag, provided that the PaO2 is less than (cf. table):",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I9",
+      "kind": "inclusion",
+      "text": "Oxygen flow (L/min) 6 7 8 9 10 or more PaO2 (mmHg) less than 180 210 240 270 300",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I10",
+      "kind": "inclusion",
+      "text": "Patient already treated by antibiotics (at least one dose since admission to hospital)",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I11",
+      "kind": "inclusion",
+      "text": "Informed consent signed by the patient, its relatives or emergency procedure",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I12",
+      "kind": "inclusion",
+      "text": "On the sub-group of patients included with COVID19 :",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I13",
+      "kind": "inclusion",
+      "text": "Diagnosis of COVID19 either as certain (PCR) or probable (evocative clinical and radiological features AND epidemic context AND absence of other microbiological documentation).",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I14",
+      "kind": "inclusion",
+      "text": "Study drug infusion initiated no longer than 24 hours post first severity criterion ; in case of transfer from another hospital, this period will be prolonged to 48 hours",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I15",
+      "kind": "inclusion",
+      "text": "Patient receiving the best available treatment as define by up-to-date scientific knowledge",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Patient treated by vasopressors for septic shock at the time of inclusion",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Clinical history suggesting of aspiration of gastric content",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Patient treated by invasive mechanical ventilation within 14 days before current hospital admission",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patient treated by antibiotics for a respiratory infection for more than seven days at the admission to the hospital (except if a pathogen resistant to this antibiotics is isolated)",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "History of cystic fibrosis",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Post-obstructive pneumonia",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Patients in which rapid PCR-test is positive for flu",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Active tuberculosis or fungal infection",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Active viral hepatitis or active infection with herpes viruses",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "Myelosuppression",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E11",
+      "kind": "exclusion",
+      "text": "Decision of withholding mechanical ventilation or endotracheal intubation",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E12",
+      "kind": "exclusion",
+      "text": "Hypersensitivity to corticosteroids",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E13",
+      "kind": "exclusion",
+      "text": "Patient needing anti-inflammatory corticosteroids or substitutive hydrocortisone for any reason",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E14",
+      "kind": "exclusion",
+      "text": "Patients under treatment by more than 15 mg/d of prednisone (or equivalent) for more than 30 days",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E15",
+      "kind": "exclusion",
+      "text": "Patient already enrolled in another drug trial with mortality as an end-point. If the patient is already participating in another therapeutic trial with a different endpoint, the investigator must verify that inclusion in CAPE COD can not prejudice it.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E16",
+      "kind": "exclusion",
+      "text": "Pregnant or breastfeeding woman",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E17",
+      "kind": "exclusion",
+      "text": "Patient on judicial protection",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Hydrocortisone",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients in the treatment group will receive intra-venous hydrocortisone (in addition to the standard treatment of severe Community-Acquired Pneumonia (CAP)",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Placebo",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Patients of the control group will receive an intravenous placebo by intravenous route (in addition to the standard treatment of severe Community-Acquired Pneumonia (CAP)",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": null,
+    "offset": null,
+    "rationale": null,
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Day 28 all causes mortality",
+      "primary": true,
+      "time_frame": "at day 28",
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "Hydrocortisone",
+        "interventions": [
+          "Hydrocortisone: Hydrocortisone will be given in a double-blind fashion for 8 or 14 full days. The intravenous route will be used. The treatment course will include 4 or 7 days of full dose (200 mg/day by continuous infusion), 2 or 4 days of half dose (100 mg/day by continuous infusion), and 2 or 3 days of tapering dose (50 mg/day by continuous infusion). Duration of treatment is chosen upon patient initial improvement."
+        ]
+      },
+      {
+        "label": "Placebo",
+        "interventions": [
+          "Placebo: Placebo will be given in a double-blind fashion for 8 or 14 full days. The intravenous route will be used. The treatment course will include 4 or 7 days of full dose (200 mg/day by continuous infusion), 2 or 4 days of half dose (100 mg/day by continuous infusion), and 2 or 3 days of tapering dose (50 mg/day by continuous infusion). Duration of treatment is chosen upon patient initial improvement."
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=28.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": "Patients will receive state-of-the-art standard therapy for severe Community-Acquired Pneumonia (CAP), including antibiotics and supportive care. Correction of hypoxemia will use standard low-flow oxygen therapy, high-flow oxygen therapy, non-invasive-ventilation or invasive ventilation with endotracheal tube, as required. Patients in the treatment group will receive intra-venous hydrocortisone. Patients of the control group will receive an intravenous placebo by intravenous route at the same frequency.\n\nHydrocortisone or placebo will be given in a double-blind fashion for 8 or 14 full days. The intravenous route will be used. The treatment course will include 4 or 7 days of full dose (200 mg/day by continuous infusion), 2 or 4 days of half dose (100 mg/day by continuous infusion), and 2 or 3 days of tapering dose (50 mg/day by continuous infusion). Duration of treatment is chosen upon patient initial improvement.\n\nA substantial amendment to the CAPE COD study has been submitted to the Competent Authorities in order to conduct a specific analysis on the sub-group of patients included with COVID19 (coronavirus disease 2019), in order to get a quick response in this specific population and in the context of an epidemic emergency.\n\nThe aim is to answer as quickly as possible a therapeutic question of major importance in the treatment of severe respiratory infections with CoV-2 SARS (severe acute respiratory syndrome coronavirus 2). Modifications made to the original study for patients with COVID (coronavirus disease) include some inclusion criteria, the primary endpoint, and secondary endpoints."
+  }
+}

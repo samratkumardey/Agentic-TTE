@@ -1,0 +1,177 @@
+{
+  "protocol_id": "NCT01636089-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT01636089",
+    "title": "Bicarbonates Versus Saline for Contrast Induced Acute Kidney Injury Prevention in Intensive Care Unit",
+    "record_sha256": "3a8231cf20b917c69c980d6c705c86e55521518545009c73ee489796568bbe40"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "patient > 18 years old",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "in intensive care unit since 24h and for up to 48 hours",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "with contrast medium injection",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "patient under renal replacement therapy",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "rise in creatinine > 26µmol/L within 48hours",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "anuria within 12 hours",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "cardiogenic pulmonary oedema",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "pH > 7.50 or kaliemia < 3mmol/L",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "pregnancy",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "bicarbonates",
+      "arm_type": "EXPERIMENTAL",
+      "description": "sodium bicarbonates 1,4%",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "saline",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "sodium chloride 0,9%",
+      "components": [],
+      "is_comparator": null,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": null,
+    "offset": null,
+    "rationale": null,
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": null,
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "contrast induced acute kidney injury",
+      "primary": true,
+      "time_frame": "72 hours",
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "bicarbonates",
+        "interventions": [
+          "bicarbonates: sodium bicarbonates 1,4%"
+        ]
+      },
+      {
+        "label": "saline",
+        "interventions": [
+          "saline: sodium chloride 0,9%"
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=72.0 unit='hour'",
+      null,
+      null
+    ],
+    "detailed_description": null
+  }
+}
