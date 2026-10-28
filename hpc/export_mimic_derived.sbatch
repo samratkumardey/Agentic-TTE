@@ -34,19 +34,34 @@ SOCK="/local/scratch/${USER:-$(id -un)}/pg-$JOB"
 RUN_DIR="runs/export-derived-$JOB"
 mkdir -p "$SOCK" "$RUN_DIR" "$ATTE_MIMIC_DERIVED" logs
 
-if [ -e "$ATTE_MIMIC_PG/postmaster.pid" ]; then
-  echo "[atte] $ATTE_MIMIC_PG/postmaster.pid exists: a server may be running on it; not starting" >&2
+# The data directory is the one holding PG_VERSION: ATTE_MIMIC_PG itself, or one folder below
+# it (the 2026-10-26 build keeps it in a subfolder next to socket/).
+PGDATA="$ATTE_MIMIC_PG"
+if [ ! -f "$PGDATA/PG_VERSION" ]; then
+  mapfile -t found < <(find "$ATTE_MIMIC_PG" -mindepth 2 -maxdepth 3 -name PG_VERSION -printf '%h\n' | sort)
+  if [ "${#found[@]}" -ne 1 ]; then
+    echo "[atte] expected one Postgres data directory (with PG_VERSION) under $ATTE_MIMIC_PG; found ${#found[@]}:" >&2
+    printf '  %s\n' "${found[@]}" >&2
+    ls -la "$ATTE_MIMIC_PG" >&2
+    exit 2
+  fi
+  PGDATA="${found[0]}"
+fi
+echo "[atte] data directory: $PGDATA"
+
+if [ -e "$PGDATA/postmaster.pid" ]; then
+  echo "[atte] $PGDATA/postmaster.pid exists: a server may be running on it; not starting" >&2
   exit 2
 fi
 
 stop_server() {
-  "$PGBIN/pg_ctl" -D "$ATTE_MIMIC_PG" -m fast -w stop >/dev/null 2>&1 || true
+  "$PGBIN/pg_ctl" -D "$PGDATA" -m fast -w stop >/dev/null 2>&1 || true
   rm -rf "$SOCK"
 }
 trap stop_server EXIT
 
 echo "[atte] $(date -u +%FT%TZ) starting Postgres on socket $SOCK, port $PORT (no TCP)"
-"$PGBIN/pg_ctl" -D "$ATTE_MIMIC_PG" -l "$RUN_DIR/postgres.log" -w \
+"$PGBIN/pg_ctl" -D "$PGDATA" -l "$RUN_DIR/postgres.log" -w \
   -o "-p $PORT -k $SOCK -c listen_addresses=''" start
 
 PSQL=("$PGBIN/psql" -h "$SOCK" -p "$PORT" -v ON_ERROR_STOP=1 -X -q)
@@ -85,7 +100,7 @@ export_table norepinephrine "SELECT stay_id, starttime, endtime FROM mimiciv_der
   echo "git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
   echo "postgres=$("$PGBIN/postgres" --version)"
   echo "database=$DB"
-  echo "data_directory=$ATTE_MIMIC_PG"
+  echo "data_directory=$PGDATA"
   echo "output=$ATTE_MIMIC_DERIVED"
   echo "mimic_code=$(git -C "${ATTE_MIMIC_CODE:-/cluster/pixstor/data/$USER/mimic-code}" rev-parse HEAD 2>/dev/null || echo unknown)"
   echo "finished=$(date -u +%FT%TZ)"
