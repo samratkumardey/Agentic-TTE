@@ -1,0 +1,1591 @@
+[
+  {
+    "nct_id": "NCT00299650",
+    "element": "eligibility",
+    "item": "I1 concepts",
+    "a": [
+      "PaO2/FiO2 ratio",
+      "Positive end-expiratory pressure",
+      "Acute respiratory distress syndrome"
+    ],
+    "b": [
+      "acute respiratory distress syndrome",
+      "PaO2/FiO2 ratio",
+      "positive end-expiratory pressure",
+      "invasive mechanical ventilation"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "ARDS with a PaO2 / FiO2 < 150 with a PEEP > 5 since less than 48 hrs",
+    "id": 0
+  },
+  {
+    "nct_id": "NCT00299650",
+    "element": "eligibility",
+    "item": "E2 concepts",
+    "a": [
+      "Neuromuscular blocking agent, continuous infusion"
+    ],
+    "b": [
+      "cisatracurium",
+      "atracurium",
+      "vecuronium",
+      "rocuronium",
+      "pancuronium"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Continuous administration of NMBA for ARDS prior inclusion",
+    "id": 1
+  },
+  {
+    "nct_id": "NCT00299650",
+    "element": "eligibility",
+    "item": "E5 concepts",
+    "a": [
+      "Persistent air leak (bronchopleural fistula / pneumothorax with air leak)"
+    ],
+    "b": [
+      "persistent air leak",
+      "pneumothorax"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Persistent air leak",
+    "id": 2
+  },
+  {
+    "nct_id": "NCT00299650",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "Randomization: first time ARDS with PaO2/FiO2 < 150 on PEEP >= 5 cmH2O is documented within 48 h of ARDS onset in a ventilated ICU patient; cisatracurium infusion starts at this point in the treated arm.",
+    "b": "severe ARDS (PaO2/FiO2 < 150 on PEEP >= 5 cm H2O) during invasive mechanical ventilation, within 48 hours of onset",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 3
+  },
+  {
+    "nct_id": "NCT00299650",
+    "element": "outcome",
+    "item": "end_event",
+    "a": null,
+    "b": "hospital discharge",
+    "decision": null,
+    "note": null,
+    "id": 4
+  },
+  {
+    "nct_id": "NCT00299650",
+    "element": "outcome",
+    "item": "end_rule",
+    "a": null,
+    "b": "first",
+    "decision": null,
+    "note": null,
+    "id": 5
+  },
+  {
+    "nct_id": "NCT00299650",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "ards etiology pneumonia sepsis",
+      "time from ards onset to time zero"
+    ],
+    "b": [
+      "tidal volume",
+      "sepsis"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 6
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "I2 concepts",
+    "a": [
+      "Intensive care unit admission"
+    ],
+    "b": [
+      "intensive care unit stay"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Hospitalized in intensive care unit",
+    "id": 7
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "I3 concepts",
+    "a": [
+      "Hypovolemia",
+      "Fluid resuscitation"
+    ],
+    "b": [
+      "hypotension",
+      "systolic blood pressure",
+      "serum lactate",
+      "blood urea nitrogen"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Need fluid resuscitation (according to the physician in charge of the patient)",
+    "id": 8
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "E3 concepts",
+    "a": [
+      "Hemophilia",
+      "Von Willebrand disease",
+      "Coagulation factor deficiency"
+    ],
+    "b": [
+      "hemophilia",
+      "von Willebrand disease",
+      "coagulation defect"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Coagulation disorders (haemophilia, Willebrand disease, etc.)",
+    "id": 9
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "E5 concepts",
+    "a": [
+      "Hepatic failure"
+    ],
+    "b": [
+      "hepatic failure",
+      "cirrhosis of liver"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Severe hepatic failure",
+    "id": 10
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "E6 concepts",
+    "a": [
+      "Burn injury",
+      "Total body surface area burned (%)"
+    ],
+    "b": [
+      "burn of more than 20% of body surface"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Burns > 20 % of body surface",
+    "id": 11
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "E8 concepts",
+    "a": [
+      "Anaphylactic shock",
+      "Dehydration",
+      "Fluid replacement during anaesthesia"
+    ],
+    "b": [
+      "anesthesia",
+      "anaphylactic shock",
+      "dehydration"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Volume replacement: As a part of anaesthesia, for anaphylactic shock, or for dehydration",
+    "id": 12
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "eligibility",
+    "item": "E10 concepts",
+    "a": [
+      "Do not resuscitate / limitation of life-sustaining treatment"
+    ],
+    "b": [
+      "do not resuscitate status",
+      "withdrawal of life-sustaining treatment"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Advance directive of withholding or withdrawal of life-sustaining treatments",
+    "id": 13
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "treatment",
+    "item": "arm '2' components",
+    "a": [
+      "Albumin human",
+      "Gelatin (succinylated / polygeline)",
+      "Hydroxyethyl starch",
+      "Dextran"
+    ],
+    "b": [
+      "colloid plasma substitute",
+      "albumin human",
+      "hydroxyethyl starch",
+      "gelatin",
+      "dextran"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 14
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First fluid-resuscitation bolus ordered for hypovolaemia during the ICU stay (randomization was within ~15 min of the decision to resuscitate).",
+    "b": "first need for fluid resuscitation for acute hypovolemia during the ICU stay (first resuscitation fluid bolus)",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 15
+  },
+  {
+    "nct_id": "NCT00318942",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "admission diagnosis stratum sepsis trauma haemorrhage other",
+      "fluids received before time zero"
+    ],
+    "b": [
+      "sepsis",
+      "multiple trauma",
+      "hypovolemic shock"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 16
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "I1 concepts",
+    "a": [
+      "Intensive care unit admission"
+    ],
+    "b": [
+      "intensive care unit stay"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "hospitalized in intensive care unit for less than 7 days",
+    "id": 17
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "I3 concepts",
+    "a": [
+      "Infection, documented site"
+    ],
+    "b": [
+      "infection",
+      "positive culture"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "at least one proven site of infection",
+    "id": 18
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "I4 concepts",
+    "a": [
+      "Number of organs with SOFA subscore >= 3"
+    ],
+    "b": [
+      "SOFA organ score"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "at least 2 organ dysfunction as defined by a SOFA score =or> to 3 for at least 6 consecutive hours",
+    "id": 19
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E1 concepts",
+    "a": [
+      "Pregnancy",
+      "Breastfeeding"
+    ],
+    "b": [
+      "pregnancy",
+      "lactation"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "pregnancy or breath feeding",
+    "id": 20
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E2 concepts",
+    "a": [
+      "Do not resuscitate / limitation of life-sustaining treatment"
+    ],
+    "b": [
+      "do not resuscitate status"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "decision not to resuscitate",
+    "id": 21
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E3 concepts",
+    "a": [
+      "Life expectancy < 1 month from underlying disease"
+    ],
+    "b": [
+      "terminal illness"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "underlying disease with an estimated life expectancy of less than 1 month",
+    "id": 22
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E7 concepts",
+    "a": [
+      "Cirrhosis of liver",
+      "Child-Pugh score"
+    ],
+    "b": [
+      "cirrhosis of liver, Child-Pugh class C"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "chronic liver disease (Child C)",
+    "id": 23
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E8 concepts",
+    "a": [
+      "Trauma"
+    ],
+    "b": [
+      "injury"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "recent trauma (ie within the past 72 hours)",
+    "id": 24
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E9 concepts",
+    "a": [
+      "Intracranial mass / neoplasm"
+    ],
+    "b": [
+      "intracranial lesion"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "intracranial process",
+    "id": 25
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E12 concepts",
+    "a": [
+      "Therapeutic-dose anticoagulant"
+    ],
+    "b": [
+      "therapeutic anticoagulation"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "formal indication for curative anticoagulant; prophylactic use of heparin is allowed",
+    "id": 26
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "eligibility",
+    "item": "E23 category",
+    "a": "clinical",
+    "b": "administrative",
+    "decision": null,
+    "note": null,
+    "text": "and a new exclusion criteria was added: \"patients who had a previous episode of sepsis during the same hospital stay",
+    "id": 27
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "treatment",
+    "item": "arm '2' grace period (hours)",
+    "a": null,
+    "b": 6.0,
+    "decision": null,
+    "note": null,
+    "id": 28
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "Time septic shock criteria are first all met (documented infection, >= 2 organ SOFA >= 3, vasopressor at threshold dose for >= 6 h), within 24 h of shock onset.",
+    "b": "septic shock criteria met (infection, vasopressor >= 0.25 ug/kg/min for >= 6 h, SOFA >= 3 in >= 2 organs for >= 6 h), within 24 hours of shock onset",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 29
+  },
+  {
+    "nct_id": "NCT00625209",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "ards",
+      "chronic comorbidity mccabe"
+    ],
+    "b": [
+      "community acquired infection"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 30
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "eligibility",
+    "item": "I3 category",
+    "a": "administrative",
+    "b": "clinical",
+    "decision": null,
+    "note": null,
+    "text": "The ICU clinician considers that both 6% hydroxyethyl starch (130/0.4) and saline are equally appropriate for the patient and that no specific indication or contraindication for either exists.",
+    "id": 31
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "eligibility",
+    "item": "I4 concepts",
+    "a": [
+      "Heart rate",
+      "Systolic blood pressure",
+      "Mean arterial pressure",
+      "Central venous pressure",
+      "Pulmonary artery wedge pressure",
+      "Respiratory variation in arterial pressure (mmHg)",
+      "Capillary refill time (s)",
+      "Urine output (mL/kg/h)"
+    ],
+    "b": [
+      "heart rate",
+      "systolic blood pressure",
+      "mean arterial pressure",
+      "central venous pressure",
+      "urine output",
+      "serum lactate"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "The requirement for fluid resuscitation must be supported by AT LEAST ONE of the following clinical signs: Heart rate > 90 beats per minute; Systolic blood pressure (SBP) < 100mmHg or mean arterial pressure (MAP) < 75mmHg or at least 40mmHg decrease in SBP or MAP from the baseline recording; Central venous pressure < 10mmHg; Pulmonary artery wedge pressure < 12 mmHg; Respiratory variation in systolic or mean arterial blood pressure of >5 mmHg; Capillary refill time > one second; Urine output < 0.5 ml/kg for one hour",
+    "id": 32
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "eligibility",
+    "item": "E2 concepts",
+    "a": [
+      "Non-traumatic intracranial hemorrhage",
+      "Traumatic intracranial hemorrhage, mass lesion > 25 mL"
+    ],
+    "b": [
+      "intracranial hemorrhage"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Primary non-traumatic intracranial haemorrhage or severe traumatic intracranial haemorrhage (mass lesion > 25 ml).",
+    "id": 33
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "eligibility",
+    "item": "E6 concepts",
+    "a": [
+      "Sex",
+      "Age",
+      "Age"
+    ],
+    "b": [
+      "pregnancy"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Women of child bearing age (18-49 years old), unless evidence of documented menopause, hysterectomy or surgical sterilisation or negative pregnancy test before randomisation",
+    "id": 34
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "eligibility",
+    "item": "E10 concepts",
+    "a": [
+      "Burn injury",
+      "Liver transplantation"
+    ],
+    "b": [
+      "burn",
+      "liver transplantation"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Patients admitted to the ICU for the treatment of burns or following liver transplantation surgery.",
+    "id": 35
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "eligibility",
+    "item": "E11 concepts",
+    "a": [
+      "Death imminent / life expectancy < 90 days"
+    ],
+    "b": [
+      "terminal illness"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Death is deemed imminent and inevitable or the patient has an underlying disease process with a life expectancy of < 90 days.",
+    "id": 36
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First fluid-resuscitation order in the study ICU during the current ICU admission (randomization occurred at the first resuscitation decision).",
+    "b": "first fluid resuscitation bolus in the ICU judged necessary by the clinician (first ICU resuscitation fluid order)",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 37
+  },
+  {
+    "nct_id": "NCT00935168",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "operative vs non operative admission",
+      "serum lactate"
+    ],
+    "b": [
+      "trauma",
+      "acute kidney injury",
+      "surgical admission"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 38
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "eligibility",
+    "item": "I2 concepts",
+    "a": [
+      "Infection, documented or suspected",
+      "SIRS criteria met (count of temperature, HR, WBC, RR/PaCO2/MV)"
+    ],
+    "b": [
+      "infection",
+      "body temperature",
+      "body temperature",
+      "heart rate",
+      "white blood cell count",
+      "respiratory rate"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Documented site of infection, or strong suspicion of infection, with 2 of the 4 clinical signs of inflammation: Core temperature > 38°C or < 35°C; Heart rate > 90 beats per minute; White cell count > 12 x 109/L or < 4 x 109/L or > 10% immature neutrophils; Respiratory rate > 20 breaths per minute, or PaCO2 < 32 mmHg, or mechanical ventilation.",
+    "id": 39
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "eligibility",
+    "item": "I4 concepts",
+    "a": [
+      "Norepinephrine",
+      "Epinephrine",
+      "Vasopressin",
+      "Dopamine",
+      "Phenylephrine",
+      "Dobutamine"
+    ],
+    "b": [
+      "norepinephrine",
+      "epinephrine",
+      "vasopressin",
+      "dopamine",
+      "phenylephrine",
+      "dobutamine",
+      "milrinone"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Being treated with vasopressors or inotropes to maintain a systolic blood pressure > 90mmHg, or mean arterial blood pressure > 60mmHg, or a MAP target set by the treating clinician for maintaining perfusion",
+    "id": 40
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "eligibility",
+    "item": "I5 concepts",
+    "a": [
+      "Vasopressor/inotrope continuous infusion duration (h)"
+    ],
+    "b": [
+      "vasopressor"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Administration of vasopressors or inotropes for = 4 hours and present at time of randomisation.",
+    "id": 41
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "eligibility",
+    "item": "E1 concepts",
+    "a": [
+      "Time since all inclusion criteria met (h)"
+    ],
+    "b": [
+      "septic shock"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Met all inclusion criteria more than 24 hours ago",
+    "id": 42
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "eligibility",
+    "item": "E8 concepts",
+    "a": [
+      "Life expectancy < 90 days from underlying disease"
+    ],
+    "b": [
+      "terminal illness"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Death from underlying disease is likely within 90 days",
+    "id": 43
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "treatment",
+    "item": "arm 'Hydrocortisone' grace period (hours)",
+    "a": null,
+    "b": 6.0,
+    "decision": null,
+    "note": null,
+    "id": 44
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First time all inclusion criteria are met: suspected/documented infection with >= 2 SIRS signs, on mechanical ventilation, and on vasopressor/inotrope for >= 4 h; randomization within 24 h of that.",
+    "b": "septic shock while mechanically ventilated: infection with >= 2 SIRS criteria and vasopressors or inotropes for >= 4 hours, within 24 hours of all criteria being met",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 45
+  },
+  {
+    "nct_id": "NCT01448109",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "operative vs non operative admission",
+      "catecholamine dose vs 15 ug min",
+      "sofa score"
+    ],
+    "b": [
+      "surgical admission",
+      "time from shock onset",
+      "norepinephrine dose"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 46
+  },
+  {
+    "nct_id": "NCT01636089",
+    "element": "eligibility",
+    "item": "I2 concepts",
+    "a": [
+      "Intensive care unit admission"
+    ],
+    "b": [
+      "intensive care unit stay"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "in intensive care unit since 24h and for up to 48 hours",
+    "id": 47
+  },
+  {
+    "nct_id": "NCT01636089",
+    "element": "eligibility",
+    "item": "I3 concepts",
+    "a": [
+      "Iodinated contrast media, intravascular"
+    ],
+    "b": [
+      "contrast media",
+      "computed tomography with contrast"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "with contrast medium injection",
+    "id": 48
+  },
+  {
+    "nct_id": "NCT01636089",
+    "element": "eligibility",
+    "item": "E2 concepts",
+    "a": [
+      "Serum creatinine rise (umol/L)"
+    ],
+    "b": [
+      "serum creatinine increase"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "rise in creatinine > 26µmol/L within 48hours",
+    "id": 49
+  },
+  {
+    "nct_id": "NCT01636089",
+    "element": "treatment",
+    "item": "arm 'bicarbonates' grace period (hours)",
+    "a": null,
+    "b": 1.0,
+    "decision": null,
+    "note": null,
+    "id": 50
+  },
+  {
+    "nct_id": "NCT01636089",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "Intravascular iodinated contrast administration in an ICU patient; study hydration starts 1 h before contrast (3 mL/kg) and runs 6 h after (1 mL/kg/h).",
+    "b": "intravascular contrast medium administration for imaging in an ICU patient who has been in the ICU for at least 24 hours",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 51
+  },
+  {
+    "nct_id": "NCT01636089",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "nephrotoxic drugs aminoglycosides vancomycin"
+    ],
+    "b": [
+      "sofa score",
+      "chronic kidney disease"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 52
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "eligibility",
+    "item": "I3 concepts",
+    "a": [
+      "Arterial pH",
+      "PaCO2 (mmHg)",
+      "Serum bicarbonate (mmol/L)",
+      "Serum lactate (mmol/L)"
+    ],
+    "b": [
+      "serum lactate",
+      "arterial pH",
+      "arterial PaCO2",
+      "serum bicarbonate"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Lactatemia of 2mmol/l or above, with pH of 7.20 or below and PaCO2 of 45mmHg or below and bicarbonatemia of 20mmol/l or below",
+    "id": 53
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "eligibility",
+    "item": "E2 concepts",
+    "a": [
+      "PaCO2 (mmHg)"
+    ],
+    "b": [
+      "respiratory acidosis",
+      "arterial PaCO2"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Single respiratory disorder (PaCO2 > 50 mmHg, Bicarbonatemia equal or higher than (PaCO2-40)/10 + 24",
+    "id": 54
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "eligibility",
+    "item": "E3 concepts",
+    "a": [
+      "Acute diarrhea",
+      "Ileostomy",
+      "Biliary drainage"
+    ],
+    "b": [
+      "diarrhea",
+      "ileostomy",
+      "biliary drainage"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Acute diarrhea, ileostomy or biliary drainage",
+    "id": 55
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "eligibility",
+    "item": "E4 concepts",
+    "a": [
+      "Chronic kidney disease stage 4",
+      "Chronic maintenance dialysis"
+    ],
+    "b": [
+      "chronic kidney disease stage 4",
+      "chronic kidney disease stage 5",
+      "chronic dialysis"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Stage IV kidney failure or chronic dialysis",
+    "id": 56
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "eligibility",
+    "item": "E5 concepts",
+    "a": [
+      "Renal tubular acidosis",
+      "Ketoacidosis",
+      "Poisoning by high anion gap acid (polyethylene glycol, salicylate, methanol)"
+    ],
+    "b": [
+      "renal tubular acidosis",
+      "ketoacidosis",
+      "poisoning by salicylate",
+      "poisoning by methanol",
+      "poisoning by ethylene glycol"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Tubular acidosis, ketoacidosis, high anion gap acids poisoning (PEG, aspirin, methanol)",
+    "id": 57
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "eligibility",
+    "item": "E6 concepts",
+    "a": [
+      "PaCO2 (mmHg) with spontaneous breathing",
+      "Pregnancy",
+      "Life expectancy <= 48 h (moribund)"
+    ],
+    "b": [
+      "arterial PaCO2",
+      "pregnancy",
+      "terminal illness"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "PaCO2 equal to 45mmHg or above and spontaneous breathing, pregnancy, protected patients, moribund patient (life expectancy of 48h or below)",
+    "id": 58
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "treatment",
+    "item": "arm 'Intervention' grace period (hours)",
+    "a": null,
+    "b": 24.0,
+    "decision": null,
+    "note": null,
+    "id": 59
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First arterial blood gas meeting severe metabolic acidaemia (pH <= 7.20, PaCO2 <= 45 mmHg, HCO3 <= 20 mmol/L) within 48 h of ICU admission.",
+    "b": "severe metabolic acidaemia (pH <= 7.20, PaCO2 <= 45 mm Hg, bicarbonate <= 20 mmol/L) within 48 hours of ICU admission",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 60
+  },
+  {
+    "nct_id": "NCT02476253",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "sepsis at inclusion"
+    ],
+    "b": [
+      "sepsis",
+      "acute kidney injury",
+      "serum bicarbonate"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 61
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "I3 concepts",
+    "a": [
+      "Intensive care unit admission",
+      "Intermediate care unit admission"
+    ],
+    "b": [
+      "intensive care unit stay"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Admission to an Intensive Care Unit (ICU) or intermediate care unit participating to the trial",
+    "id": 62
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "I7 category",
+    "a": "administrative",
+    "b": "clinical",
+    "decision": null,
+    "note": null,
+    "text": "Study drug infusion initiated no longer than 24 hours post first severity criterion",
+    "id": 63
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "I8 concepts",
+    "a": [
+      "Pneumonia Severity Index",
+      "PEEP on invasive or non-invasive ventilation (cmH2O)",
+      "PaO2/FiO2 on high-flow oxygen with FiO2 >= 0.5",
+      "PaO2 on reservoir-bag mask (flow-dependent threshold, mmHg)"
+    ],
+    "b": [
+      "invasive mechanical ventilation",
+      "noninvasive ventilation",
+      "high-flow nasal oxygen",
+      "Pneumonia Severity Index"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Severity defined by at least one of the following: Pneumonia Severity Index (PSI) > 130 (Fine class V); Patient placed on mechanical ventilation (invasive or not) for acute respiratory failure, with a PEEP level of 5 cm of water or more; Patient treated by high-flow oxygen therapy with a FiO2 of 50% or more and a P/F ratio less than 300; Patient treated by oxygen therapy with a partial rebreathing-mask with a reservoir bag, provided that the PaO2 is less than (cf. table):",
+    "id": 64
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "I9 category",
+    "a": "administrative",
+    "b": "clinical",
+    "decision": null,
+    "note": null,
+    "text": "Oxygen flow (L/min) 6 7 8 9 10 or more PaO2 (mmHg) less than 180 210 240 270 300",
+    "id": 65
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "I13 category",
+    "a": "administrative",
+    "b": "clinical",
+    "decision": null,
+    "note": null,
+    "text": "Diagnosis of COVID19 either as certain (PCR) or probable (evocative clinical and radiological features AND epidemic context AND absence of other microbiological documentation).",
+    "id": 66
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "E1 concepts",
+    "a": [
+      "Septic shock",
+      "Norepinephrine",
+      "Epinephrine",
+      "Vasopressin",
+      "Dopamine",
+      "Phenylephrine"
+    ],
+    "b": [
+      "vasopressor"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Patient treated by vasopressors for septic shock at the time of inclusion",
+    "id": 67
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "E7 concepts",
+    "a": [
+      "Influenza, PCR-confirmed"
+    ],
+    "b": [
+      "influenza"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Patients in which rapid PCR-test is positive for flu",
+    "id": 68
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "E8 concepts",
+    "a": [
+      "Active tuberculosis",
+      "Fungal infection"
+    ],
+    "b": [
+      "tuberculosis",
+      "mycosis"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Active tuberculosis or fungal infection",
+    "id": 69
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "E10 concepts",
+    "a": [
+      "Bone marrow suppression"
+    ],
+    "b": [
+      "bone marrow suppression",
+      "neutropenia"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Myelosuppression",
+    "id": 70
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "E11 concepts",
+    "a": [
+      "Decision to withhold intubation / mechanical ventilation"
+    ],
+    "b": [
+      "do not intubate status"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Decision of withholding mechanical ventilation or endotracheal intubation",
+    "id": 71
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "eligibility",
+    "item": "E14 concepts",
+    "a": [
+      "Prednisone-equivalent dose (mg/day)"
+    ],
+    "b": [
+      "prednisone"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Patients under treatment by more than 15 mg/d of prednisone (or equivalent) for more than 30 days",
+    "id": 72
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First time a severity criterion (I8) is met in a patient hospitalised with community-acquired pneumonia.",
+    "b": "first severity criterion of community-acquired pneumonia in the ICU (mechanical ventilation with PEEP >= 5, high-flow oxygen with FiO2 >= 50% and PaO2/FiO2 < 300, or PSI > 130)",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 73
+  },
+  {
+    "nct_id": "NCT02517489",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "pneumonia severity index",
+      "mechanical ventilation at baseline",
+      "c reactive protein",
+      "time from severity criterion to treatment"
+    ],
+    "b": [
+      "saps ii",
+      "psi score",
+      "invasive mechanical ventilation",
+      "noninvasive ventilation",
+      "high flow nasal oxygen",
+      "chronic obstructive lung disease"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 74
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "eligibility",
+    "item": "I2 concepts",
+    "a": [
+      "Intensive care unit admission"
+    ],
+    "b": [
+      "intensive care unit stay"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Admission to an intensive care unit (ICU)",
+    "id": 75
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "eligibility",
+    "item": "I4 concepts",
+    "a": [
+      "Serum creatinine / baseline ratio",
+      "Serum creatinine (umol/L)",
+      "Urine output over preceding 12 h (mL/kg)"
+    ],
+    "b": [
+      "acute kidney injury KDIGO stage 2",
+      "acute kidney injury KDIGO stage 3",
+      "serum creatinine",
+      "urine output"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Evidence of severe AKI defined by at least 1 of the following 3 criteria: ≥ 2-fold increase in serum creatinine from a known pre-morbid baseline or during the current hospitalization; OR ii) Achievement of a serum creatinine ≥ 354 µmol/L with evidence of a minimum increase of 27 µmol/L from pre-morbid baseline or during the current hospitalization; OR iii) Urine output < 6.0 mL/kg over the preceding 12 hours",
+    "id": 76
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "eligibility",
+    "item": "E3 concepts",
+    "a": [
+      "Drug overdose requiring dialysis"
+    ],
+    "b": [
+      "poisoning"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Presence of a drug overdose that necessitates initiation of RRT",
+    "id": 77
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "eligibility",
+    "item": "E7 concepts",
+    "a": [
+      "eGFR before hospitalisation (mL/min/1.73m2)"
+    ],
+    "b": [
+      "chronic kidney disease stage 4",
+      "chronic kidney disease stage 5",
+      "estimated glomerular filtration rate"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Known pre-hospitalization advanced chronic kidney disease, defined by an estimated glomerular filtration rate < 20 mL/min/1.73 m2",
+    "id": 78
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "eligibility",
+    "item": "E8 concepts",
+    "a": [
+      "Urinary tract obstruction",
+      "Rapidly progressive glomerulonephritis",
+      "Vasculitis",
+      "Thrombotic microangiopathy",
+      "Acute interstitial nephritis"
+    ],
+    "b": [
+      "obstructive uropathy",
+      "rapidly progressive glomerulonephritis",
+      "vasculitis",
+      "thrombotic microangiopathy",
+      "acute interstitial nephritis"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Presence or clinical suspicion of renal obstruction, rapidly progressive glomerulonephritis, vasculitis, thrombotic microangiopathy or acute interstitial nephritis",
+    "id": 79
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "treatment",
+    "item": "arm 'Accelerated RRT initiation' components",
+    "a": [
+      "Renal replacement therapy",
+      "Dialysis catheter insertion"
+    ],
+    "b": [
+      "renal replacement therapy"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 80
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First time all eligibility criteria are met (ICU, creatinine threshold, severe AKI criterion) with no urgent RRT indication.",
+    "b": "full eligibility for severe AKI (KDIGO stage 2-3 with creatinine >= 100/130 umol/L, no emergency indication for RRT) in an ICU patient",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 81
+  },
+  {
+    "nct_id": "NCT02568722",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "apache ii"
+    ],
+    "b": [
+      "saps ii",
+      "chronic kidney disease",
+      "fluid balance"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 82
+  },
+  {
+    "nct_id": "NCT02643381",
+    "element": "treatment",
+    "item": "arm 'Ketamine' grace period (hours)",
+    "a": null,
+    "b": 1.0,
+    "decision": null,
+    "note": null,
+    "id": 83
+  },
+  {
+    "nct_id": "NCT02643381",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "Emergency endotracheal intubation (induction drug administration).",
+    "b": "emergency endotracheal intubation (induction of anesthesia) in an adult hospital patient",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 84
+  },
+  {
+    "nct_id": "NCT02643381",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "indication respiratory failure airway protection",
+      "pre induction systolic blood pressure",
+      "illness severity score",
+      "neuromuscular blocker used"
+    ],
+    "b": [
+      "sofa score",
+      "trauma",
+      "hypotension",
+      "admission diagnosis",
+      "neuromuscular blocking agent"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 85
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "eligibility",
+    "item": "I3 concepts",
+    "a": [
+      "Systolic blood pressure < 90 mmHg for > 30 min",
+      "Norepinephrine",
+      "Epinephrine",
+      "Vasopressin",
+      "Dopamine",
+      "Phenylephrine"
+    ],
+    "b": [
+      "systolic blood pressure",
+      "norepinephrine",
+      "epinephrine",
+      "dopamine",
+      "dobutamine"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Systolic blood pressure <90 mmHg >30 min or catecholamines required to maintain pressure >90 mmHg during Systole",
+    "id": 86
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "eligibility",
+    "item": "E2 concepts",
+    "a": [
+      "Ventricular septal rupture",
+      "Papillary muscle rupture",
+      "Left ventricular free wall rupture"
+    ],
+    "b": [
+      "ventricular septal rupture",
+      "papillary muscle rupture",
+      "rupture of cardiac free wall"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Mechanical cause of cardiogenic shock",
+    "id": 87
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "eligibility",
+    "item": "E4 concepts",
+    "a": [
+      "Severe peripheral artery disease"
+    ],
+    "b": [
+      "peripheral arterial disease"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Severe peripheral artery disease with impossibility to insert ECLS cannulae",
+    "id": 88
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "eligibility",
+    "item": "E7 concepts",
+    "a": [
+      "Life expectancy < 6 months from other disease"
+    ],
+    "b": [
+      "terminal illness"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Other severe concomitant disease with limited life expectancy <6 months",
+    "id": 89
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "treatment",
+    "item": "arm 'ECLS' components",
+    "a": [
+      "Extracorporeal life support (VA-ECMO)"
+    ],
+    "b": [
+      "extracorporeal membrane oxygenation"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 90
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "treatment",
+    "item": "arm 'ECLS' grace period (hours)",
+    "a": null,
+    "b": 6.0,
+    "decision": null,
+    "note": null,
+    "id": 91
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "Diagnostic coronary angiography in AMI with cardiogenic shock, before revascularization.",
+    "b": "coronary angiography in acute myocardial infarction with cardiogenic shock (SBP < 90 mm Hg > 30 min or catecholamines, lactate > 3 mmol/L, hypoperfusion) with planned revascularization",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 92
+  },
+  {
+    "nct_id": "NCT03637205",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "stemi vs nstemi",
+      "resuscitation before time zero",
+      "arterial lactate",
+      "systolic blood pressure",
+      "catecholamine use",
+      "multivessel coronary disease"
+    ],
+    "b": [
+      "serum lactate",
+      "arterial ph",
+      "cardiac arrest",
+      "st elevation myocardial infarction",
+      "scai shock stage",
+      "serum creatinine",
+      "number of diseased coronary vessels",
+      "vasopressor use"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 93
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "eligibility",
+    "item": "I1 concepts",
+    "a": [
+      "Intensive care unit admission",
+      "Infection, proven or suspected"
+    ],
+    "b": [
+      "intensive care unit stay",
+      "infection",
+      "sepsis"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Admitted to the intensive care unit with proven or suspected infection as the main diagnosis;",
+    "id": 94
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "eligibility",
+    "item": "E1 concepts",
+    "a": [
+      "Time since ICU admission (h)"
+    ],
+    "b": [
+      "intensive care unit stay"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "> 24 hours of intensive care unit admission;",
+    "id": 95
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "eligibility",
+    "item": "E4 concepts",
+    "a": [
+      "Allergy to vitamin C"
+    ],
+    "b": [
+      "allergy to ascorbic acid"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Known allergy to vitamin C;",
+    "id": 96
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "eligibility",
+    "item": "E7 concepts",
+    "a": [
+      "Expected death / withdrawal of life support within 48 h"
+    ],
+    "b": [
+      "limitation of treatment"
+    ],
+    "decision": null,
+    "note": null,
+    "text": "Expected death or withdrawal of life-sustaining treatments within 48 hours;",
+    "id": 97
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "treatment",
+    "item": "arm 'Vitamin C' grace period (hours)",
+    "a": null,
+    "b": 6.0,
+    "decision": null,
+    "note": null,
+    "id": 98
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "time_zero",
+    "item": "anchor event",
+    "a": "First time an ICU patient with proven/suspected infection is on a continuous vasopressor infusion, within 24 h of ICU admission.",
+    "b": "vasopressor infusion for proven or suspected infection within the first 24 hours of ICU admission",
+    "decision": null,
+    "note": null,
+    "rating": null,
+    "rating_scale": "same | acceptable alternative | different",
+    "id": 99
+  },
+  {
+    "nct_id": "NCT03680274",
+    "element": "confounders",
+    "item": "only one annotator listed",
+    "a": [
+      "vasopressor dose",
+      "charlson comorbidity index"
+    ],
+    "b": [
+      "norepinephrine dose",
+      "hydrocortisone",
+      "thiamine"
+    ],
+    "decision": null,
+    "note": null,
+    "id": 100
+  }
+]

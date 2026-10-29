@@ -32,3 +32,6 @@ data/
 
 # Jupyter autosave folders (OnDemand)
 .ipynb_checkpoints/
+
+# Trial papers (copyrighted; used for the E3 references, never committed)
+papers/

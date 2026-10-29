@@ -1,0 +1,363 @@
+{
+  "protocol_id": "NCT01636089-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT01636089",
+    "title": "Bicarbonates Versus Saline for Contrast Induced Acute Kidney Injury Prevention in Intensive Care Unit",
+    "record_sha256": "3a8231cf20b917c69c980d6c705c86e55521518545009c73ee489796568bbe40"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "patient > 18 years old",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 18
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "in intensive care unit since 24h and for up to 48 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Intensive care unit admission",
+              "domain": "Visit"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: registry text 'in ICU since 24h and for up to 48 hours' is ambiguous (ICU stay >= 24 h? expected to stay 48 h?). Check the paper's Methods and add a duration atom."
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "with contrast medium injection",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Iodinated contrast media, intravascular",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "This is the time-zero event."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "patient under renal replacement therapy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Renal replacement therapy",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "rise in creatinine > 26µmol/L within 48hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Serum creatinine rise (umol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 26
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 48,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Paper enrolled patients with stable renal function."
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "anuria within 12 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Anuria",
+              "domain": "Condition"
+            }
+          ],
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 12,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "cardiogenic pulmonary oedema",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Cardiogenic pulmonary edema",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "pH > 7.50 or kaliemia < 3mmol/L",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Arterial pH",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 7.5
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Serum potassium (mmol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 3
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "pregnancy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Pregnancy",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "bicarbonates",
+      "arm_type": "EXPERIMENTAL",
+      "description": "sodium bicarbonates 1,4%",
+      "components": [
+        {
+          "concept": {
+            "name": "Sodium bicarbonate 1.4%",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "saline",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "sodium chloride 0,9%",
+      "components": [
+        {
+          "concept": {
+            "name": "Sodium chloride 0.9%",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Baseline serum creatinine / eGFR",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Diabetes mellitus",
+        "domain": "Condition"
+      },
+      {
+        "name": "Contrast volume and type",
+        "domain": "Drug"
+      },
+      {
+        "name": "Sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "Vasopressor use",
+        "domain": "Drug"
+      },
+      {
+        "name": "Mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Nephrotoxic drugs (aminoglycosides, vancomycin)",
+        "domain": "Drug"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "Intravascular iodinated contrast administration in an ICU patient; study hydration starts 1 h before contrast (3 mL/kg) and runs 6 h after (1 mL/kg/h).",
+    "offset": null,
+    "rationale": "Randomization happened just before contrast exposure and the outcome window (72 h) is defined from contrast exposure, so contrast administration is the EHR anchor.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 72,
+      "unit": "hour"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "contrast induced acute kidney injury",
+      "primary": true,
+      "time_frame": "72 hours",
+      "concept": {
+        "name": "Contrast-associated acute kidney injury (AKIN criteria)",
+        "domain": "Condition"
+      },
+      "horizon": {
+        "amount": 72,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] All 307 randomized patients analysed by group; primary result reported as an absolute risk difference of -1.8% (Valette et al., Crit Care Med 2017).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "bicarbonates",
+        "interventions": [
+          "bicarbonates: sodium bicarbonates 1,4%"
+        ]
+      },
+      {
+        "label": "saline",
+        "interventions": [
+          "saline: sodium chloride 0,9%"
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=72.0 unit='hour'",
+      null,
+      null
+    ],
+    "detailed_description": null
+  },
+  "_reference_notes": [
+    "Defined by AKIN criteria 72 h after contrast (paper)."
+  ]
+}

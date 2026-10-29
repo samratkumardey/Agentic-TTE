@@ -575,3 +575,19 @@ These are named now, and each is fully specified in this changelog before it run
         Replicate 2 checks determinism only.
       - **E3 templates** (`eval/make_reference_templates.py` → `eval/reference_protocols/templates/`): protocol skeletons in our schema, built from the registry record only.
       - **Blinding:** the investigator writes each reference from the trial paper before opening that trial's draft. The README states this, and the references record who wrote them. A reference must pass `--check` (valid and complete) before E3 or the attribution analysis uses it.
+  24. **Second annotation of the E3 references** (2026-10-29, before any model draft or MIMIC estimate is seen, and before the second annotator reads the investigator's references).
+      - **Why:** clinician time does not scale; a second, independent annotation makes the reference's reliability measurable instead of assumed.
+      - **Annotators:**
+        - investigator (SKD): `eval/reference_protocols/<NCT>.SKD.json`, written from the trial paper (item 23);
+        - LLM second annotator (Claude Opus 5.5, the coding assistant that built the pipeline): `<NCT>.AI.json`, written from the same papers (`papers/`, git-ignored) and the same templates, without reading the investigator's references or any model draft.
+      - **Limitation, stated in the paper:** the second annotator is not independent of the pipeline's design and may share its conventions, so agreement can be inflated. It is reported as an LLM annotation, never as a clinician's.
+      - **Agreement:** element by element (the 7 TTE elements, as in Phase 0 part C, plus criterion atoms as in part B), reported before adjudication.
+      - **Adjudication:** the investigator resolves each disagreement first; the clinician reviews the disputed items plus the random 20% audit of item 11b. The adjudicated protocol is the E3 reference.
+      - **Reported as:** *investigator-written reference protocols with an independent LLM second annotation; disagreements adjudicated, with clinician audit*. Never as clinician gold.
+  25. **Reference comparison measures** (2026-10-29, `eval/compare_references.py`, `eval/results/e3_reference_agreement.md`).
+      - **Pre-registered** (Phase 0 parts B and C): strict and relaxed concept F1, category agreement and κ, arms, comparator, horizon, end event, contrast and estimand. Time zero is rated by hand at adjudication.
+      - **Added after the first run, and reported as such:**
+        - *strict as compiled*: no time constraint counts as "at time zero" and units are ignored, because the compiler reads them that way. The first run's strict F1 (2%) mostly counted that notation difference (one annotator left "at time zero" implicit, the other wrote it).
+        - *lenient names*: one-to-one matching of concept names that differ only in wording.
+        - A 0-hour grace period equals none, as the Statistician reads it.
+      - Every disagreement, under any measure, is listed for adjudication; none is dropped.

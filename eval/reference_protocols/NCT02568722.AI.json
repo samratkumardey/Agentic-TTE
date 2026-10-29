@@ -1,0 +1,587 @@
+{
+  "protocol_id": "NCT02568722-reference-ai",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT02568722",
+    "title": "STandard Versus Accelerated Initiation of Renal Replacement Therapy in Acute Kidney Injury (STARRT-AKI): A Multi-Centre, Randomized, Controlled Trial (Principal Trial)",
+    "record_sha256": "0804975d56b5e4dea35eb508a2855cecbcf1fc11c399e9c3a1adb14c3eef4be2"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Age ≥ 18 years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 18,
+            "unit": "year"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Admission to an intensive care unit (ICU)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intensive care unit stay",
+              "domain": "Visit"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Evidence of kidney dysfunction [serum creatinine ≥100 µmol/L (women) and ≥ 130 µmol/L (men)]",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "serum creatinine",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 100,
+            "unit": "umol/L",
+            "text": ">= 100 umol/L (women), >= 130 umol/L (men)"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Sex-specific threshold; the schema holds one value."
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Evidence of severe AKI defined by at least 1 of the following 3 criteria: ≥ 2-fold increase in serum creatinine from a known pre-morbid baseline or during the current hospitalization; OR ii) Achievement of a serum creatinine ≥ 354 µmol/L with evidence of a minimum increase of 27 µmol/L from pre-morbid baseline or during the current hospitalization; OR iii) Urine output < 6.0 mL/kg over the preceding 12 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "acute kidney injury KDIGO stage 2",
+              "domain": "Condition"
+            },
+            {
+              "name": "acute kidney injury KDIGO stage 3",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "serum creatinine",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 354,
+            "unit": "umol/L"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "urine output",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "<",
+            "value": 6,
+            "unit": "ml/kg",
+            "text": "< 6 ml/kg over the preceding 12 hours"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 12,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": "Any of the three KDIGO routes (any). Pre-hospital baseline creatinine is often missing in EHR data."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Serum potassium > 5.5 mmol/L",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "serum potassium",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">",
+            "value": 5.5,
+            "unit": "mmol/L"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Serum bicarbonate < 15 mmol/L",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "serum bicarbonate",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "<",
+            "value": 15,
+            "unit": "mmol/L"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Presence of a drug overdose that necessitates initiation of RRT",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "poisoning",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Lack of commitment to ongoing life support (including RRT)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "limitation of treatment",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Any RRT within the previous 2 months (either acute or chronic RRT)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "renal replacement therapy",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 2,
+              "unit": "month"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Kidney transplant within the past 365 days",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "kidney transplantation",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 365,
+              "unit": "day"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Known pre-hospitalization advanced chronic kidney disease, defined by an estimated glomerular filtration rate < 20 mL/min/1.73 m2",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "chronic kidney disease stage 4",
+              "domain": "Condition"
+            },
+            {
+              "name": "chronic kidney disease stage 5",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "estimated glomerular filtration rate",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "<",
+            "value": 20,
+            "unit": "ml/min/1.73m2"
+          },
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": "CKD stage or eGFR < 20 (any)."
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Presence or clinical suspicion of renal obstruction, rapidly progressive glomerulonephritis, vasculitis, thrombotic microangiopathy or acute interstitial nephritis",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "obstructive uropathy",
+              "domain": "Condition"
+            },
+            {
+              "name": "rapidly progressive glomerulonephritis",
+              "domain": "Condition"
+            },
+            {
+              "name": "vasculitis",
+              "domain": "Condition"
+            },
+            {
+              "name": "thrombotic microangiopathy",
+              "domain": "Condition"
+            },
+            {
+              "name": "acute interstitial nephritis",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Clinician(s) caring for patient believe(s) that immediate RRT is mandated",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "clinician judgement that immediate RRT is mandated",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Clinician equipoise item; not codable."
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "Clinician(s) caring for patient believe(s) that deferral of RRT initiation is mandated; at their discretion, clinicians may administer a bolus of intravenous furosemide (ie, \"furosemide stress test\") and evaluate the subsequent urine output to help guide decision making regarding the likelihood of AKI progression",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "clinician judgement that RRT deferral is mandated",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Clinician equipoise item; not codable."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Standard RRT initiation",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "RRT initiation will be guided by the presence of one or more clinical indications. Even in the absence of one of these indications, RRT may be commenced at the discretion of the treating physician.",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Accelerated RRT initiation",
+      "arm_type": "EXPERIMENTAL",
+      "description": "A dialysis catheter will be placed and RRT initiated as soon as possible and within 12 hours of the patient meeting the eligibility criteria.",
+      "components": [
+        {
+          "concept": {
+            "name": "renal replacement therapy",
+            "domain": "Procedure"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 12,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Accelerated group: RRT started as soon as possible and within 12 hours after full eligibility."
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "serum creatinine",
+        "domain": "Measurement"
+      },
+      {
+        "name": "baseline eGFR",
+        "domain": "Measurement"
+      },
+      {
+        "name": "chronic kidney disease",
+        "domain": "Condition"
+      },
+      {
+        "name": "urine output",
+        "domain": "Measurement"
+      },
+      {
+        "name": "serum potassium",
+        "domain": "Measurement"
+      },
+      {
+        "name": "serum bicarbonate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "vasopressor use",
+        "domain": "Drug"
+      },
+      {
+        "name": "invasive mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "surgical admission",
+        "domain": "Visit"
+      },
+      {
+        "name": "fluid balance",
+        "domain": "Measurement"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "full eligibility for severe AKI (KDIGO stage 2-3 with creatinine >= 100/130 umol/L, no emergency indication for RRT) in an ICU patient",
+    "offset": null,
+    "rationale": "Randomization and accelerated RRT followed full eligibility within a 12 h window; the standard arm is 'no RRT unless a conventional indication develops' (a dynamic strategy).",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 90,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss to follow-up"
+    ],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "All-cause Mortality.",
+      "primary": true,
+      "time_frame": "90 days following study randomization.",
+      "concept": null,
+      "horizon": {
+        "amount": 90,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "2927 (97.0%) were included in the modified intention-to-treat analysis",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "claude-opus-5-5 (LLM second annotator, SCORING.md item 24)",
+    "notes": "Written from the trial's primary paper (papers/, not in git) and the registry template, without reading the investigator's reference or any model draft."
+  }
+}

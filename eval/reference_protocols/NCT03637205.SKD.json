@@ -1,0 +1,514 @@
+{
+  "protocol_id": "NCT03637205-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT03637205",
+    "title": "Prospective Randomized Multicenter Study Comparing Extracorporeal Life Support Plus Optimal Medical Care Versus Optimal Medical Care Alone in Patients With Acute Myocardial Infarction Complicated by Cardiogenic Shock Undergoing Revascularization",
+    "record_sha256": "13bc6923ebec8c0b57a871f882051df80f5b1838b57d5c4afd64e0ae15aa9b48"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Cardiogenic shock complicating AMI (STEMI or NSTEMI) plus obligatory:",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Acute myocardial infarction (STEMI or NSTEMI)",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Cardiogenic shock",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Planned revascularization (PCI or alternatively CABG)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Percutaneous coronary intervention",
+              "domain": "Procedure"
+            },
+            {
+              "name": "Coronary artery bypass graft",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "'Planned' revascularization; in EHR, revascularization on or shortly after time zero."
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Systolic blood pressure <90 mmHg >30 min or catecholamines required to maintain pressure >90 mmHg during Systole",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Systolic blood pressure < 90 mmHg for > 30 min",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 90
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Norepinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Epinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Vasopressin",
+              "domain": "Drug"
+            },
+            {
+              "name": "Dopamine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Phenylephrine",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Signs of impaired organ perfusion with at least one of the following criteria a) Altered mental Status, b) Cold, clammy skin and extremities, c) Oliguria with urine output <30 ml/h",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Altered mental status",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Cold, clammy skin and extremities",
+              "domain": "Observation"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Urine output (mL/h)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 30
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "Arterial lactate >3 mmol/l",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Arterial lactate (mmol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 3
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I6",
+      "kind": "inclusion",
+      "text": "Informed consent",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Consent."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Resuscitation >45 minutes",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Cardiopulmonary resuscitation duration (min)",
+              "domain": "Procedure"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 45
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Mechanical cause of cardiogenic shock",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Ventricular septal rupture",
+              "domain": "Condition"
+            },
+            {
+              "name": "Papillary muscle rupture",
+              "domain": "Condition"
+            },
+            {
+              "name": "Left ventricular free wall rupture",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Onset of shock >12 h",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Time since cardiogenic shock onset (h)",
+              "domain": "Observation"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 12
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Severe peripheral artery disease with impossibility to insert ECLS cannulae",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Severe peripheral artery disease",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Precluding cannulation."
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Age <18 years or age >75 years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 18
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 75
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Shock of other cause (bradycardia, sepsis, hypovolemia, etc.)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Septic shock",
+              "domain": "Condition"
+            },
+            {
+              "name": "Hypovolemic shock",
+              "domain": "Condition"
+            },
+            {
+              "name": "Bradycardia",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Other severe concomitant disease with limited life expectancy <6 months",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Life expectancy < 6 months from other disease",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Pregnancy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Pregnancy",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Participation in another trial",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Participation in another trial."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "ECLS",
+      "arm_type": "EXPERIMENTAL",
+      "description": "PCI (or CABG) plus medical treatment + ECLS",
+      "components": [
+        {
+          "concept": {
+            "name": "Extracorporeal life support (VA-ECMO)",
+            "domain": "Procedure"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "No ECLS",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "PCI (or CABG) plus medical treatment",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "STEMI vs NSTEMI",
+        "domain": "Condition"
+      },
+      {
+        "name": "Resuscitation before time zero",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Arterial lactate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Systolic blood pressure",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Catecholamine use",
+        "domain": "Drug"
+      },
+      {
+        "name": "Left ventricular ejection fraction",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Multivessel coronary disease",
+        "domain": "Condition"
+      },
+      {
+        "name": "Mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Diabetes mellitus",
+        "domain": "Condition"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "Diagnostic coronary angiography in AMI with cardiogenic shock, before revascularization.",
+    "offset": null,
+    "rationale": "Randomization occurred after angiography and before planned PCI/CABG; ECLS was to be inserted before revascularization.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 30,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "30-day mortality",
+      "primary": true,
+      "time_frame": "30 days",
+      "concept": {
+        "name": "Death",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 30,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] Primary outcome analysed in the intention-to-treat population (Thiele et al., NEJM 2023).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "ECLS",
+        "interventions": [
+          "ECLS insertion: After diagnostic angiography the culprit lesion should be identified and revascularization (preferably by PCI, alternatively CABG) should be planned. ECLS insertion should be performed preferably before revascularization",
+          "Revascularisation and optimal medical treatment: After diagnostic angiography the culprit lesion should be identified and revascularization (preferably by PCI, alternatively CABG) should be planned."
+        ]
+      },
+      {
+        "label": "No ECLS",
+        "interventions": [
+          "Revascularisation and optimal medical treatment: After diagnostic angiography the culprit lesion should be identified and revascularization (preferably by PCI, alternatively CABG) should be planned."
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=30.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": null
+  }
+}

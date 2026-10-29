@@ -1,0 +1,380 @@
+{
+  "protocol_id": "NCT03680274-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT03680274",
+    "title": "Lessening Organ Dysfunction With VITamin C (LOVIT)",
+    "record_sha256": "7b83accbcd113bae387c56f84f0f3d0110f7b0e109778e16f8167da367506f11"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Admitted to the intensive care unit with proven or suspected infection as the main diagnosis;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Intensive care unit admission",
+              "domain": "Visit"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Infection, proven or suspected",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Currently treated with a continuous IV infusion of vasopressors (norepinephrine, epinephrine, vasopressin, dopamine, phenylephrine).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Norepinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Epinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Vasopressin",
+              "domain": "Drug"
+            },
+            {
+              "name": "Dopamine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Phenylephrine",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "> 24 hours of intensive care unit admission;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Time since ICU admission (h)",
+              "domain": "Observation"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 24
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Known Glucose-6-phosphate dehydrogenase (G6PD) deficiency;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Glucose-6-phosphate dehydrogenase deficiency",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Pregnancy;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Pregnancy",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Known allergy to vitamin C;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Allergy to vitamin C",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Known kidney stones within the past 1 year;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Kidney stone",
+              "domain": "Condition"
+            }
+          ],
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 365,
+              "unit": "day"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Received any intravenous vitamin C during this hospitalization unless incorporated in parenteral nutrition;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Ascorbic acid, intravenous",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "During this hospitalisation; vitamin C in parenteral nutrition does not count."
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Expected death or withdrawal of life-sustaining treatments within 48 hours;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Expected death / withdrawal of life support within 48 h",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Previously enrolled in this study;",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Previously enrolled in LOVIT."
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Previously enrolled in a trial with which co-enrolment is not allowed.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Co-enrolment restriction."
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "The LOVIT trial has broad eligibility criteria and includes patients with a primary diagnosis of sepsis of any cause (including sepsis caused by viral pathogens as COVID-19).",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Descriptive note in the registry (broad sepsis eligibility incl. COVID-19), not a criterion."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Vitamin C",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Vitamin C: 50 mg/kg every 6 hours for 96 hours.",
+      "components": [
+        {
+          "concept": {
+            "name": "Ascorbic acid, intravenous",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Control",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Dextrose 5% in water (D5W) or normal saline (0.9% NaCl) in a volume to match the vitamin C.",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "APACHE II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Vasopressor dose",
+        "domain": "Drug"
+      },
+      {
+        "name": "Serum lactate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Invasive mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Source of infection",
+        "domain": "Condition"
+      },
+      {
+        "name": "COVID-19",
+        "domain": "Condition"
+      },
+      {
+        "name": "Charlson comorbidity index",
+        "domain": "Observation"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "First time an ICU patient with proven/suspected infection is on a continuous vasopressor infusion, within 24 h of ICU admission.",
+    "offset": null,
+    "rationale": "Randomization required current vasopressor therapy for infection and occurred within 24 h of ICU admission.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 28,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Number of deceased participants or with persistent organ dysfunction",
+      "primary": true,
+      "time_frame": "Both assessed at 28 days",
+      "concept": {
+        "name": "Death or persistent organ dysfunction",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 28,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] Primary analysis in the modified intention-to-treat population (Lamontagne et al., NEJM 2022).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "Vitamin C",
+        "interventions": [
+          "Vitamin C: Intravenous vitamin C administered in bolus doses of 50 mg/kg mixed in a 50-mL solution of either dextrose 5% in water (D5W) or normal saline (0.9% NaCl), during 30 to 60 minutes, every 6 hours for 96 hours (i.e. 200 mg/kg/day and 16 doses in total)."
+        ]
+      },
+      {
+        "label": "Control",
+        "interventions": [
+          "Control: Dextrose 5% in water (D5W) or normal saline (0.9% NaCl) in a volume to match the vitamin C."
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=28.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": "Background. The burden of sepsis is increasing worldwide. It is the cause of 8 million global deaths each year. Currently, treatment options are limited to antimicrobials and supportive care such as intravenous fluids, vasopressors, mechanical ventilation, and renal replacement therapy. In the absence of effective therapies specifically targeting the dysregulated immune response, prolonged use of these life-sustaining therapies can be debilitating. A growing body of evidence suggesting that vitamin C, an inexpensive and readily available intervention, is potentially lifesaving in sepsis. Intravenous vitamin C may be the first therapy to mitigate the dysregulated cascade of events that leads to sepsis. If proven effective, vitamin C could be used worldwide and drastically change outcomes in high- and low-income settings alike.\n\nObjectives. To determine whether intravenous vitamin C, compared to placebo, reduces mortality and morbidity in sepsis (induced by bacterial and viral pathogens (as COVID-19)), and compare clinical and biochemical measures of organ dysfunction, and health-related quality of life (HRQoL) at 6 months. To ascertain the volume of distribution, clearance, and plasma concentration over a course of 96 hours of intravenous vitamin C 50 mg/kg of weight every 6 hours or matching placebo (pharmacokinetic (PK) substudy).\n\nMethods. Patients will be randomly assigned to vitamin C (intravenous, 50 mg/kg every 6h) or placebo (0.9% NaCl or dextrose 5% in water) for 96 hours. Study personnel at the clinical sites will document the composite of death or persistent organ dysfunction at day 28. Daily assessments will occur for organ function, on days 1, 3, 7 for inflammation, infection, and endothelial injury biomarkers, at baseline for vitamin C level, and at 6 months for mortality and HRQoL. The LOVIT Trial will be conducted in adult general Canadian and international intensive care units. For the PK substudy: Blood samples will be drawn around the 8th dose at time 0 and then after administration at times 1h, 2h, 4h and 6h (the 6h level will be immediately prior to the next dose). The PK substudy will be conducted with 100 participants in 3 of the 25 participating centers.\n\nRelevance. In the context of increasing off-label use of vitamin C for sepsis and ongoing trials of vitamin C bundled with other pharmacological interventions, the LOVIT Trial will constitute a rigorous assessment of the effect of vitamin C monotherapy on patient-important outcomes."
+  },
+  "_reference_notes": [
+    "Composite at day 28; persistent organ dysfunction = vasopressor, invasive ventilation or new RRT at day 28."
+  ]
+}

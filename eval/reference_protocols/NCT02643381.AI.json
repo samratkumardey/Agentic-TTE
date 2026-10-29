@@ -1,0 +1,291 @@
+{
+  "protocol_id": "NCT02643381-reference-ai",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT02643381",
+    "title": "Etomidate Versus Ketamine for Emergency Endotracheal Intubation: a Prospective Randomized Clinical Trial",
+    "record_sha256": "1ecc4e1ad154ed559f02b1b6365756d8a1f6f54f474a4590787001b737d3aad4"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Adult patient (male or female) requiring emergency endotracheal intubation.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 18,
+            "unit": "year"
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "emergency endotracheal intubation",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Paper analysis set is after notification and consent to data collection; contrast evidence quotes the analysed numbers."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Children (<18 years old).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "<",
+            "value": 18,
+            "unit": "year"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Women who are known to be pregnant.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Any patient who has been previously randomized in the EvK Trial.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients who require endotracheal intubation without sedative medication. For example, patients in full cardiac arrest.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "cardiac arrest",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Intubation without sedatives (cardiac arrest, obtunded, awake intubation); cardiac arrest is the codable part."
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Patients with a known allergy to ketamine or etomidate.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "allergy to ketamine",
+              "domain": "Observation"
+            },
+            {
+              "name": "allergy to etomidate",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Any individual wearing a MedAlert bracelet indicating that he/she has formally opted out of the EvK Trial.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Etomidate",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Both registry arms are labelled EXPERIMENTAL. Ketamine is taken as the treatment and etomidate as the comparator, following the paper's hypothesis (ketamine instead of etomidate).",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Ketamine",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Both registry arms are labelled EXPERIMENTAL. Ketamine is taken as the treatment and etomidate as the comparator, following the paper's hypothesis (ketamine instead of etomidate).",
+      "components": [
+        {
+          "concept": {
+            "name": "ketamine",
+            "domain": "Drug"
+          },
+          "route": "intravenous",
+          "dose": "1-2 mg/kg, single induction dose"
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 1,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Induction agent given immediately before intubation."
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "trauma",
+        "domain": "Condition"
+      },
+      {
+        "name": "hypotension",
+        "domain": "Condition"
+      },
+      {
+        "name": "vasopressor use",
+        "domain": "Drug"
+      },
+      {
+        "name": "intubation location",
+        "domain": "Visit"
+      },
+      {
+        "name": "admission diagnosis",
+        "domain": "Condition"
+      },
+      {
+        "name": "neuromuscular blocking agent",
+        "domain": "Drug"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "emergency endotracheal intubation (induction of anesthesia) in an adult hospital patient",
+    "offset": null,
+    "rationale": "Randomization was immediately before intubation; the induction drug is a one-time exposure at time zero.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 7,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss to follow-up"
+    ],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Survival at Day 7",
+      "primary": true,
+      "time_frame": "Day 7",
+      "concept": null,
+      "horizon": {
+        "amount": 7,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "Of the 801 enrolled patients, 396 were analyzed in the etomidate arm, and 395 in the ketamine arm.",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "claude-opus-5-5 (LLM second annotator, SCORING.md item 24)",
+    "notes": "Written from the trial's primary paper (papers/, not in git) and the registry template, without reading the investigator's reference or any model draft."
+  }
+}

@@ -1,0 +1,309 @@
+{
+  "protocol_id": "NCT00299650-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT00299650",
+    "title": "Systematic Early Use of Neuromuscular Blocking Agents in ARDS Patients",
+    "record_sha256": "4210e09da935b0efc894d1110f6280a80b8fac6e77ec5308084a80de068b5166"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "ARDS with a PaO2 / FiO2 < 150 with a PEEP > 5 since less than 48 hrs",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "PaO2/FiO2 ratio",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 150
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Positive end-expiratory pressure",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 5
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Acute respiratory distress syndrome",
+              "domain": "Condition"
+            }
+          ],
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 48,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: registry says PEEP > 5; the paper uses PEEP >= 5 cmH2O. Encoded >= 5. 'Since less than 48 hrs' = ARDS onset within 48 h before time zero."
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "informed consent",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Consent."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "NMBA allergy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Allergy to neuromuscular blocking agent",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Continuous administration of NMBA for ARDS prior inclusion",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Neuromuscular blocking agent, continuous infusion",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: no look-back window stated; 'prior to inclusion' encoded with no window (any time in the current admission)."
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Age < 18 yrs",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 18
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "SAPS II > 70",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "SAPS II score",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 70
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Persistent air leak",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Persistent air leak (bronchopleural fistula / pneumothorax with air leak)",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "A",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": null,
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "B",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": null,
+      "components": [
+        {
+          "concept": {
+            "name": "Cisatracurium",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "PaO2/FiO2 ratio",
+        "domain": "Measurement"
+      },
+      {
+        "name": "PEEP",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Plateau pressure",
+        "domain": "Measurement"
+      },
+      {
+        "name": "ARDS etiology: pneumonia / sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "Vasopressor use (shock)",
+        "domain": "Drug"
+      },
+      {
+        "name": "Time from ARDS onset to time zero",
+        "domain": "Observation"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "Randomization: first time ARDS with PaO2/FiO2 < 150 on PEEP >= 5 cmH2O is documented within 48 h of ARDS onset in a ventilated ICU patient; cisatracurium infusion starts at this point in the treated arm.",
+    "offset": null,
+    "rationale": "Enrollment and the 48-h NMBA infusion both began at randomization, which in EHR data is the first time the oxygenation criterion is met inside the 48-h ARDS window.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 90,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Reduction of the mortality rate of ARDS patients at d90",
+      "primary": true,
+      "time_frame": "36 months",
+      "concept": {
+        "name": "Death",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 90,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim from Methods/Statistical Analysis] All randomized patients analysed by assigned group; primary result reported as a Cox-adjusted hazard ratio for 90-day death (Papazian et al., NEJM 2010).",
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "A",
+        "interventions": [
+          "Placebo: physiological serum infusion"
+        ]
+      },
+      {
+        "label": "B",
+        "interventions": [
+          "cisatracurium: None",
+          "Cisatracurium besilate: Cisatracurium besilate infusion (900mg/day)"
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=36.0 unit='month'",
+      null,
+      null
+    ],
+    "detailed_description": "The use of neuromuscular blocking agents (NMBA) in ARDS patients has not been extensively investigated. It has been recently demonstrated that a systematic 48-h infusion of NMBA is associated with a significant improvement in oxygenation as compared with a control group (Gainnier et al., Crit Care Med 2004). Moreover, a trend towards a reduction in the mortality rate has been observed. The aim of the study is to show a reduction of the mortality rate of ARDS patients."
+  },
+  "_reference_notes": [
+    "Registry time_frame '36 months' is the study duration; the primary endpoint is 90-day mortality."
+  ]
+}

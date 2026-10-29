@@ -1,0 +1,436 @@
+{
+  "protocol_id": "NCT02476253-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT02476253",
+    "title": "Sodium Bicarbonate to Treat Severe Acidosis in the Critically Ill : A Multiple Center Randomized Clinical Trial (BICAR-ICU)",
+    "record_sha256": "852387dc254a20f1d8c813864d79b901ef930219f43c0f3c8ae32aa2be651ea6"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Age of 18 yo or above,",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 18
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Critically ill patient with a SOFA score of 4 or above,",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "SOFA score",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 4
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: registry ANDs SOFA >= 4 with lactate >= 2 (I3); the paper uses SOFA >= 4 OR lactate >= 2. If you follow the paper, move the lactate atom here with logic 'any'."
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Lactatemia of 2mmol/l or above, with pH of 7.20 or below and PaCO2 of 45mmHg or below and bicarbonatemia of 20mmol/l or below",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Arterial pH",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<=",
+            "value": 7.2
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "PaCO2 (mmHg)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<=",
+            "value": 45
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Serum bicarbonate (mmol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<=",
+            "value": 20
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Serum lactate (mmol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 2
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Administration of Sodium Bicarbonate 24 hours before inclusion",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Sodium bicarbonate",
+              "domain": "Drug"
+            }
+          ],
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 24,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Prior-treatment exclusion."
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Single respiratory disorder (PaCO2 > 50 mmHg, Bicarbonatemia equal or higher than (PaCO2-40)/10 + 24",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "PaCO2 (mmHg)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 50
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Plus HCO3 >= (PaCO2-40)/10 + 24 (pure respiratory acidosis) - formula not expressible."
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Acute diarrhea, ileostomy or biliary drainage",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Acute diarrhea",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Ileostomy",
+              "domain": "Procedure"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Biliary drainage",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Stage IV kidney failure or chronic dialysis",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Chronic kidney disease stage 4",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Chronic maintenance dialysis",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": "Registry 'stage IV'."
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Tubular acidosis, ketoacidosis, high anion gap acids poisoning (PEG, aspirin, methanol)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Renal tubular acidosis",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Ketoacidosis",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Poisoning by high anion gap acid (polyethylene glycol, salicylate, methanol)",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "PaCO2 equal to 45mmHg or above and spontaneous breathing, pregnancy, protected patients, moribund patient (life expectancy of 48h or below)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "PaCO2 (mmHg) with spontaneous breathing",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 45
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Pregnancy",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Life expectancy <= 48 h (moribund)",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": "Mixed list; 'protected patients' (legal guardianship) is administrative and omitted."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Intervention",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Intravenous 4.2% Sodium Bicarbonate 125ml to 250ml / 30min up to 1000ml/24h to maintain plasma pH equal or greater than 7.30",
+      "components": [
+        {
+          "concept": {
+            "name": "Sodium bicarbonate 4.2%",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Control",
+      "arm_type": "NO_INTERVENTION",
+      "description": "No intervention",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Sepsis at inclusion",
+        "domain": "Condition"
+      },
+      {
+        "name": "AKIN stage 2-3 at inclusion",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Arterial pH",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Serum lactate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Vasopressor use",
+        "domain": "Drug"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "First arterial blood gas meeting severe metabolic acidaemia (pH <= 7.20, PaCO2 <= 45 mmHg, HCO3 <= 20 mmol/L) within 48 h of ICU admission.",
+    "offset": null,
+    "rationale": "Patients were randomized once the acidaemia criteria were met in the first 48 h of ICU stay (paper), and bicarbonate was started immediately in the treated arm.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 28,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Composite criteria of Day 28 mortality and/or patients with at least one organ failure defined as a SOFA score of 3 or 4",
+      "primary": true,
+      "time_frame": "Day 0 to Day 28",
+      "concept": {
+        "name": "Death by day 28 or >= 1 organ failure (SOFA 3-4) at day 7",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 28,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "Abstract: 'we enrolled 389 patients into the intention-to-treat analysis' (Jaber et al., Lancet 2018).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "Intervention",
+        "interventions": [
+          "Sodium Bicarbonate: Intravenous 4.2% Sodium Bicarbonate 125ml to 250ml / 30min up to 1000ml/24h to maintain plasma pH equal or greater than 7.30"
+        ]
+      },
+      {
+        "label": "Control",
+        "interventions": []
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=0.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": "* Design: randomized multiple center clinical trial, open label\n* Arms: intravenous 4.2% Sodium Bicarbonate vs no additional treatment\n* Inclusion: age of 18 yo or above, critically ill patient with a SOFA score of 4 or above, lactatemia of 2mmol/l or above, with pH of 7.20 or below and PaCO2 of 45mmHg or below and bicarbonatemia of 20mmol/l or below\n* Exclusion: single respiratory disorder (PaCO2 \\> 50 mmHg, Bicarbonatemia equal or higher than (PaCO2-40)/10 + 24 ; acute diarrhea, ileostomy or biliary drainage ; stage IV kidney failure or chronic dialysis ; tubular acidosis, ketoacidosis, high anion gap acids poisoning (PEG, aspirin, methanol) ; PaCO2 equal to 45mmHg or above and spontaneous breathing, pregnancy, protected patients, moribund patient (life expectancy of 48h or below)\n* Randomization: website randomization with stratification on age, presence of sepsis at inclusion, renal failure\n* Intervention: experimental arm: intravenous 4.2% Sodium Bicarbonate 125 to 250ml in 30min up to 1000ml/24h. The target is a plasma pH of 7.30 or above.\n* An interim statistical analysis is planned when 200 patients will be included"
+  },
+  "_reference_notes": [
+    "Composite: death by day 28 OR at least one organ failure at day 7. The registry parser hint 'amount=0.0' is wrong; horizon is 28 days.",
+    "Note: about a quarter of controls received rescue bicarbonate, so ITT and per-protocol estimands will differ."
+  ]
+}

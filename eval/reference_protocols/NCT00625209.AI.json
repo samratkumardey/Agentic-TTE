@@ -1,0 +1,817 @@
+{
+  "protocol_id": "NCT00625209-reference-ai",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT00625209",
+    "title": "Phase III of Recombinant Human Activated Protein C and Low Dose of Hydrocortisone and Fludrocortisone in Adult Septic Shock",
+    "record_sha256": "ba91a058465cfd47602a69051d35e0bfa8ae2c029bcb4500bdb90b2614363263"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "hospitalized in intensive care unit for less than 7 days",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intensive care unit stay",
+              "domain": "Visit"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 7,
+              "unit": "day"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Removed by amendment on 11/06/2010 (registry E22)."
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "septic shock for less than 24 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "septic shock",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 24,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "at least one proven site of infection",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "infection",
+              "domain": "Condition"
+            },
+            {
+              "name": "positive culture",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "at least 2 organ dysfunction as defined by a SOFA score =or> to 3 for at least 6 consecutive hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "SOFA organ score",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 3,
+            "text": ">= 3 in at least 2 organs for >= 6 consecutive hours"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 24,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "need for vasopressor (dopamine =or>15µg/kg/min or epinephrine/norepinephrine at =or>0,25 µg/kg/min for at least 6 consecutive hours, to maintain systolic arterial pressure at 90 mmHg or more OR mean arterial pressure at 6( mmHg or more",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "norepinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "epinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "dopamine",
+              "domain": "Drug"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 0.25,
+            "unit": "ug/kg/min",
+            "text": "norepinephrine or epinephrine >= 0.25 ug/kg/min or dopamine >= 15 ug/kg/min for >= 6 h"
+          },
+          "temporal": {
+            "relation": "cumulative_duration",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 6,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I6",
+      "kind": "inclusion",
+      "text": "informed consent",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "pregnancy or breath feeding",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition"
+            },
+            {
+              "name": "lactation",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "decision not to resuscitate",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "do not resuscitate status",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "underlying disease with an estimated life expectancy of less than 1 month",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "terminal illness",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Life expectancy < 1 month is a judgement; terminal illness is a proxy."
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "formal indication for corticosteroids",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "systemic corticosteroid",
+              "domain": "Drug"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "recent surgery (ie within the past 72 hours) or a surgery at high risk of bleeding",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "surgical procedure",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 72,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Drotrecogin-only criterion, removed in 2012 after Xigris withdrawal; the published corticosteroid contrast spans both periods."
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "gastro-intestinal bleeding within the past 6 weeks",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "gastrointestinal hemorrhage",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 6,
+              "unit": "week"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "chronic liver disease (Child C)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "cirrhosis of liver, Child-Pugh class C",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "recent trauma (ie within the past 72 hours)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "injury",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 72,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "intracranial process",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intracranial lesion",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "history of stroke, CNS bleeding or traumatic brain injury within the past 3 months",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "stroke",
+              "domain": "Condition"
+            },
+            {
+              "name": "intracranial hemorrhage",
+              "domain": "Condition"
+            },
+            {
+              "name": "traumatic brain injury",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 3,
+              "unit": "month"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E11",
+      "kind": "exclusion",
+      "text": "platelet counts of less than 30000 per cubic millimeter",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "platelet count",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "<",
+            "value": 30000,
+            "unit": "per mm3"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E12",
+      "kind": "exclusion",
+      "text": "formal indication for curative anticoagulant; prophylactic use of heparin is allowed",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "therapeutic anticoagulation",
+              "domain": "Drug"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E13",
+      "kind": "exclusion",
+      "text": "any condition of high risk of bleeding as per patient's primary physicians",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "bleeding risk",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Physician-judged bleeding risk; not codable reliably."
+    },
+    {
+      "id": "E14",
+      "kind": "exclusion",
+      "text": "hypersensitivity of activated drotrecogin alpha or any other component of the drug",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "allergy to drotrecogin alfa",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E15",
+      "kind": "exclusion",
+      "text": "no affiliation to a social security",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": null
+    },
+    {
+      "id": "E16",
+      "kind": "exclusion",
+      "text": "Amendments to eligibility criteria were:",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E17",
+      "kind": "exclusion",
+      "text": "On 27/03/2008: Changes in following exclusion criteria :",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E18",
+      "kind": "exclusion",
+      "text": "\"surgical procedure in the past 7 days\" was changed for \"surgical procedure within 72 hours, or any surgery associated with high risk of bleeding, or a planned surgery within 24 h\".",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E19",
+      "kind": "exclusion",
+      "text": "\"chronic liver disease\" was clarified as \"chronic liver disease with Child score C\".",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E20",
+      "kind": "exclusion",
+      "text": "\"severe thrombopenia\" was clarified \"as severe thrombopenia (<30,000/mm3, before transfusion).",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E21",
+      "kind": "exclusion",
+      "text": "On 25/08/2009: The exclusion criteria: surgical procedure within 72 hours, or any surgery associated with high risk of bleeding, or a planned surgery within 24 h\" was changed for \"surgical procedure within 12 hours, or any surgery associated with high risk of bleeding",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E22",
+      "kind": "exclusion",
+      "text": "On 11/06/2010: the inclusion criteria: admitted to the ICU for < 7 days was removed",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E23",
+      "kind": "exclusion",
+      "text": "and a new exclusion criteria was added: \"patients who had a previous episode of sepsis during the same hospital stay",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E24",
+      "kind": "exclusion",
+      "text": "On 18/04/2012: following the withdrawal of DAA from the market: the following exclusion criteria (only related to DAA) were removed :",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E25",
+      "kind": "exclusion",
+      "text": "any surgery in the past 12 hours, or any surgery associated with high risk of bleeding;",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E26",
+      "kind": "exclusion",
+      "text": "chronic liver disease with a Child score C;",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E27",
+      "kind": "exclusion",
+      "text": "recent trauma;",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E28",
+      "kind": "exclusion",
+      "text": "any intracranial mass, or stroke or head injury in the past 3 months;",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E29",
+      "kind": "exclusion",
+      "text": "severe thrombocytopenia (< 30.000 /mm3, before platelet transfusion);",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    },
+    {
+      "id": "E30",
+      "kind": "exclusion",
+      "text": "formal indication for anticoagulation, or any other condition associated with increased risk of bleeding, as appreciated by the patient's physician.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Registry amendment history, not a criterion."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "1",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "2x2 factorial; the drotrecogin alfa arms (3, 4) are dropped. The reported contrast is hydrocortisone plus fludrocortisone vs placebo (Annane 2018).",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "2",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "2x2 factorial; the drotrecogin alfa arms (3, 4) are dropped. The reported contrast is hydrocortisone plus fludrocortisone vs placebo (Annane 2018).",
+      "components": [
+        {
+          "concept": {
+            "name": "hydrocortisone",
+            "domain": "Drug"
+          },
+          "route": "intravenous",
+          "dose": "50 mg every 6 hours",
+          "duration": {
+            "amount": 7,
+            "unit": "day"
+          }
+        },
+        {
+          "concept": {
+            "name": "fludrocortisone",
+            "domain": "Drug"
+          },
+          "route": "enteral",
+          "dose": "50 micrograms once daily",
+          "duration": {
+            "amount": 7,
+            "unit": "day"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 6,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Trial agents started at randomization; a short window allows for the first dose in EHR timestamps."
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "serum lactate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "invasive mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "norepinephrine dose",
+        "domain": "Drug"
+      },
+      {
+        "name": "source of infection",
+        "domain": "Condition"
+      },
+      {
+        "name": "community-acquired infection",
+        "domain": "Condition"
+      },
+      {
+        "name": "surgical admission",
+        "domain": "Visit"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "septic shock criteria met (infection, vasopressor >= 0.25 ug/kg/min for >= 6 h, SOFA >= 3 in >= 2 organs for >= 6 h), within 24 hours of shock onset",
+    "offset": null,
+    "rationale": "Patients were randomized with septic shock present for less than 24 hours.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 90,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss to follow-up"
+    ],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "90-day mortality",
+      "primary": true,
+      "time_frame": "90 day",
+      "concept": null,
+      "horizon": {
+        "amount": 90,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "An intention-to-treat analysis was planned to be performed",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "claude-opus-5-5 (LLM second annotator, SCORING.md item 24)",
+    "notes": "Written from the trial's primary paper (papers/, not in git) and the registry template, without reading the investigator's reference or any model draft."
+  }
+}

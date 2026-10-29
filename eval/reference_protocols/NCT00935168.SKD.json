@@ -1,0 +1,642 @@
+{
+  "protocol_id": "NCT00935168-reference",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT00935168",
+    "title": "A Multi-centre Randomized Controlled Trial of Fluid Resuscitation With Starch (6%Hydroxyethyl Starch 130/0.4) Compared to Saline (0.9% Sodium Chloride) in Intensive Care Patients on Mortality",
+    "record_sha256": "0ccf1c8f45d8b693655d3616fc247c3056ca16c350ca5f36397990211aa8dd7f"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Written informed consent has been obtained or if not possible, the procedure for obtaining informed consent has been approved by the ethics committee.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Consent."
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Fluid resuscitation is required to increase or maintain intravascular volume that is in addition to maintenance fluids, enteral and parenteral nutrition, blood products and specific replacement fluids to replace ongoing insensible or fluid losses from other sites (e.g., fistula losses from the gastrointestinal tract, urinary losses from diabetes insipidus or the polyuric phase of acute renal failure or to correct metabolic derangements).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Fluid resuscitation (bolus beyond maintenance)",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: distinguishing resuscitation from maintenance/replacement fluid needs bolus volume/rate logic."
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "The ICU clinician considers that both 6% hydroxyethyl starch (130/0.4) and saline are equally appropriate for the patient and that no specific indication or contraindication for either exists.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Clinician equipoise between the two fluids; not EHR-observable."
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "The requirement for fluid resuscitation must be supported by AT LEAST ONE of the following clinical signs: Heart rate > 90 beats per minute; Systolic blood pressure (SBP) < 100mmHg or mean arterial pressure (MAP) < 75mmHg or at least 40mmHg decrease in SBP or MAP from the baseline recording; Central venous pressure < 10mmHg; Pulmonary artery wedge pressure < 12 mmHg; Respiratory variation in systolic or mean arterial blood pressure of >5 mmHg; Capillary refill time > one second; Urine output < 0.5 ml/kg for one hour",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Heart rate",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 90
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Systolic blood pressure",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 100
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Mean arterial pressure",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 75
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Central venous pressure",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 10
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Pulmonary artery wedge pressure",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 12
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Respiratory variation in arterial pressure (mmHg)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 5
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Capillary refill time (s)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 1
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Urine output (mL/kg/h)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 0.5
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": "'>= 40 mmHg fall in SBP/MAP from baseline' omitted (needs a baseline reference)."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Previous allergic reaction to hydroxyethyl starch solution.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Allergy to hydroxyethyl starch",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Primary non-traumatic intracranial haemorrhage or severe traumatic intracranial haemorrhage (mass lesion > 25 ml).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Non-traumatic intracranial hemorrhage",
+              "domain": "Condition"
+            },
+            {
+              "name": "Traumatic intracranial hemorrhage, mass lesion > 25 mL",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Patients who are receiving renal replacement therapy or in whom the ICU physician considers renal replacement therapy is imminent (i.e. renal replacement therapy will start in 6 hours)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Renal replacement therapy",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "'Imminent (within 6 h)' RRT not expressible; current RRT only."
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients with documented serum creatinine value ≥ 350µmol/L and urine output averaging ≤ 10ml / hr over 12 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Serum creatinine (umol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 350
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Urine output (mL/h, 12-h average)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": "<=",
+            "value": 10
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Severe hypernatraemia (Serum sodium > 160 mmol/l) or severe hyperchloraemia (Serum chloride > 130 mmol/l).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Serum sodium (mmol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 160
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Serum chloride (mmol/L)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 130
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Women of child bearing age (18-49 years old), unless evidence of documented menopause, hysterectomy or surgical sterilisation or negative pregnancy test before randomisation",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Sex",
+              "domain": "Demographic"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 18
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": "<=",
+            "value": 49
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: SEX atom means female. Exception (menopause/hysterectomy/sterilisation/negative test) not expressible."
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Breastfeeding",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Breastfeeding",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Patients who have received > 1000mL hydroxyethyl starch in the 24 hours before randomization.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Hydroxyethyl starch (mL)",
+              "domain": "Drug"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 1000
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 24,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Patients admitted to the ICU following cardiac surgery; patients admitted to ICU following cardiac surgery.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Cardiac surgery",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Registry text duplicated. Means ICU admission following cardiac surgery."
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "Patients admitted to the ICU for the treatment of burns or following liver transplantation surgery.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Burn injury",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Liver transplantation",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E11",
+      "kind": "exclusion",
+      "text": "Death is deemed imminent and inevitable or the patient has an underlying disease process with a life expectancy of < 90 days.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Death imminent / life expectancy < 90 days",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E12",
+      "kind": "exclusion",
+      "text": "A limitation of therapy order has been documented restricting implementation of the study protocol or the treating clinician deems aggressive care unsuitable.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Do not resuscitate / limitation of life-sustaining treatment",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E13",
+      "kind": "exclusion",
+      "text": "Patient has previously been enrolled in the CHEST study.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Previously enrolled in CHEST."
+    },
+    {
+      "id": "E14",
+      "kind": "exclusion",
+      "text": "Patient has previously received fluid resuscitation that was prescribed within the study ICU during this current ICU admission.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Fluid resuscitation earlier in the current ICU admission",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Prior-treatment (new-user) exclusion; window = current ICU stay."
+    },
+    {
+      "id": "E15",
+      "kind": "exclusion",
+      "text": "Patient has been transferred to the study ICU from another ICU and received fluid resuscitation for the treatment of volume depletion in that other ICU.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Transfer from another ICU with fluid resuscitation there",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Hydroxy-ethyl starch",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Intravenous fluid resuscitation with 6% Hydroxy-ethyl starch (130/0.4)",
+      "components": [
+        {
+          "concept": {
+            "name": "Hydroxyethyl starch 130/0.4 6%",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Saline",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "Intravenous fluid resuscitation with saline (0.9% sodium chloride)",
+      "components": [
+        {
+          "concept": {
+            "name": "Sodium chloride 0.9%",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "APACHE II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Operative vs non-operative admission",
+        "domain": "Visit"
+      },
+      {
+        "name": "Sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "Trauma / traumatic brain injury",
+        "domain": "Condition"
+      },
+      {
+        "name": "Serum creatinine / RIFLE category",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Vasopressor use",
+        "domain": "Drug"
+      },
+      {
+        "name": "Serum lactate",
+        "domain": "Measurement"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "First fluid-resuscitation order in the study ICU during the current ICU admission (randomization occurred at the first resuscitation decision).",
+    "offset": null,
+    "rationale": "E14 requires that no resuscitation fluid was prescribed earlier in this ICU stay, so time zero is the first resuscitation bolus - a clean new-user design.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 90,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "All cause mortality",
+      "primary": true,
+      "time_frame": "90 days",
+      "concept": {
+        "name": "Death",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 90,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] Primary analysis by intention to treat, excluding patients whose consent was withdrawn (Myburgh et al., NEJM 2012).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "_registry": {
+    "arms": [
+      {
+        "label": "Hydroxy-ethyl starch",
+        "interventions": [
+          "6% Hydroxy-ethyl starch (130/0.4): Maximum dose of 50ml/kg/day of 6% hydroxy-ethyl starch (130/0.4) for intravascular volume fluid resuscitation"
+        ]
+      },
+      {
+        "label": "Saline",
+        "interventions": [
+          "Saline: Maximum dose of 50ml/kg/day of saline for intravascular volume fluid resuscitation"
+        ]
+      }
+    ],
+    "primary_outcome_parser_hint_not_reference": [
+      "amount=90.0 unit='day'",
+      null,
+      null
+    ],
+    "detailed_description": "Patients in intensive care units frequently require intravenous fluid because the treating clinicians consider that the patient's blood pressure or circulating blood volume needs to be increased to clinically acceptable levels. Despite fluid resuscitation being a fundamental part of standard medical treatment for critically ill patients, clinicians are left with uncertainty about the optimal choice and volume of fluid that should be administered.\n\nThis study is a prospective, multi-centre, blinded, randomised controlled trial.\n\nThe two fluids being compared are 0.9% sodium chloride (saline) and 6% hydroxyethyl starch 130/0.4 in 0.9% sodium chloride,(starch). The null hypothesis assumes no difference in all-cause mortality between patients given starch in comparison with patients given saline for fluid resuscitation.\n\nEach patient who meets all inclusion criteria and none of the exclusion criteria will be randomised to receive one of the two study fluids for fluid resuscitation.\n\nOnce treatment has been assigned the participant will continue to receive either starch or saline only for all fluid resuscitation requirements in intensive care. The treating clinical team will decide the amount and frequency of the fluid given for resuscitation based on standard care.\n\nDuring their ICU stay, participants will have information on the use of study fluids, other fluids, kidney function, blood pressure, heart rate and other haemodynamic data that is routinely recorded in the medical record collected. All participants will be followed up at day 90 and at 6 months after randomisation.\n\nThe participants status (alive, in hospital and length of stay) will be recorded at day 28 and day 90 after randomisation. At the 6 month follow-up all participants or their carer will be interviewed by telephone using standardised questionnaires about the participant's quality of life. In addition, participants who were admitted to intensive care with a traumatic brain injury will be interviewed to determine how well the participant is recovering.\n\nAfter all patients have completed the 6 months of follow-up, data linkage will also be used to link patients (in NSW only) to health databases in order to obtain information on their use of health services."
+  }
+}

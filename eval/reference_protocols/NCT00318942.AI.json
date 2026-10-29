@@ -1,0 +1,517 @@
+{
+  "protocol_id": "NCT00318942-reference-ai",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT00318942",
+    "title": "CRISTAL: Colloids Compared to Crystalloids in Fluid Resuscitation of Critically Ill Patients: A Multinational Randomised Controlled Trial",
+    "record_sha256": "ce9d810d1bd92935642dee5f81d8c940749b5f526918988375b4c3bab90f4067"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Males and females, above the legal age of consent",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 18,
+            "unit": "year"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Hospitalized in intensive care unit",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intensive care unit stay",
+              "domain": "Visit"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Need fluid resuscitation (according to the physician in charge of the patient)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hypotension",
+              "domain": "Condition"
+            },
+            {
+              "name": "systolic blood pressure",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "serum lactate",
+              "domain": "Measurement"
+            },
+            {
+              "name": "blood urea nitrogen",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Need for resuscitation is a clinician judgement. Paper: SBP < 90 or MAP < 60 (or orthostatic fall), low filling pressures, and hypoperfusion (lactate > 2, BUN > 56 mg/dL, GCS < 12, urine < 25 ml/h). Only partly codable."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Patients who have one or more of the following items:",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Known allergy to gelatins, albumin or starch",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "allergy to gelatin",
+              "domain": "Observation"
+            },
+            {
+              "name": "allergy to albumin",
+              "domain": "Observation"
+            },
+            {
+              "name": "allergy to hydroxyethyl starch",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Coagulation disorders (haemophilia, Willebrand disease, etc.)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hemophilia",
+              "domain": "Condition"
+            },
+            {
+              "name": "von Willebrand disease",
+              "domain": "Condition"
+            },
+            {
+              "name": "coagulation defect",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Chronic renal failure on permanent dialysis",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "end-stage renal disease",
+              "domain": "Condition"
+            },
+            {
+              "name": "chronic dialysis",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Severe hepatic failure",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hepatic failure",
+              "domain": "Condition"
+            },
+            {
+              "name": "cirrhosis of liver",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Burns > 20 % of body surface",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "burn of more than 20% of body surface",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Pregnancy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Volume replacement: As a part of anaesthesia, for anaphylactic shock, or for dehydration",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "anesthesia",
+              "domain": "Procedure"
+            },
+            {
+              "name": "anaphylactic shock",
+              "domain": "Condition"
+            },
+            {
+              "name": "dehydration",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Indication for fluid (anaesthesia, anaphylaxis, dehydration) is hard to assign from EHR data."
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Brain death",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "brain death",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "Advance directive of withholding or withdrawal of life-sustaining treatments",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "do not resuscitate status",
+              "domain": "Observation"
+            },
+            {
+              "name": "withdrawal of life-sustaining treatment",
+              "domain": "Observation"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E11",
+      "kind": "exclusion",
+      "text": "Any other investigational drugs",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "1",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "Crystalloids, any type of Crystalloids including isotonic or hypertonic saline, Ringer Lactates either modified or not",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "2",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Colloids, including albumin, gelatines, starch any other synthetic colloids",
+      "components": [
+        {
+          "concept": {
+            "name": "colloid plasma substitute",
+            "domain": "Drug"
+          }
+        },
+        {
+          "concept": {
+            "name": "albumin human",
+            "domain": "Drug"
+          }
+        },
+        {
+          "concept": {
+            "name": "hydroxyethyl starch",
+            "domain": "Drug"
+          }
+        },
+        {
+          "concept": {
+            "name": "gelatin",
+            "domain": "Drug"
+          }
+        },
+        {
+          "concept": {
+            "name": "dextran",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 0,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Fluid resuscitation followed randomization immediately; patients had received no prior resuscitation fluid in the ICU."
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "multiple trauma",
+        "domain": "Condition"
+      },
+      {
+        "name": "hypovolemic shock",
+        "domain": "Condition"
+      },
+      {
+        "name": "McCabe class",
+        "domain": "Measurement"
+      },
+      {
+        "name": "mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "vasopressor use",
+        "domain": "Drug"
+      },
+      {
+        "name": "serum lactate",
+        "domain": "Measurement"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "first need for fluid resuscitation for acute hypovolemia during the ICU stay (first resuscitation fluid bolus)",
+    "offset": null,
+    "rationale": "Patients had received no prior resuscitation fluids during their ICU stay and were randomized when resuscitation was first required.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 28,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss to follow-up"
+    ],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "28-day mortality",
+      "primary": true,
+      "time_frame": "Day 28",
+      "concept": null,
+      "horizon": {
+        "amount": 28,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "The final analysis was performed according to the intention-to-treat principle",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "claude-opus-5-5 (LLM second annotator, SCORING.md item 24)",
+    "notes": "Written from the trial's primary paper (papers/, not in git) and the registry template, without reading the investigator's reference or any model draft."
+  }
+}

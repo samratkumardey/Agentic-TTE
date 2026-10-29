@@ -78,31 +78,35 @@ def check(path: Path) -> list[str]:
     """What a filled reference still lacks, or [] when it is complete and valid."""
     data = json.loads(path.read_text(encoding="utf-8"))
     data = {k: v for k, v in data.items() if not k.startswith("_")}
-    # Plain messages for the fields a template leaves empty, before the schema's own errors.
-    blanks = [f"arm '{a.get('label')}': set is_comparator (true or false)"
-              for a in data.get("treatment_strategies", []) if a.get("is_comparator") is None]
-    if not (data.get("time_zero") or {}).get("anchor_event"):
-        blanks.append("time zero: no anchor event")
-    if blanks:
-        return blanks
+    # Plain messages for the fields a template leaves empty. They are filled with stand-ins so
+    # that validation can go on and list everything else still missing in the same pass.
     problems = []
+    for a in data.get("treatment_strategies", []):
+        if a.get("is_comparator") is None:
+            problems.append(f"arm '{a.get('label')}': set is_comparator (true or false)")
+            a["is_comparator"] = False
+    unset_arms = bool(problems)
+    tz = data.get("time_zero") or {}
+    if not tz.get("anchor_event"):
+        problems.append("time zero: no anchor event")
+        data["time_zero"] = {**tz, "anchor_event": "unset"}
     try:
         p = TargetTrialProtocol.model_validate(data)
     except Exception as e:  # noqa: BLE001 - reported to the person filling it in
-        return [f"not a valid protocol: {e}"]
+        return problems + [f"not a valid protocol: {e}"]
     for c in p.eligibility:
         if c.emulable and not c.atoms:
             problems.append(f"{c.id}: no atoms (or set category 'administrative')")
     arms = [a for a in p.treatment_strategies if not a.is_comparator]
     comps = [a for a in p.treatment_strategies if a.is_comparator]
-    if len(arms) != 1 or len(comps) != 1:
+    if not unset_arms and (len(arms) != 1 or len(comps) != 1):
         problems.append("treatment strategies: set is_comparator so that exactly one arm is the "
                         "treatment and one the comparator")
-    for a in arms:
+    for a in arms if not unset_arms else []:
         if not a.components:
             problems.append(f"arm '{a.label}': no components (the treatment's concepts)")
-    if p.time_zero is None or not p.time_zero.anchor_event:
-        problems.append("time zero: no anchor event")
+    if unset_arms and not any(a.components for a in p.treatment_strategies):
+        problems.append("treatment arm: no components (the treatment's concepts)")
     primary = next((o for o in p.outcomes if o.primary), None)
     if primary is None or (primary.horizon or p.follow_up.horizon) is None:
         problems.append("primary outcome: no horizon")

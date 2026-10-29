@@ -30,6 +30,9 @@ def test_check_lists_what_is_missing_then_accepts(nct03872011_study, tmp_path):
     path.write_text(json.dumps(t), encoding="utf-8")
     blank = mrt.check(path)
     assert any("is_comparator" in x for x in blank) and "time zero: no anchor event" in blank
+    # Everything else missing is listed in the same pass, not only after the basics are set.
+    assert any("no atoms" in x for x in blank) and "primary outcome: no horizon" in blank
+    assert "assignment: no confounders" in blank and any("components" in x for x in blank)
 
     for i, a in enumerate(t["treatment_strategies"]):
         a["is_comparator"] = i > 0

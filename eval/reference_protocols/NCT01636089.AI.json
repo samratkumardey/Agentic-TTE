@@ -1,0 +1,396 @@
+{
+  "protocol_id": "NCT01636089-reference-ai",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT01636089",
+    "title": "Bicarbonates Versus Saline for Contrast Induced Acute Kidney Injury Prevention in Intensive Care Unit",
+    "record_sha256": "3a8231cf20b917c69c980d6c705c86e55521518545009c73ee489796568bbe40"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "patient > 18 years old",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 18,
+            "unit": "year"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "in intensive care unit since 24h and for up to 48 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intensive care unit stay",
+              "domain": "Visit"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 24,
+              "unit": "hour"
+            },
+            "text": "admitted at least 24 h earlier"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Paper: expected ICU stay > 48 h and not on the day of ICU admission; registry wording 'since 24h and for up to 48 hours' is ambiguous."
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "with contrast medium injection",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "contrast media",
+              "domain": "Drug"
+            },
+            {
+              "name": "computed tomography with contrast",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "patient under renal replacement therapy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "renal replacement therapy",
+              "domain": "Procedure"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "rise in creatinine > 26µmol/L within 48hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "serum creatinine increase",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 0.3,
+            "unit": "mg/dL",
+            "text": "rise > 26 umol/L"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 48,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "anuria within 12 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "anuria",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "anchor": "time_zero",
+            "window": {
+              "amount": 12,
+              "unit": "hour"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "cardiogenic pulmonary oedema",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "cardiogenic pulmonary edema",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "pH > 7.50 or kaliemia < 3mmol/L",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "arterial pH",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">",
+            "value": 7.5
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "serum potassium",
+              "domain": "Measurement"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "<",
+            "value": 3,
+            "unit": "mmol/L"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "notes": "Either atom excludes (any)."
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "pregnancy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "bicarbonates",
+      "arm_type": "EXPERIMENTAL",
+      "description": "sodium bicarbonates 1,4%",
+      "components": [
+        {
+          "concept": {
+            "name": "sodium bicarbonate",
+            "domain": "Drug"
+          },
+          "route": "intravenous",
+          "dose": "1.4%, 3 ml/kg over 1 h then 1 ml/kg/h for 6 h"
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 1,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Infusion started 1 hour before contrast."
+    },
+    {
+      "label": "saline",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "sodium chloride 0,9%",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SAPS II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "serum creatinine",
+        "domain": "Measurement"
+      },
+      {
+        "name": "chronic kidney disease",
+        "domain": "Condition"
+      },
+      {
+        "name": "diabetes mellitus",
+        "domain": "Condition"
+      },
+      {
+        "name": "contrast volume",
+        "domain": "Measurement"
+      },
+      {
+        "name": "vasopressor use",
+        "domain": "Drug"
+      },
+      {
+        "name": "mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "sepsis",
+        "domain": "Condition"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "intravascular contrast medium administration for imaging in an ICU patient who has been in the ICU for at least 24 hours",
+    "offset": null,
+    "rationale": "Hydration started 1 h before contrast; the outcome window (72 h) is counted from contrast exposure. Not included on the day of ICU admission.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 72,
+      "unit": "hour"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss to follow-up"
+    ],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "contrast induced acute kidney injury",
+      "primary": true,
+      "time_frame": "72 hours",
+      "concept": null,
+      "horizon": {
+        "amount": 72,
+        "unit": "hour"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "The main analysis included all randomized patients who followed the inclusion criteria, that is, a modified intention-to-treat strategy.",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "claude-opus-5-5 (LLM second annotator, SCORING.md item 24)",
+    "notes": "Written from the trial's primary paper (papers/, not in git) and the registry template, without reading the investigator's reference or any model draft."
+  }
+}
