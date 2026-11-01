@@ -790,8 +790,15 @@
     "item": "arm 'bicarbonates' grace period (hours)",
     "a": null,
     "b": 1.0,
-    "decision": null,
-    "note": "Unresolved (2026-10-31): hydration starts 1 h BEFORE contrast. With time zero at contrast, the compiler counts only treatment started at or after time zero, so no patient is treated; with time zero at hydration start, the contrast criterion lies after time zero (look-ahead). Neither reference is emulable as written: needs a pre-time-zero assignment window (pipeline extension) or the trial is reported as not emulable.",
+    "decision": {
+      "grace_period": null,
+      "initiation_before": {
+        "amount": 1,
+        "unit": "hour"
+      },
+      "initiation_before_evidence": "3 mL/kg during 1 hour started before the administration of contrast medium"
+    },
+    "note": "SKD chose to extend the pipeline, 2026-10-31. Time zero stays at contrast administration (both references); no grace period; hydration started up to 1 h before contrast counts as initiation at time zero (TreatmentStrategy.initiation_before, changelog item 26). Assignment uses only data up to time zero, so there is no look-ahead and no immortal time.",
     "id": 50
   },
   {

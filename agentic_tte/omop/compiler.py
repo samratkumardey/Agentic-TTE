@@ -519,6 +519,8 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
         notes.append("frame not compiled: active comparators are not supported yet")
         return None
     starts = []
+    pre = arm.initiation_before
+    lower = f"c.t0 - {_interval(pre)}" if pre else "c.t0"
     components = list({_norm(c.concept.name): c for c in arm.components}.values())
     if len(components) < len(arm.components):
         notes.append(f"'{arm.label}' lists the same component more than once; counted once")
@@ -532,7 +534,7 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
         table, col, _, _ = EVENT_TABLE[dom]
         x = _time("r", dom)
         starts.append(f"(SELECT min({x}) FROM {table} r WHERE r.person_id = c.person_id AND "
-                      f"{_in_set(f'r.{col}', ids, spec.descendants)} AND {x} >= c.t0)")
+                      f"{_in_set(f'r.{col}', ids, spec.descendants)} AND {x} >= {lower})")
     if not starts:
         notes.append("frame not compiled: the treatment arm has no components")
         return None
@@ -542,6 +544,9 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
                      "started")
     notes.append(f"treated: '{arm.label}' initiated after time zero and before follow-up ends; "
                  f"comparator '{comparators[0].label}' is no initiation")
+    if pre:
+        notes.append(f"initiation up to {pre.amount:g} {pre.unit}(s) before time zero counts as "
+                     "initiation at time zero (the strategy starts before the defining event)")
 
     primaries = [o for o in p.outcomes if o.primary]
     if not primaries:
@@ -659,7 +664,8 @@ o AS (
 )
 SELECT c.person_id{select_conf},
        CAST(coalesce(c.rx_start < c.end_time, FALSE) AS INTEGER) AS treated,
-       CASE WHEN c.rx_start < c.end_time THEN {_days('c.t0', 'c.rx_start')} END AS treat_start,
+       CASE WHEN c.rx_start < c.end_time
+            THEN greatest({_days('c.t0', 'c.rx_start')}, 0) END AS treat_start,
        {_days('c.t0', 'c.end_time')} AS time,
        CAST(c.hit AS INTEGER) AS event,
        CASE WHEN c.hit THEN '{label}'

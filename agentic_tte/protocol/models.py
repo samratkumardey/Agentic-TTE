@@ -212,6 +212,11 @@ class TreatmentStrategy(_Model):
     grace_period: Duration | None = None  # window after time zero in which initiation counts
     grace_period_origin: Origin | None = None
     grace_period_evidence: str | None = None
+    # A strategy that starts shortly before the event that defines time zero ("hydration from
+    # 1 hour before contrast"): initiation in this window before time zero counts as initiation
+    # at time zero. Assignment still uses only data up to time zero.
+    initiation_before: Duration | None = None
+    initiation_before_evidence: str | None = None
 
 
 class Outcome(_Model):

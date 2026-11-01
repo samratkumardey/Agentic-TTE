@@ -31,6 +31,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from agentic_tte.omop.compiler import (
+    _SECONDS,
     EVENT_TABLE,
     CompiledCohort,
     CompileSpec,
@@ -144,10 +145,15 @@ def data_summary(con, protocol: TargetTrialProtocol, spec: CompileSpec,
         out["late_start_share"] = f[1] / f[0] if f[0] else None
     sets = _treatment_sets(protocol, spec)
     if sets:
+        # A start inside the arm's stated pre-time-zero window is part of the strategy.
+        arms, _ = _arms(protocol)
+        pre = arms[0].initiation_before if len(arms) == 1 else None
+        upper = (f"b.t0 - INTERVAL '{pre.amount * _SECONDS[pre.unit]:g} seconds'"
+                 if pre else "b.t0")  # fmt: skip
         exists = " OR ".join(
             f"EXISTS (SELECT 1 FROM {EVENT_TABLE[dom][0]} r WHERE r.person_id = b.person_id "
             f"AND {_in_set(f'r.{EVENT_TABLE[dom][1]}', ids, spec.descendants)} "
-            f"AND {_time('r', dom)} < b.t0 AND {_time('r', dom)} >= b.t0 - "
+            f"AND {_time('r', dom)} < {upper} AND {_time('r', dom)} >= b.t0 - "
             f"INTERVAL '{BEFORE_T0_DAYS} days')" for dom, ids in sets)  # fmt: skip
         n, k = con.execute(f"WITH {compiled.ctes} SELECT count(*), count(*) FILTER (WHERE "
                            f"{exists}) FROM base b").fetchone()  # fmt: skip

@@ -591,3 +591,9 @@ These are named now, and each is fully specified in this changelog before it run
         - *lenient names*: one-to-one matching of concept names that differ only in wording.
         - A 0-hour grace period equals none, as the Statistician reads it.
       - Every disagreement, under any measure, is listed for adjudication; none is dropped.
+  26. **Initiation before time zero** (2026-10-31; adjudication of HYDRAREA).
+      - **Problem:** HYDRAREA's hydration starts 1 hour before contrast, the event that defines time zero. The compiler counted treatment only from time zero, so no patient would be treated; moving time zero to the start of hydration would put the contrast criterion after time zero (look-ahead).
+      - **Change:** `TreatmentStrategy.initiation_before` (a duration, with evidence). Initiation in that window before time zero counts as initiation at time zero (`treat_start` 0). Assignment still uses only data up to time zero.
+      - **Auditor A-c** ignores treatment records inside the stated window and still fails on earlier ones.
+      - **Rule:** a prior-treatment (new-user) exclusion must end before the window, or it removes the patients the window counts as treated.
+      - **Scope:** only arms that state the window. No other core trial uses it; the Trialist does not propose it yet.
