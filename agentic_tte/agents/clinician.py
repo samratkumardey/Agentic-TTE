@@ -35,7 +35,10 @@ from agentic_tte.llm.base import LLMClient, Message
 from agentic_tte.protocol.models import ConceptRef, Domain, TargetTrialProtocol
 from agentic_tte.sources.pubmed.client import Article, PubMedClient
 
-PROMPT_VERSION = "clinician-v1"
+# clinician-v2: the answer schema bounds every length (at most 20 confounders, 2 citations each,
+# quotes under 300 characters). v1 had no bounds, and qwen3:32b ran past the 600-second request
+# timeout on the first two core trials (2026-11-01, before any output was produced).
+PROMPT_VERSION = "clinician-v2"
 TOP_K = 15  # passages shown to the model
 PER_ARTICLE = 3  # at most this many passages from one abstract
 
@@ -217,20 +220,21 @@ def retrieve(p: TargetTrialProtocol, lit: Literature, k: int = TOP_K) -> list[Pa
 # --- the agent ------------------------------------------------------------------------------
 
 
+# The bounds go into the JSON schema, so a grammar-constrained decoder cannot run on.
 class Citation(BaseModel):
-    pmid: str
-    quote: str
+    pmid: str = Field(max_length=12)
+    quote: str = Field(max_length=300)
 
 
 class ProposedConfounder(BaseModel):
-    name: str
+    name: str = Field(max_length=80)
     domain: Domain
-    rationale: str
-    citations: list[Citation] = Field(default_factory=list)
+    rationale: str = Field(max_length=300)
+    citations: list[Citation] = Field(default_factory=list, max_length=2)
 
 
 class ClinicianAnswer(BaseModel):
-    confounders: list[ProposedConfounder]
+    confounders: list[ProposedConfounder] = Field(max_length=20)
 
 
 class ConfounderItem(BaseModel):
@@ -301,9 +305,9 @@ inclusion condition itself).
 exactly one domain: Demographic, Condition, Drug, Procedure, Device, Measurement, Observation \
 or Visit.
 6. rationale: one sentence on why the variable affects both treatment choice and outcome.
-7. citations: quotes copied word for word from the passages (at least four words each), with \
-the passage's PMID. Cite only what a passage actually says; leave citations empty rather than \
-invent one.
+7. citations: one or two quotes copied word for word from the passages (at least four words, \
+under 300 characters each), with the passage's PMID. Cite only what a passage actually says; \
+leave citations empty rather than invent one.
 8. List the 8 to 20 most important variables.
 Return only the JSON object."""
 

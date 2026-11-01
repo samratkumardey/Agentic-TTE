@@ -251,3 +251,15 @@ def test_score_clinician_against_the_references(tmp_path):
     assert len(rows) == 12 and all(r["prf"].recall == 1 for r in rows)
     assert not any(r["rep_identical"] for r in rows)
     assert "Disclosure" in sc.render(rows, tmp_path, "m")
+
+
+def test_answer_schema_is_bounded():
+    # clinician-v1 had no bounds and ran past the request timeout on the core trials; the
+    # bounds are in the JSON schema the decoder is constrained by.
+    from agentic_tte.llm.base import inline_refs
+
+    s = json.dumps(inline_refs(ClinicianAnswer.model_json_schema()))
+    assert '"maxItems": 20' in s and '"maxItems": 2' in s and '"maxLength": 300' in s
+    with pytest.raises(ValueError):
+        ClinicianAnswer.model_validate({"confounders": [
+            {"name": f"v{i}", "domain": "Measurement", "rationale": "r"} for i in range(21)]})
