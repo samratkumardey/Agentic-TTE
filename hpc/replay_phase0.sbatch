@@ -4,6 +4,9 @@
 #   sbatch -p "$SLURM_GPU_PARTITION" --gres="$SLURM_GPU_GRES" hpc/replay_phase0.sbatch
 # Override the trial list or model with  --export=ALL,ATTE_TRIALS="NCT...",ATTE_MODEL=...
 # Run `agentic-tte fetch <NCT>` on the login node first if compute nodes have no internet.
+# ATTE_TASK=clinician runs the Clinician agent instead of drafting: each trial's protocol from
+# $ATTE_DRAFTS/<NCT>.protocol.json and its literature from $ATTE_LITERATURE/<NCT>.json, sheets
+# to $RUN_DIR/<NCT>.clinician.{json,md} (hpc/clinician_core_submit.sh sets all three).
 #SBATCH --job-name=atte-replay0
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -21,6 +24,18 @@ source "${ATTE_ENV:-hpc/env.sh}"
 # The paper's MIMIC-IV acute-care trials (PLAN.md §11).
 TRIALS="${ATTE_TRIALS:-NCT00475852 NCT02856698 NCT03872011 NCT04134403 NCT06091982 NCT03258684 NCT03592693 NCT01560650 NCT01223690 NCT00953303}"
 export ATTE_MODEL="${ATTE_MODEL:-qwen3:32b}"
+TASK="${ATTE_TASK:-draft}"
+case "$TASK" in
+  draft) ;;
+  clinician)
+    : "${ATTE_DRAFTS:?ATTE_TASK=clinician needs ATTE_DRAFTS}" "${ATTE_LITERATURE:?ATTE_TASK=clinician needs ATTE_LITERATURE}"
+    for t in $TRIALS; do
+      for f in "$ATTE_DRAFTS/$t.protocol.json" "$ATTE_LITERATURE/$t.json"; do
+        [[ -f "$f" ]] || { echo "[atte] missing $f"; exit 1; }
+      done
+    done ;;
+  *) echo "[atte] unknown ATTE_TASK=$TASK"; exit 1 ;;
+esac
 
 # A per-job port, so two jobs that land on the same node don't collide.
 PORT=$((20000 + SLURM_JOB_ID % 20000))
@@ -62,6 +77,13 @@ curl -sf "$ATTE_OLLAMA_HOST/api/version" || { echo "[atte] Ollama did not start"
   echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
   echo "ollama_flash_attention=$OLLAMA_FLASH_ATTENTION"
   echo "unload_per_trial=${ATTE_UNLOAD_PER_TRIAL:-1}"
+  echo "task=$TASK"
+  if [[ "$TASK" == clinician ]]; then
+    echo "drafts=$ATTE_DRAFTS"
+    echo "literature=$ATTE_LITERATURE"
+    # one hash over the trials' literature files, in trial order
+    echo "literature_sha256=$(for t in $TRIALS; do sha256sum "$ATTE_LITERATURE/$t.json"; done | sha256sum | cut -d' ' -f1)"
+  fi
   echo "model=$ATTE_MODEL"
   echo "think=${ATTE_THINK:-}"
   echo "num_predict=${ATTE_NUM_PREDICT:-8192}"
@@ -81,14 +103,20 @@ uv run agentic-tte llm-check || { echo "[atte] model $ATTE_MODEL missing; see hp
 
 failed=0
 for t in $TRIALS; do
-  echo "[atte] $(date +%T) drafting $t"
+  echo "[atte] $(date +%T) $TASK $t"
   # Unload the model first, so the trial's output does not depend on earlier requests
   # (repro test 2026-10-24; hpc/HELLBENDER.md).
   if [[ "${ATTE_UNLOAD_PER_TRIAL:-1}" == "1" ]]; then
     curl -sf "$ATTE_OLLAMA_HOST/api/generate" -d "{\"model\": \"$ATTE_MODEL\", \"keep_alive\": 0}" \
       > /dev/null || echo "[atte] warning: could not unload $ATTE_MODEL"
   fi
-  if ! uv run agentic-tte draft "$t" -o "$RUN_DIR/$t.protocol.json" 2> "$RUN_DIR/$t.log"; then
+  if [[ "$TASK" == clinician ]]; then
+    cmd=(uv run agentic-tte clinician "$ATTE_DRAFTS/$t.protocol.json"
+         --literature "$ATTE_LITERATURE/$t.json" -o "$RUN_DIR/$t.clinician")
+  else
+    cmd=(uv run agentic-tte draft "$t" -o "$RUN_DIR/$t.protocol.json")
+  fi
+  if ! "${cmd[@]}" 2> "$RUN_DIR/$t.log"; then
     echo "[atte] $t failed, see $RUN_DIR/$t.log"
     failed=$((failed + 1))
   fi

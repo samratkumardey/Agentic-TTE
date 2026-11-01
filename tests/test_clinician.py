@@ -217,3 +217,37 @@ def test_queries_use_the_main_condition_and_filter_the_population(drafted):
     q = __import__("agentic_tte.agents.clinician", fromlist=["x"]).literature_queries(p)
     assert q and all('"Septic Shock"' in x and "COVID" not in x for x in q)
     assert all("NOT (animals[mh] NOT humans[mh])" in x and "pediatric" in x for x in q)
+
+
+def test_acronym_variants():
+    from agentic_tte.agents.clinician import acronym_pattern
+
+    assert acronym_pattern("(BICAR-ICU)").search("the BICAR-ICU trial")
+    assert acronym_pattern("CAPE_COD").search("In CAPE COD, hydrocortisone")
+    assert not acronym_pattern("CHEST").search("chest radiograph")
+    assert acronym_pattern("EvK") is None
+
+
+def test_score_clinician_against_the_references(tmp_path):
+    import importlib.util
+    import sys
+    from pathlib import Path
+
+    ev = Path(__file__).parents[1] / "eval"
+    sys.path.insert(0, str(ev))
+    spec = importlib.util.spec_from_file_location("score_clinician", ev / "score_clinician.py")
+    sc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sc)
+    for ref in sorted((ev / "reference_protocols").glob("NCT*.adjudicated.json")):
+        nct = ref.name.split(".")[0]
+        names = [c.name for c in sc.load(ref).assignment.confounders]
+        for rep, extra in (("rep1", []), ("rep2", ["something else"])):
+            sheet = {"model": "m", "prompt_version": "clinician-v1", "dropped": [],
+                     "items": [{"name": n, "status": "cited"} for n in names + extra]}
+            d = tmp_path / "m" / rep
+            d.mkdir(parents=True, exist_ok=True)
+            (d / f"{nct}.clinician.json").write_text(json.dumps(sheet), encoding="utf-8")
+    rows = sc.score(tmp_path, "m")
+    assert len(rows) == 12 and all(r["prf"].recall == 1 for r in rows)
+    assert not any(r["rep_identical"] for r in rows)
+    assert "Disclosure" in sc.render(rows, tmp_path, "m")

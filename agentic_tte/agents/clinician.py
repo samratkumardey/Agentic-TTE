@@ -98,6 +98,16 @@ def _adult(ps: dict) -> bool:
     return bool(m) and int(m.group(1)) >= 18
 
 
+def acronym_pattern(acronym: str) -> re.Pattern | None:
+    """Registry acronyms come as "(BICAR-ICU)" or "CAPE_COD": match the words with a space,
+    hyphen, underscore or nothing between them, case-sensitively (lower-case "chest" is not
+    the CHEST trial). None under 4 letters, which would match too much."""
+    words = re.findall(r"[A-Za-z0-9]+", acronym)
+    if sum(map(len, words)) < 4:
+        return None
+    return re.compile(r"\b" + r"[-_ ]?".join(map(re.escape, words)) + r"\b")
+
+
 def build_literature(study: dict, p: TargetTrialProtocol, client: PubMedClient, *,
                      per_query: int = 40) -> Literature:  # fmt: skip
     """The result-blind literature for the trial in ``study`` (a CT.gov v2 record)."""
@@ -113,7 +123,7 @@ def build_literature(study: dict, p: TargetTrialProtocol, client: PubMedClient, 
     pmids = list(background)
     for q in queries:
         pmids += client.search(q, retmax=per_query, maxdate=maxdate)
-    acro = re.compile(rf"\b{re.escape(acronym)}\b") if len(acronym) >= 4 else None
+    acro = acronym_pattern(acronym)
     keep, excluded = [], []
     for a in client.fetch(list(dict.fromkeys(pmids))):
         why = ("a publication of the trial (registry reference)" if a.pmid in own else
@@ -240,6 +250,7 @@ class Dropped(BaseModel):
 class ConfounderSheet(BaseModel):
     nct_id: str | None = None
     model: str
+    model_digest: str | None = None
     prompt_version: str = PROMPT_VERSION
     n_articles: int = 0
     n_excluded: int = 0
@@ -398,4 +409,6 @@ class Clinician:
             Message(role="system", content=SYSTEM),
             Message(role="user", content=f"Protocol:\n{_summary(p)}\n\nPassages:\n{ctx}")],
             ClinicianAnswer)  # fmt: skip
-        return check(answer, p, lit, self.llm.model, shown)
+        sheet = check(answer, p, lit, self.llm.model, shown)
+        sheet.model_digest = self.llm.model_digest()
+        return sheet

@@ -101,6 +101,40 @@ def literature(
                f"(result-revealing), cutoff {lit.cutoff or 'none'}", err=True)  # fmt: skip
 
 
+@app.command()
+def clinician(
+    protocol: Path = typer.Argument(..., help="Protocol JSON (e.g. a Trialist draft)."),
+    literature: Path = typer.Option(..., help="Its literature (`agentic-tte literature`)."),
+    out: Path = typer.Option(..., "--out", "-o", help="Sheet path; writes <out>.json and "
+                                                      "<out>.md."),
+    model: str = typer.Option(None, help="Override ATTE_MODEL."),
+    no_cache: bool = typer.Option(False, help="Bypass the LLM response cache."),
+):
+    """Propose a protocol's baseline confounders with the Clinician agent (a draft for
+    review; the protocol file is not changed)."""
+    from agentic_tte.agents import Clinician
+    from agentic_tte.agents.clinician import Literature
+    from agentic_tte.llm import make_client
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    s = get_settings()
+    if model:
+        s.model = model
+    llm = make_client(s, use_cache=not no_cache)
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    lit = Literature.model_validate_json(literature.read_text(encoding="utf-8"))
+    sheet = Clinician(llm).propose(p, lit)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.with_suffix(".json").write_text(sheet.model_dump_json(indent=2), encoding="utf-8")
+    out.with_suffix(".md").write_text(sheet.to_markdown(), encoding="utf-8")
+    u = llm.usage
+    cited = sum(i.status == "cited" for i in sheet.items)
+    typer.echo(f"[clinician] {len(sheet.items)} confounders ({cited} cited), "
+               f"{len(sheet.dropped)} dropped; wrote {out.with_suffix('.json')}", err=True)
+    typer.echo(f"[llm] calls={u.calls} cache_hits={u.cache_hits} prompt_tokens={u.prompt_tokens} "
+               f"completion_tokens={u.completion_tokens} failures={u.failures}", err=True)
+
+
 @app.command("llm-check")
 def llm_check():
     """Check that the configured Ollama server is reachable and the model is pulled."""
