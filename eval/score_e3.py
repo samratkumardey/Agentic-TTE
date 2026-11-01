@@ -77,6 +77,14 @@ def score(run: Path, model: str) -> dict:
     return {"rows": rows, "sheet": sheet}
 
 
+def t0_summary(sheet: list[dict]) -> str:
+    if not all(x.get("rating") for x in sheet):
+        return f"{sum(1 for x in sheet if x.get('rating'))}/{len(sheet)} rated: not reported"
+    n = len(sheet)
+    return ", ".join(f"{k} {sum(x['rating'] == k for x in sheet)}/{n}"
+                     for k in ("same", "acceptable alternative", "different"))  # fmt: skip
+
+
 def render(s: dict, run: Path, model: str) -> str:
     rows = s["rows"]
     tot = {k: PRF() for k in ("strict", "compiled", "relaxed", "lenient")}
@@ -123,7 +131,7 @@ def render(s: dict, run: Path, model: str) -> str:
         f"| Treatment components (lenient names) | {prf(comp)} |",
         f"| Treatment: right grace period | {share(lambda r: r['treatment']['grace_agree'])} "
         "trials |",
-        "| Time zero | rating sheet `eval/results/e3_time_zero_ratings.json` |",
+        f"| Time zero (rated, `e3_time_zero_ratings.json`) | {t0_summary(s['sheet'])} |",
         f"| Outcome horizon | {share(lambda r: r['outcome']['horizon_hours'])} trials |",
         f"| Outcome end event | {share(lambda r: r['outcome']['end_event'])} trials |",
         f"| Causal contrast | {share(lambda r: r['contrast_agree'])} trials |",
@@ -148,6 +156,12 @@ def render(s: dict, run: Path, model: str) -> str:
             f"{yn[r['contrast_agree']]} | {yn[r['estimand_agree']]} | "
             f"{r['n_conf_draft']}, {pct(r['confounders'].f1)} | "
             f"{'; '.join(r['structured']) or '-'} |")  # fmt: skip
+    if all(x.get("rating") for x in s["sheet"]):
+        lines += ["", "## Time zero (rated, not scored automatically)", "",
+                  f"Rater: {s['sheet'][0].get('rater', 'not recorded')}", "",
+                  "| Trial | Rating | Reason |", "|---|---|---|"]
+        lines += [f"| {r['name']} | {x['rating']} | {x.get('note') or ''} |"
+                  for r, x in zip(rows, s["sheet"], strict=True)]  # fmt: skip
     lines += ["", "## Element differences (draft vs reference)", ""]
     for r in rows:
         diffs = [d for d in r["disagreements"] if d["element"] not in ("time_zero",
@@ -191,14 +205,22 @@ def main(argv: list[str]) -> int:
     run = Path(args[0])
     s = score(run, model)
     RESULTS.mkdir(exist_ok=True)
-    (RESULTS / f"e3_{model}.md").write_text(render(s, run, model), encoding="utf-8")
     sheet = RESULTS / "e3_time_zero_ratings.json"
-    if sheet.exists() and any(x.get("rating") for x in json.loads(sheet.read_text("utf-8"))):
+    rated = json.loads(sheet.read_text("utf-8")) if sheet.exists() else []
+    if any(x.get("rating") for x in rated):
+        # Ratings belong to the anchors they were made on: refuse a sheet from other drafts.
+        if [(x["nct_id"], x["draft"], x["reference"]) for x in rated] != [
+                (x["nct_id"], x["draft"], x["reference"]) for x in s["sheet"]]:  # fmt: skip
+            print(f"{sheet.name} was rated on other anchors: move it aside and rate again")
+            return 1
+        s["sheet"] = rated
         print(f"{sheet.name} already holds ratings: not overwritten")
     else:
         sheet.write_text(json.dumps(s["sheet"], indent=2, ensure_ascii=False) + "\n",
                          encoding="utf-8")
-    print(render(s, run, model))
+    report = render(s, run, model)
+    (RESULTS / f"e3_{model}.md").write_text(report, encoding="utf-8")
+    print(report)
     return 0
 
 

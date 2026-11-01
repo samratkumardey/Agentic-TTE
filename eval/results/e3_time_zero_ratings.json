@@ -3,84 +3,120 @@
     "nct_id": "NCT00299650",
     "reference": "Randomization: first time ARDS with PaO2/FiO2 < 150 on PEEP >= 5 cmH2O is documented within 48 h of ARDS onset in a ventilated ICU patient; cisatracurium infusion starts at this point in the treated arm.",
     "draft": "first time PaO2 / FiO2 < 150 with PEEP > 5 recorded during the patient's hospital stay",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "acceptable alternative",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Same event (first P/F < 150 on PEEP). The draft drops the 48 h ARDS-onset window and mechanical ventilation from the anchor and treats the 48 h as a grace period; it uses PEEP > 5 for the paper's >= 5.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
     "reference": "First fluid-resuscitation bolus ordered for hypovolaemia during the ICU stay (randomization was within ~15 min of the decision to resuscitate).",
     "draft": "Day of randomisation (Day-0), when the patient is hospitalized in the ICU and needs fluid resuscitation according to the physician in charge.",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "acceptable alternative",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Same decision point (need for fluid resuscitation, randomised within 15 min), but stated as a day and a physician's judgement; it needs operationalising as the first fluid bolus to be found in the data.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
     "reference": "Time septic shock criteria are first all met (documented infection, >= 2 organ SOFA >= 3, vasopressor at threshold dose for >= 6 h), within 24 h of shock onset.",
     "draft": "first time septic shock is diagnosed and all inclusion criteria are met, including need for vasopressors and at least 2 organ dysfunctions as defined by a SOFA score >= 3 for at least 6 consecutive hours",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "same",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Full septic-shock definition first met; same criteria.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
     "reference": "First fluid-resuscitation order in the study ICU during the current ICU admission (randomization occurred at the first resuscitation decision).",
     "draft": "First time fluid resuscitation is required and supported by at least one of the specified clinical signs during the ICU stay",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "acceptable alternative",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "The first need for resuscitation with supporting clinical signs, where the reference uses the first resuscitation-fluid order: the same moment in practice, observed differently.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
     "reference": "First time all inclusion criteria are met: suspected/documented infection with >= 2 SIRS signs, on mechanical ventilation, and on vasopressor/inotrope for >= 4 h; randomization within 24 h of that.",
     "draft": "First time the patient is treated with vasopressors or inotropes for ≥ 4 hours and is present at the time of randomisation, while meeting all other inclusion criteria.",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "same",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "First time all inclusion criteria are met, vasopressors for >= 4 h. The 24 h limit is an eligibility criterion (E1) in both.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT01636089",
     "reference": "Intravascular iodinated contrast administration in an ICU patient; study hydration starts 1 h before contrast (3 mL/kg) and runs 6 h after (1 mL/kg/h).",
     "draft": "contrast medium injection",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "same",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Contrast injection. The pre-contrast hydration hour is the initiation window, not a different time zero.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
     "reference": "First arterial blood gas meeting severe metabolic acidaemia (pH <= 7.20, PaCO2 <= 45 mmHg, HCO3 <= 20 mmol/L) within 48 h of ICU admission.",
     "draft": "First time lactatemia of 2 mmol/l or above coincides with pH of 7.20 or below, PaCO2 of 45 mmHg or below, and bicarbonatemia of 20 mmol/l or below during ICU admission",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "acceptable alternative",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Same acidaemia criteria. The draft adds the registry's lactate >= 2 mmol/L to the anchor and drops the 48 h ICU window.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
     "reference": "First time a severity criterion (I8) is met in a patient hospitalised with community-acquired pneumonia.",
     "draft": "Study drug infusion initiated",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "different",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Anchored at study-drug start, which exists only in the treated arm: the comparator has no time zero, and anchoring at treatment start selects on the future. The reference anchors at the first severity criterion with a 24 h grace period.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
     "reference": "First time all eligibility criteria are met (ICU, creatinine threshold, severe AKI criterion) with no urgent RRT indication.",
     "draft": "First time serum creatinine meets eligibility criteria (≥100 µmol/L for women and ≥130 µmol/L for men) and evidence of severe AKI is present (≥2-fold increase in serum creatinine from baseline, serum creatinine ≥354 µmol/L with ≥27 µmol/L increase, or urine output <6.0 mL/kg over the preceding 12 hours) during ICU admission",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "same",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "First time the creatinine and severe-AKI criteria are met in the ICU; the no-urgent-RRT condition is an exclusion criterion in both.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT02643381",
     "reference": "Emergency endotracheal intubation (induction drug administration).",
     "draft": "First documented need for emergency endotracheal intubation in an eligible adult patient.",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "same",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Emergency intubation: the need and the induction are the same moment.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
     "reference": "Diagnostic coronary angiography in AMI with cardiogenic shock, before revascularization.",
     "draft": "First time systolic blood pressure <90 mmHg for >30 min or catecholamines required to maintain systolic pressure >90 mmHg, combined with signs of impaired organ perfusion and arterial lactate >3 mmol/l",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "different",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Anchored at cardiogenic-shock onset; the trial randomised after diagnostic angiography, before revascularisation. Shock onset comes earlier and includes patients before the treatment decision could be made.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
     "reference": "First time an ICU patient with proven/suspected infection is on a continuous vasopressor infusion, within 24 h of ICU admission.",
     "draft": "First time vasopressors are initiated and the patient is admitted to the ICU with proven or suspected infection as the main diagnosis",
-    "rating": null,
-    "rating_scale": "same | acceptable alternative | different"
+    "rating": "same",
+    "rating_scale": "same | acceptable alternative | different",
+    "note": "Vasopressors for infection in the ICU. The 24 h from ICU admission is in the eligibility criteria; the draft also calls it a grace period.",
+    "rater": "Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.",
+    "audit": true
   }
 ]

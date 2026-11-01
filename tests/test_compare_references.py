@@ -104,3 +104,11 @@ def test_e3_eligibility_grade(nct03872011_study):
         c["atoms"][0]["concepts"][0]["name"] = "cardiogenic shock"
     g = se.eligibility_grade(p, TargetTrialProtocol.model_validate(b))
     assert g["strict"] == 0 and g["grade_strict"] == "wrong"
+
+
+def test_e3_time_zero_summary_waits_for_every_rating():
+    se = _load("score_e3")
+    sheet = [{"rating": "same"}, {"rating": "different"}, {"rating": None}]
+    assert "not reported" in se.t0_summary(sheet)
+    sheet[2]["rating"] = "same"
+    assert se.t0_summary(sheet) == "same 2/3, acceptable alternative 0/3, different 1/3"

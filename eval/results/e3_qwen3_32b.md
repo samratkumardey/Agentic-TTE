@@ -16,7 +16,7 @@ Run `runs/exit-H100-core`, replicate 1 (analysis set); replicate 2 identical in 
 | Treatment: right comparator | 8/12 trials |
 | Treatment components (lenient names) | P 45%, R 56%, F1 50% |
 | Treatment: right grace period | 6/12 trials |
-| Time zero | rating sheet `eval/results/e3_time_zero_ratings.json` |
+| Time zero (rated, `e3_time_zero_ratings.json`) | same 6/12, acceptable alternative 4/12, different 2/12 |
 | Outcome horizon | 10/12 trials |
 | Outcome end event | 11/12 trials |
 | Causal contrast | 12/12 trials |
@@ -39,6 +39,25 @@ Run `runs/exit-H100-core`, replicate 1 (analysis set); replicate 2 identical in 
 | EvK | 0/5 / 1/5 | 0% / 24% / 71% | wrong | 50% | wrong | right | right | right | wrong | 0, n/a | - |
 | ECLS-SHOCK | 1/13 / 2/13 | 19% / 26% / 45% | right | 0% | wrong | right | right | right | wrong | 0, n/a | - |
 | LOVIT | 1/9 / 1/9 | 6% / 6% / 71% | right | 100% | wrong | right | right | right | wrong | 0, n/a | minimumAge: 18 Years |
+
+## Time zero (rated, not scored automatically)
+
+Rater: Rated by the LLM second annotator (Claude Opus 5.5) at the investigator's request, 2026-10-31. It did not write the drafts but wrote one side of the references and adjudicated them, so every rating goes to the clinician audit.
+
+| Trial | Rating | Reason |
+|---|---|---|
+| ACURASYS | acceptable alternative | Same event (first P/F < 150 on PEEP). The draft drops the 48 h ARDS-onset window and mechanical ventilation from the anchor and treats the 48 h as a grace period; it uses PEEP > 5 for the paper's >= 5. |
+| CRISTAL | acceptable alternative | Same decision point (need for fluid resuscitation, randomised within 15 min), but stated as a day and a physician's judgement; it needs operationalising as the first fluid bolus to be found in the data. |
+| APROCCHSS | same | Full septic-shock definition first met; same criteria. |
+| CHEST | acceptable alternative | The first need for resuscitation with supporting clinical signs, where the reference uses the first resuscitation-fluid order: the same moment in practice, observed differently. |
+| ADRENAL | same | First time all inclusion criteria are met, vasopressors for >= 4 h. The 24 h limit is an eligibility criterion (E1) in both. |
+| HYDRAREA | same | Contrast injection. The pre-contrast hydration hour is the initiation window, not a different time zero. |
+| BICAR-ICU | acceptable alternative | Same acidaemia criteria. The draft adds the registry's lactate >= 2 mmol/L to the anchor and drops the 48 h ICU window. |
+| CAPE COD | different | Anchored at study-drug start, which exists only in the treated arm: the comparator has no time zero, and anchoring at treatment start selects on the future. The reference anchors at the first severity criterion with a 24 h grace period. |
+| STARRT-AKI | same | First time the creatinine and severe-AKI criteria are met in the ICU; the no-urgent-RRT condition is an exclusion criterion in both. |
+| EvK | same | Emergency intubation: the need and the induction are the same moment. |
+| ECLS-SHOCK | different | Anchored at cardiogenic-shock onset; the trial randomised after diagnostic angiography, before revascularisation. Shock onset comes earlier and includes patients before the treatment decision could be made. |
+| LOVIT | same | Vasopressors for infection in the ICU. The 24 h from ICU admission is in the eligibility criteria; the draft also calls it a grace period. |
 
 ## Element differences (draft vs reference)
 
