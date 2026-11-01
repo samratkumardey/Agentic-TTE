@@ -29,6 +29,12 @@ DISCLOSURE = (
     "clinician audit.")  # fmt: skip
 
 
+def _path(rep: Path, nct: str) -> Path:
+    """``<NCT>.clinician.json``; runs before the CLI fix of 2026-11-01 wrote ``<NCT>.json``."""
+    p = rep / f"{nct}.clinician.json"
+    return p if p.exists() else rep / f"{nct}.json"
+
+
 def _sheet(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -38,14 +44,15 @@ def score(run: Path, model: str) -> list[dict]:
     for ref_path in sorted(REFS.glob("NCT*.adjudicated.json")):
         nct = ref_path.name.split(".")[0]
         ref = [c.name for c in load(ref_path).assignment.confounders]
-        s1 = _sheet(run / model / "rep1" / f"{nct}.clinician.json")
-        rep2 = run / model / "rep2" / f"{nct}.clinician.json"
+        s1 = _sheet(_path(run / model / "rep1", nct))
+        rep2 = _path(run / model / "rep2", nct)
         names = [i["name"] for i in s1["items"]]
         rows.append({
             "nct_id": nct, "name": NAMES.get(nct, nct), "prf": names_prf(names, ref),
             "n": len(names), "cited": sum(i["status"] == "cited" for i in s1["items"]),
             "dropped": [f"{d['name']} ({d['reason']})" for d in s1["dropped"]],
-            "rep_identical": rep2.exists() and [i["name"] for i in _sheet(rep2)["items"]] == names,
+            "rep_identical": ([i["name"] for i in _sheet(rep2)["items"]] == names
+                              if rep2.exists() else None),
             "model": s1["model"], "prompt_version": s1["prompt_version"]})  # fmt: skip
     return rows
 
@@ -55,10 +62,12 @@ def render(rows: list[dict], run: Path, model: str) -> str:
     for r in rows:
         tot += r["prf"]
     n = len(rows)
+    have = [r["rep_identical"] for r in rows if r["rep_identical"] is not None]
+    rep2 = (f"replicate 2 identical in {sum(have)}/{len(have)} trials" if have
+            else "replicate 2 not run yet")
     lines = [
         f"# Trialist + Clinician: {model} confounders vs the adjudicated references", "",
-        f"Run `{run.as_posix()}`, replicate 1; replicate 2 identical in "
-        f"{sum(r['rep_identical'] for r in rows)}/{n} trials. Prompt "
+        f"Run `{run.as_posix()}`, replicate 1; {rep2}. Prompt "
         f"{rows[0]['prompt_version'] if rows else '?'}. Lenient one-to-one name matching. The "
         "frozen E3 result (`e3_qwen3_32b.md`, confounder recall 0) is unchanged.", "",
         DISCLOSURE, "",

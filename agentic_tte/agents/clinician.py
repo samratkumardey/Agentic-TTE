@@ -380,7 +380,8 @@ def check(answer: ClinicianAnswer, p: TargetTrialProtocol, lit: Literature,
             if art is None:
                 notes.append(f"citation to PMID {cit.pmid} dropped: not in the literature")
             elif len(cit.quote.split()) < 4 or _ws(cit.quote) not in _ws(art.text):
-                notes.append(f"citation to PMID {cit.pmid} dropped: quote not found verbatim")
+                notes.append(f"citation to PMID {cit.pmid} dropped: quote not found verbatim: "
+                             f"{cit.quote[:200]!r}")
             else:
                 good.append(Citation(pmid=art.pmid, quote=" ".join(cit.quote.split())))
         if any(t and f" {t} " in f" {key} " for t in treat):

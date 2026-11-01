@@ -125,12 +125,14 @@ def clinician(
     lit = Literature.model_validate_json(literature.read_text(encoding="utf-8"))
     sheet = Clinician(llm).propose(p, lit)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.with_suffix(".json").write_text(sheet.model_dump_json(indent=2), encoding="utf-8")
-    out.with_suffix(".md").write_text(sheet.to_markdown(), encoding="utf-8")
+    # Appended, not with_suffix: "<NCT>.clinician" would lose ".clinician" (rep1, 2026-11-01).
+    js, md = Path(f"{out}.json"), Path(f"{out}.md")
+    js.write_text(sheet.model_dump_json(indent=2), encoding="utf-8")
+    md.write_text(sheet.to_markdown(), encoding="utf-8")
     u = llm.usage
     cited = sum(i.status == "cited" for i in sheet.items)
     typer.echo(f"[clinician] {len(sheet.items)} confounders ({cited} cited), "
-               f"{len(sheet.dropped)} dropped; wrote {out.with_suffix('.json')}", err=True)
+               f"{len(sheet.dropped)} dropped; wrote {js}", err=True)
     typer.echo(f"[llm] calls={u.calls} cache_hits={u.cache_hits} prompt_tokens={u.prompt_tokens} "
                f"completion_tokens={u.completion_tokens} failures={u.failures}", err=True)
 
