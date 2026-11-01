@@ -1,0 +1,370 @@
+{
+  "protocol_id": "NCT03680274-reference-adjudicated",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT03680274",
+    "title": "Lessening Organ Dysfunction With VITamin C (LOVIT)",
+    "record_sha256": "7b83accbcd113bae387c56f84f0f3d0110f7b0e109778e16f8167da367506f11"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Admitted to the intensive care unit with proven or suspected infection as the main diagnosis;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Intensive care unit admission",
+              "domain": "Visit"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "Infection, proven or suspected",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Currently treated with a continuous IV infusion of vasopressors (norepinephrine, epinephrine, vasopressin, dopamine, phenylephrine).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Norepinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Epinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Vasopressin",
+              "domain": "Drug"
+            },
+            {
+              "name": "Dopamine",
+              "domain": "Drug"
+            },
+            {
+              "name": "Phenylephrine",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "> 24 hours of intensive care unit admission;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Time since ICU admission (h)",
+              "domain": "Observation"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 24
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Known Glucose-6-phosphate dehydrogenase (G6PD) deficiency;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Glucose-6-phosphate dehydrogenase deficiency",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Pregnancy;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Pregnancy",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Known allergy to vitamin C;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Allergy to vitamin C",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Known kidney stones within the past 1 year;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Kidney stone",
+              "domain": "Condition"
+            }
+          ],
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 365,
+              "unit": "day"
+            }
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Received any intravenous vitamin C during this hospitalization unless incorporated in parenteral nutrition;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Ascorbic acid, intravenous",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "During this hospitalisation; vitamin C in parenteral nutrition does not count."
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Expected death or withdrawal of life-sustaining treatments within 48 hours;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Expected death / withdrawal of life support within 48 h",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Previously enrolled in this study;",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Previously enrolled in LOVIT."
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Previously enrolled in a trial with which co-enrolment is not allowed.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Co-enrolment restriction."
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "The LOVIT trial has broad eligibility criteria and includes patients with a primary diagnosis of sepsis of any cause (including sepsis caused by viral pathogens as COVID-19).",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Descriptive note in the registry (broad sepsis eligibility incl. COVID-19), not a criterion."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Vitamin C",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Vitamin C: 50 mg/kg every 6 hours for 96 hours.",
+      "components": [
+        {
+          "concept": {
+            "name": "Ascorbic acid, intravenous",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 6,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "First dose at randomization; doses every 6 hours."
+    },
+    {
+      "label": "Control",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "Dextrose 5% in water (D5W) or normal saline (0.9% NaCl) in a volume to match the vitamin C.",
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "APACHE II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Vasopressor dose",
+        "domain": "Drug"
+      },
+      {
+        "name": "Serum lactate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Invasive mechanical ventilation",
+        "domain": "Procedure"
+      },
+      {
+        "name": "Source of infection",
+        "domain": "Condition"
+      },
+      {
+        "name": "COVID-19",
+        "domain": "Condition"
+      },
+      {
+        "name": "Charlson comorbidity index",
+        "domain": "Observation"
+      },
+      {
+        "name": "hydrocortisone",
+        "domain": "Drug"
+      },
+      {
+        "name": "thiamine",
+        "domain": "Drug"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "First time an ICU patient with proven/suspected infection is on a continuous vasopressor infusion, within 24 h of ICU admission.",
+    "offset": null,
+    "rationale": "Randomization required current vasopressor therapy for infection and occurred within 24 h of ICU admission.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 28,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Number of deceased participants or with persistent organ dysfunction",
+      "primary": true,
+      "time_frame": "Both assessed at 28 days",
+      "concept": {
+        "name": "Death or persistent organ dysfunction",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 28,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] Primary analysis in the modified intention-to-treat population (Lamontagne et al., NEJM 2022).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "adjudication (eval/build_adjudicated_references.py)",
+    "notes": "Investigator's reference (SKD) with the decisions in adjudication.json applied; decisions marked audit=true go to the clinician audit."
+  }
+}

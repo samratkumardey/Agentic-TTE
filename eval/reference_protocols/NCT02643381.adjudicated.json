@@ -1,0 +1,273 @@
+{
+  "protocol_id": "NCT02643381-reference-adjudicated",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT02643381",
+    "title": "Etomidate Versus Ketamine for Emergency Endotracheal Intubation: a Prospective Randomized Clinical Trial",
+    "record_sha256": "1ecc4e1ad154ed559f02b1b6365756d8a1f6f54f474a4590787001b737d3aad4"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Adult patient (male or female) requiring emergency endotracheal intubation.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 18
+          }
+        },
+        {
+          "concepts": [
+            {
+              "name": "Emergency endotracheal intubation",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Children (<18 years old).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": "<",
+            "value": 18
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Women who are known to be pregnant.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Pregnancy",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Any patient who has been previously randomized in the EvK Trial.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Previously randomized in EvK."
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients who require endotracheal intubation without sedative medication. For example, patients in full cardiac arrest.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Cardiac arrest",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Intubation without sedative; paper also lists obtunded patients and awake intubations."
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Patients with a known allergy to ketamine or etomidate.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Allergy to ketamine",
+              "domain": "Condition"
+            },
+            {
+              "name": "Allergy to etomidate",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Any individual wearing a MedAlert bracelet indicating that he/she has formally opted out of the EvK Trial.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Opt-out MedAlert bracelet."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Etomidate",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients randomized to this group will receive etomidate immediately prior to emergency endotracheal intubation.",
+      "components": [
+        {
+          "concept": {
+            "name": "Etomidate",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Ketamine",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients randomized to this group will receive ketamine immediately prior to emergency endotracheal intubation.",
+      "components": [
+        {
+          "concept": {
+            "name": "Ketamine",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 1,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Induction agent given immediately before intubation."
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "Intubation location (ICU / ward / ED)",
+        "domain": "Visit"
+      },
+      {
+        "name": "Indication: respiratory failure / airway protection",
+        "domain": "Condition"
+      },
+      {
+        "name": "Sepsis",
+        "domain": "Condition"
+      },
+      {
+        "name": "Pre-induction systolic blood pressure",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Vasopressor use before intubation",
+        "domain": "Drug"
+      },
+      {
+        "name": "Illness severity score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Neuromuscular blocker used",
+        "domain": "Drug"
+      },
+      {
+        "name": "trauma",
+        "domain": "Condition"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "Emergency endotracheal intubation (induction drug administration).",
+    "offset": null,
+    "rationale": "Randomization occurred at the moment of emergency intubation and the induction drug was given immediately.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 7,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "Survival at Day 7",
+      "primary": true,
+      "time_frame": "Day 7",
+      "concept": {
+        "name": "Death",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 7,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] Patients analysed by randomized arm (396 etomidate, 395 ketamine); result reported as a difference in day-7 survival (Matchett et al., Intensive Care Med 2022).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "adjudication (eval/build_adjudicated_references.py)",
+    "notes": "Investigator's reference (SKD) with the decisions in adjudication.json applied; decisions marked audit=true go to the clinician audit."
+  }
+}

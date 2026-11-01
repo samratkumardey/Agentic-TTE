@@ -14,10 +14,11 @@
       "positive end-expiratory pressure",
       "invasive mechanical ventilation"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). The paper requires endotracheal mechanical ventilation and PEEP >= 5 (registry: > 5); the AI atoms add ventilation and use the paper's threshold.",
     "text": "ARDS with a PaO2 / FiO2 < 150 with a PEEP > 5 since less than 48 hrs",
-    "id": 0
+    "id": 0,
+    "audit": true
   },
   {
     "nct_id": "NCT00299650",
@@ -33,10 +34,11 @@
       "rocuronium",
       "pancuronium"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same meaning; named NMBA ingredients map to RxNorm, a 'continuous infusion' class does not.",
     "text": "Continuous administration of NMBA for ARDS prior inclusion",
-    "id": 1
+    "id": 1,
+    "audit": true
   },
   {
     "nct_id": "NCT00299650",
@@ -49,10 +51,11 @@
       "persistent air leak",
       "pneumothorax"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Pneumothorax without a persistent leak would over-exclude.",
     "text": "Persistent air leak",
-    "id": 2
+    "id": 2,
+    "audit": true
   },
   {
     "nct_id": "NCT00299650",
@@ -64,7 +67,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: first time the oxygenation criterion (PaO2/FiO2 < 150, PEEP >= 5) is met while ventilated, within 48 h of ARDS onset. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 3
+    "id": 3,
+    "audit": true
   },
   {
     "nct_id": "NCT00299650",
@@ -72,9 +76,10 @@
     "item": "end_event",
     "a": null,
     "b": "hospital discharge",
-    "decision": null,
-    "note": null,
-    "id": 4
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Primary outcome is death before hospital discharge within 90 days (paper): follow-up ends at discharge or 90 days, whichever first. The compiler does not apply end events yet; it says so.",
+    "id": 4,
+    "audit": true
   },
   {
     "nct_id": "NCT00299650",
@@ -82,9 +87,10 @@
     "item": "end_rule",
     "a": null,
     "b": "first",
-    "decision": null,
-    "note": null,
-    "id": 5
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). See the end event.",
+    "id": 5,
+    "audit": true
   },
   {
     "nct_id": "NCT00299650",
@@ -98,9 +104,17 @@
       "tidal volume",
       "sepsis"
     ],
-    "decision": null,
-    "note": null,
-    "id": 6
+    "decision": {
+      "add": [
+        {
+          "name": "tidal volume",
+          "domain": "Measurement"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Sepsis is in SKD's ARDS aetiology; tidal volume added (ventilator setting at baseline).",
+    "id": 6,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -112,10 +126,11 @@
     "b": [
       "intensive care unit stay"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Hospitalized in intensive care unit",
-    "id": 7
+    "id": 7,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -131,10 +146,11 @@
       "serum lactate",
       "blood urea nitrogen"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Resuscitation itself is the time-zero event; the paper's haemodynamic criteria need a k-of-n rule the schema lacks. Kept for clinician review.",
     "text": "Need fluid resuscitation (according to the physician in charge of the patient)",
-    "id": 8
+    "id": 8,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -150,10 +166,11 @@
       "von Willebrand disease",
       "coagulation defect"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Coagulation disorders (haemophilia, Willebrand disease, etc.)",
-    "id": 9
+    "id": 9,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -166,10 +183,11 @@
       "hepatic failure",
       "cirrhosis of liver"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Cirrhosis is not hepatic failure; AI over-broad.",
     "text": "Severe hepatic failure",
-    "id": 10
+    "id": 10,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -182,10 +200,11 @@
     "b": [
       "burn of more than 20% of body surface"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Keeps the %TBSA measurement.",
     "text": "Burns > 20 % of body surface",
-    "id": 11
+    "id": 11,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -201,10 +220,11 @@
       "anaphylactic shock",
       "dehydration"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). 'Fluid replacement during anaesthesia' is the criterion; 'anesthesia' alone over-excludes.",
     "text": "Volume replacement: As a part of anaesthesia, for anaphylactic shock, or for dehydration",
-    "id": 12
+    "id": 12,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -217,10 +237,11 @@
       "do not resuscitate status",
       "withdrawal of life-sustaining treatment"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Advance directive of withholding or withdrawal of life-sustaining treatments",
-    "id": 13
+    "id": 13,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -239,9 +260,10 @@
       "gelatin",
       "dextran"
     ],
-    "decision": null,
-    "note": null,
-    "id": 14
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). The four named colloids; the generic class adds nothing.",
+    "id": 14,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -253,7 +275,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: first resuscitation fluid bolus for hypovolaemia in the ICU stay. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 15
+    "id": 15,
+    "audit": true
   },
   {
     "nct_id": "NCT00318942",
@@ -268,9 +291,10 @@
       "multiple trauma",
       "hypovolemic shock"
     ],
-    "decision": null,
-    "note": null,
-    "id": 16
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). SKD's admission-diagnosis stratum covers sepsis, trauma and hypovolaemic shock.",
+    "id": 16,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -282,10 +306,11 @@
     "b": [
       "intensive care unit stay"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "hospitalized in intensive care unit for less than 7 days",
-    "id": 17
+    "id": 17,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -298,10 +323,11 @@
       "infection",
       "positive culture"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). A positive culture is not a documented site of infection.",
     "text": "at least one proven site of infection",
-    "id": 18
+    "id": 18,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -313,10 +339,11 @@
     "b": [
       "SOFA organ score"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). More specific (count of organs with SOFA >= 3).",
     "text": "at least 2 organ dysfunction as defined by a SOFA score =or> to 3 for at least 6 consecutive hours",
-    "id": 19
+    "id": 19,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -330,10 +357,11 @@
       "pregnancy",
       "lactation"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Registry says breastfeeding.",
     "text": "pregnancy or breath feeding",
-    "id": 20
+    "id": 20,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -345,10 +373,11 @@
     "b": [
       "do not resuscitate status"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "decision not to resuscitate",
-    "id": 21
+    "id": 21,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -360,10 +389,11 @@
     "b": [
       "terminal illness"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "underlying disease with an estimated life expectancy of less than 1 month",
-    "id": 22
+    "id": 22,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -376,10 +406,11 @@
     "b": [
       "cirrhosis of liver, Child-Pugh class C"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Cirrhosis plus a Child-Pugh score value is more precise.",
     "text": "chronic liver disease (Child C)",
-    "id": 23
+    "id": 23,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -391,10 +422,11 @@
     "b": [
       "injury"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "recent trauma (ie within the past 72 hours)",
-    "id": 24
+    "id": 24,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -406,10 +438,11 @@
     "b": [
       "intracranial lesion"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Mass or neoplasm is the usual reading of 'intracranial process'.",
     "text": "intracranial process",
-    "id": 25
+    "id": 25,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -421,10 +454,11 @@
     "b": [
       "therapeutic anticoagulation"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "formal indication for curative anticoagulant; prophylactic use of heparin is allowed",
-    "id": 26
+    "id": 26,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -432,10 +466,11 @@
     "item": "E23 category",
     "a": "clinical",
     "b": "administrative",
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). A real exclusion added by amendment (previous sepsis episode in the same stay).",
     "text": "and a new exclusion criteria was added: \"patients who had a previous episode of sepsis during the same hospital stay",
-    "id": 27
+    "id": 27,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -457,7 +492,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: septic-shock definition first fully met, within 24 h of onset. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 29
+    "id": 29,
+    "audit": true
   },
   {
     "nct_id": "NCT00625209",
@@ -470,9 +506,17 @@
     "b": [
       "community acquired infection"
     ],
-    "decision": null,
-    "note": null,
-    "id": 30
+    "decision": {
+      "add": [
+        {
+          "name": "community-acquired infection",
+          "domain": "Condition"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Added.",
+    "id": 30,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -480,10 +524,11 @@
     "item": "I3 category",
     "a": "administrative",
     "b": "clinical",
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Clinician equipoise is not in the data: administrative.",
     "text": "The ICU clinician considers that both 6% hydroxyethyl starch (130/0.4) and saline are equally appropriate for the patient and that no specific indication or contraindication for either exists.",
-    "id": 31
+    "id": 31,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -507,10 +552,11 @@
       "urine output",
       "serum lactate"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Matches the registry list; lactate is not in it.",
     "text": "The requirement for fluid resuscitation must be supported by AT LEAST ONE of the following clinical signs: Heart rate > 90 beats per minute; Systolic blood pressure (SBP) < 100mmHg or mean arterial pressure (MAP) < 75mmHg or at least 40mmHg decrease in SBP or MAP from the baseline recording; Central venous pressure < 10mmHg; Pulmonary artery wedge pressure < 12 mmHg; Respiratory variation in systolic or mean arterial blood pressure of >5 mmHg; Capillary refill time > one second; Urine output < 0.5 ml/kg for one hour",
-    "id": 32
+    "id": 32,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -523,10 +569,11 @@
     "b": [
       "intracranial hemorrhage"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Keeps the severity qualifier.",
     "text": "Primary non-traumatic intracranial haemorrhage or severe traumatic intracranial haemorrhage (mass lesion > 25 ml).",
-    "id": 33
+    "id": 33,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -540,10 +587,11 @@
     "b": [
       "pregnancy"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Taken literally, the criterion excludes every woman aged 18-49 without documented sterility or a negative test; its intent is to exclude pregnancy, which is what the data can show. For clinician review.",
     "text": "Women of child bearing age (18-49 years old), unless evidence of documented menopause, hysterectomy or surgical sterilisation or negative pregnancy test before randomisation",
-    "id": 34
+    "id": 34,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -557,10 +605,11 @@
       "burn",
       "liver transplantation"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Patients admitted to the ICU for the treatment of burns or following liver transplantation surgery.",
-    "id": 35
+    "id": 35,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -572,10 +621,11 @@
     "b": [
       "terminal illness"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Death is deemed imminent and inevitable or the patient has an underlying disease process with a life expectancy of < 90 days.",
-    "id": 36
+    "id": 36,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -587,7 +637,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: first resuscitation fluid order in the current ICU admission. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 37
+    "id": 37,
+    "audit": true
   },
   {
     "nct_id": "NCT00935168",
@@ -602,9 +653,21 @@
       "acute kidney injury",
       "surgical admission"
     ],
-    "decision": null,
-    "note": null,
-    "id": 38
+    "decision": {
+      "add": [
+        {
+          "name": "trauma",
+          "domain": "Condition"
+        },
+        {
+          "name": "acute kidney injury",
+          "domain": "Condition"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Trauma was a stratification factor; AKI a prespecified subgroup. Surgical admission duplicates SKD's operative admission.",
+    "id": 38,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -622,10 +685,11 @@
       "white blood cell count",
       "respiratory rate"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). '2 of 4 SIRS signs' needs a SIRS count; the AI version cannot express 2-of-4. Needs a derived SIRS-count concept at concept review.",
     "text": "Documented site of infection, or strong suspicion of infection, with 2 of the 4 clinical signs of inflammation: Core temperature > 38°C or < 35°C; Heart rate > 90 beats per minute; White cell count > 12 x 109/L or < 4 x 109/L or > 10% immature neutrophils; Respiratory rate > 20 breaths per minute, or PaCO2 < 32 mmHg, or mechanical ventilation.",
-    "id": 39
+    "id": 39,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -648,10 +712,11 @@
       "dobutamine",
       "milrinone"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). The trial includes inotropes; milrinone is one.",
     "text": "Being treated with vasopressors or inotropes to maintain a systolic blood pressure > 90mmHg, or mean arterial blood pressure > 60mmHg, or a MAP target set by the treating clinician for maintaining perfusion",
-    "id": 40
+    "id": 40,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -663,10 +728,11 @@
     "b": [
       "vasopressor"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's. Not compilable either way (the compiler has no cumulative duration): reported as an unsupported criterion, never dropped.",
     "text": "Administration of vasopressors or inotropes for = 4 hours and present at time of randomisation.",
-    "id": 41
+    "id": 41,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -678,10 +744,11 @@
     "b": [
       "septic shock"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Satisfied by construction: time zero is the first time all criteria are met.",
     "text": "Met all inclusion criteria more than 24 hours ago",
-    "id": 42
+    "id": 42,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -693,10 +760,11 @@
     "b": [
       "terminal illness"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Death from underlying disease is likely within 90 days",
-    "id": 43
+    "id": 43,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -718,7 +786,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: all inclusion criteria first met (infection, >= 2 SIRS signs, ventilated, >= 4 h vasopressors); the 24 h limit is an eligibility bound on both sides. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 45
+    "id": 45,
+    "audit": true
   },
   {
     "nct_id": "NCT01448109",
@@ -734,9 +803,17 @@
       "time from shock onset",
       "norepinephrine dose"
     ],
-    "decision": null,
-    "note": null,
-    "id": 46
+    "decision": {
+      "add": [
+        {
+          "name": "time from shock onset to time zero",
+          "domain": "Observation"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). A covariate in the paper's sensitivity analysis. Norepinephrine dose duplicates SKD's catecholamine dose.",
+    "id": 46,
+    "audit": true
   },
   {
     "nct_id": "NCT01636089",
@@ -748,10 +825,11 @@
     "b": [
       "intensive care unit stay"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). The paper excludes inclusion on the day of ICU admission; the AI atom states 'admitted at least 24 h earlier'.",
     "text": "in intensive care unit since 24h and for up to 48 hours",
-    "id": 47
+    "id": 47,
+    "audit": true
   },
   {
     "nct_id": "NCT01636089",
@@ -764,10 +842,11 @@
       "contrast media",
       "computed tomography with contrast"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Contrast is often recorded only as a contrast-enhanced imaging procedure; 'any of' both captures it.",
     "text": "with contrast medium injection",
-    "id": 48
+    "id": 48,
+    "audit": true
   },
   {
     "nct_id": "NCT01636089",
@@ -779,10 +858,11 @@
     "b": [
       "serum creatinine increase"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "rise in creatinine > 26µmol/L within 48hours",
-    "id": 49
+    "id": 49,
+    "audit": true
   },
   {
     "nct_id": "NCT01636089",
@@ -811,7 +891,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: contrast administration. Both share the unresolved problem that hydration starts 1 h before it (see the HYDRAREA grace item). Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 51
+    "id": 51,
+    "audit": true
   },
   {
     "nct_id": "NCT01636089",
@@ -824,9 +905,21 @@
       "sofa score",
       "chronic kidney disease"
     ],
-    "decision": null,
-    "note": null,
-    "id": 52
+    "decision": {
+      "add": [
+        {
+          "name": "chronic kidney disease",
+          "domain": "Condition"
+        },
+        {
+          "name": "SOFA score",
+          "domain": "Measurement"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). CKD is the main risk factor for contrast AKI.",
+    "id": 52,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -844,10 +937,11 @@
       "arterial PaCO2",
       "serum bicarbonate"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Lactatemia of 2mmol/l or above, with pH of 7.20 or below and PaCO2 of 45mmHg or below and bicarbonatemia of 20mmol/l or below",
-    "id": 53
+    "id": 53,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -860,10 +954,11 @@
       "respiratory acidosis",
       "arterial PaCO2"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Keeps the registry's PaCO2 definition.",
     "text": "Single respiratory disorder (PaCO2 > 50 mmHg, Bicarbonatemia equal or higher than (PaCO2-40)/10 + 24",
-    "id": 54
+    "id": 54,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -879,10 +974,11 @@
       "ileostomy",
       "biliary drainage"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Acute diarrhea, ileostomy or biliary drainage",
-    "id": 55
+    "id": 55,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -897,10 +993,11 @@
       "chronic kidney disease stage 5",
       "chronic dialysis"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Stage 5 is worse than stage IV and must be excluded too.",
     "text": "Stage IV kidney failure or chronic dialysis",
-    "id": 56
+    "id": 56,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -918,10 +1015,11 @@
       "poisoning by methanol",
       "poisoning by ethylene glycol"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Registry names the class; 'PEG' is ambiguous (polyethylene vs ethylene glycol). For clinician review.",
     "text": "Tubular acidosis, ketoacidosis, high anion gap acids poisoning (PEG, aspirin, methanol)",
-    "id": 57
+    "id": 57,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -937,10 +1035,11 @@
       "pregnancy",
       "terminal illness"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). More precise (spontaneous breathing, <= 48 h).",
     "text": "PaCO2 equal to 45mmHg or above and spontaneous breathing, pregnancy, protected patients, moribund patient (life expectancy of 48h or below)",
-    "id": 58
+    "id": 58,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -964,7 +1063,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: first blood gas meeting the acidaemia criteria within 48 h of ICU admission. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 60
+    "id": 60,
+    "audit": true
   },
   {
     "nct_id": "NCT02476253",
@@ -978,9 +1078,21 @@
       "acute kidney injury",
       "serum bicarbonate"
     ],
-    "decision": null,
-    "note": null,
-    "id": 61
+    "decision": {
+      "add": [
+        {
+          "name": "acute kidney injury",
+          "domain": "Condition"
+        },
+        {
+          "name": "serum bicarbonate",
+          "domain": "Measurement"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). AKI (AKIN 2-3) was a stratification factor.",
+    "id": 61,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -993,10 +1105,11 @@
     "b": [
       "intensive care unit stay"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Registry includes intermediate care units.",
     "text": "Admission to an Intensive Care Unit (ICU) or intermediate care unit participating to the trial",
-    "id": 62
+    "id": 62,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1004,10 +1117,11 @@
     "item": "I7 category",
     "a": "administrative",
     "b": "clinical",
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Treatment timing, carried by time zero plus the 24 h grace period.",
     "text": "Study drug infusion initiated no longer than 24 hours post first severity criterion",
-    "id": 63
+    "id": 63,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1025,10 +1139,11 @@
       "high-flow nasal oxygen",
       "Pneumonia Severity Index"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Keeps each severity threshold.",
     "text": "Severity defined by at least one of the following: Pneumonia Severity Index (PSI) > 130 (Fine class V); Patient placed on mechanical ventilation (invasive or not) for acute respiratory failure, with a PEEP level of 5 cm of water or more; Patient treated by high-flow oxygen therapy with a FiO2 of 50% or more and a P/F ratio less than 300; Patient treated by oxygen therapy with a partial rebreathing-mask with a reservoir bag, provided that the PaO2 is less than (cf. table):",
-    "id": 64
+    "id": 64,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1036,10 +1151,11 @@
     "item": "I9 category",
     "a": "administrative",
     "b": "clinical",
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Part of I8's oxygenation threshold.",
     "text": "Oxygen flow (L/min) 6 7 8 9 10 or more PaO2 (mmHg) less than 180 210 240 270 300",
-    "id": 65
+    "id": 65,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1047,10 +1163,11 @@
     "item": "I13 category",
     "a": "administrative",
     "b": "clinical",
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Sub-group text for the embedded COVID-19 trial. The main analysis did not include COVID-19 patients, so the emulation should exclude them: for clinician review.",
     "text": "Diagnosis of COVID19 either as certain (PCR) or probable (evocative clinical and radiological features AND epidemic context AND absence of other microbiological documentation).",
-    "id": 66
+    "id": 66,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1067,10 +1184,11 @@
     "b": [
       "vasopressor"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Names the vasopressors and the septic-shock indication.",
     "text": "Patient treated by vasopressors for septic shock at the time of inclusion",
-    "id": 67
+    "id": 67,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1082,10 +1200,11 @@
     "b": [
       "influenza"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Patients in which rapid PCR-test is positive for flu",
-    "id": 68
+    "id": 68,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1099,10 +1218,11 @@
       "tuberculosis",
       "mycosis"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Active tuberculosis or fungal infection",
-    "id": 69
+    "id": 69,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1115,10 +1235,11 @@
       "bone marrow suppression",
       "neutropenia"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Neutropenia is not the criterion.",
     "text": "Myelosuppression",
-    "id": 70
+    "id": 70,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1130,10 +1251,11 @@
     "b": [
       "do not intubate status"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Decision of withholding mechanical ventilation or endotracheal intubation",
-    "id": 71
+    "id": 71,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1145,10 +1267,11 @@
     "b": [
       "prednisone"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Prednisone or equivalent: a dose measure is the right concept. Not compilable either way (the compiler has no cumulative duration): reported as an unsupported criterion, never dropped.",
     "text": "Patients under treatment by more than 15 mg/d of prednisone (or equivalent) for more than 30 days",
-    "id": 72
+    "id": 72,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1160,7 +1283,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Both anchor at the first severity criterion; SKD allows it anywhere in the hospital stay, AI only in the ICU. The paper times treatment from 'the onset of any severity criterion', which can begin in the emergency department (e.g. ventilation started before ICU transfer), so SKD's anchor is the more faithful one. Keep SKD. Reference keeps the investigator's anchor.",
     "rating": "acceptable alternative",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 73
+    "id": 73,
+    "audit": true
   },
   {
     "nct_id": "NCT02517489",
@@ -1180,9 +1304,32 @@
       "high flow nasal oxygen",
       "chronic obstructive lung disease"
     ],
-    "decision": null,
-    "note": null,
-    "id": 74
+    "decision": {
+      "add": [
+        {
+          "name": "SAPS II",
+          "domain": "Measurement"
+        },
+        {
+          "name": "noninvasive ventilation",
+          "domain": "Procedure"
+        },
+        {
+          "name": "high-flow nasal oxygen",
+          "domain": "Procedure"
+        },
+        {
+          "name": "chronic obstructive lung disease",
+          "domain": "Condition"
+        }
+      ],
+      "remove": [
+        "time from severity criterion to treatment"
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Removed SKD's 'time from severity criterion to treatment': it is measured after time zero (post-baseline). Added respiratory support types and COPD.",
+    "id": 74,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1194,10 +1341,11 @@
     "b": [
       "intensive care unit stay"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Admission to an intensive care unit (ICU)",
-    "id": 75
+    "id": 75,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1214,10 +1362,11 @@
       "serum creatinine",
       "urine output"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). KDIGO stage codes are rarely recorded; creatinine ratio, value and urine output follow the registry.",
     "text": "Evidence of severe AKI defined by at least 1 of the following 3 criteria: ≥ 2-fold increase in serum creatinine from a known pre-morbid baseline or during the current hospitalization; OR ii) Achievement of a serum creatinine ≥ 354 µmol/L with evidence of a minimum increase of 27 µmol/L from pre-morbid baseline or during the current hospitalization; OR iii) Urine output < 6.0 mL/kg over the preceding 12 hours",
-    "id": 76
+    "id": 76,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1229,10 +1378,11 @@
     "b": [
       "poisoning"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Presence of a drug overdose that necessitates initiation of RRT",
-    "id": 77
+    "id": 77,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1246,10 +1396,11 @@
       "chronic kidney disease stage 5",
       "estimated glomerular filtration rate"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Pre-hospital eGFR is often missing; CKD stage 4-5 codes capture the same patients.",
     "text": "Known pre-hospitalization advanced chronic kidney disease, defined by an estimated glomerular filtration rate < 20 mL/min/1.73 m2",
-    "id": 78
+    "id": 78,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1269,10 +1420,11 @@
       "thrombotic microangiopathy",
       "acute interstitial nephritis"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Presence or clinical suspicion of renal obstruction, rapidly progressive glomerulonephritis, vasculitis, thrombotic microangiopathy or acute interstitial nephritis",
-    "id": 79
+    "id": 79,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1285,9 +1437,10 @@
     "b": [
       "renal replacement therapy"
     ],
-    "decision": null,
-    "note": null,
-    "id": 80
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Treatment is RRT; requiring a recorded catheter insertion would lose patients whose insertion is not coded.",
+    "id": 80,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1299,7 +1452,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: full eligibility for severe AKI with no emergency RRT indication. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 81
+    "id": 81,
+    "audit": true
   },
   {
     "nct_id": "NCT02568722",
@@ -1313,9 +1467,21 @@
       "chronic kidney disease",
       "fluid balance"
     ],
-    "decision": null,
-    "note": null,
-    "id": 82
+    "decision": {
+      "add": [
+        {
+          "name": "SAPS II",
+          "domain": "Measurement"
+        },
+        {
+          "name": "chronic kidney disease",
+          "domain": "Condition"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). SAPS II was the paper's baseline score; fluid balance left out (often missing).",
+    "id": 82,
+    "audit": true
   },
   {
     "nct_id": "NCT02643381",
@@ -1337,7 +1503,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: emergency intubation (induction drug). Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 84
+    "id": 84,
+    "audit": true
   },
   {
     "nct_id": "NCT02643381",
@@ -1356,9 +1523,17 @@
       "admission diagnosis",
       "neuromuscular blocking agent"
     ],
-    "decision": null,
-    "note": null,
-    "id": 85
+    "decision": {
+      "add": [
+        {
+          "name": "trauma",
+          "domain": "Condition"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). The rest duplicates SKD. Both lists adjust for the neuromuscular blocker given at intubation, a co-treatment at time zero: for clinician review.",
+    "id": 85,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1379,10 +1554,11 @@
       "dopamine",
       "dobutamine"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). 'Catecholamines': vasopressin and phenylephrine are not catecholamines, dobutamine is.",
     "text": "Systolic blood pressure <90 mmHg >30 min or catecholamines required to maintain pressure >90 mmHg during Systole",
-    "id": 86
+    "id": 86,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1398,10 +1574,11 @@
       "papillary muscle rupture",
       "rupture of cardiac free wall"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Mechanical cause of cardiogenic shock",
-    "id": 87
+    "id": 87,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1413,10 +1590,11 @@
     "b": [
       "peripheral arterial disease"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Severe peripheral artery disease with impossibility to insert ECLS cannulae",
-    "id": 88
+    "id": 88,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1428,10 +1606,11 @@
     "b": [
       "terminal illness"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Other severe concomitant disease with limited life expectancy <6 months",
-    "id": 89
+    "id": 89,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1443,9 +1622,10 @@
     "b": [
       "extracorporeal membrane oxygenation"
     ],
-    "decision": null,
-    "note": null,
-    "id": 90
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). VA-ECMO is the specific device.",
+    "id": 90,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1467,7 +1647,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: diagnostic coronary angiography in AMI with cardiogenic shock, before revascularization. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 92
+    "id": 92,
+    "audit": true
   },
   {
     "nct_id": "NCT03637205",
@@ -1491,9 +1672,21 @@
       "number of diseased coronary vessels",
       "vasopressor use"
     ],
-    "decision": null,
-    "note": null,
-    "id": 93
+    "decision": {
+      "add": [
+        {
+          "name": "arterial pH",
+          "domain": "Measurement"
+        },
+        {
+          "name": "serum creatinine",
+          "domain": "Measurement"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Cardiac arrest and lactate duplicate SKD's resuscitation and lactate.",
+    "id": 93,
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
@@ -1508,10 +1701,11 @@
       "infection",
       "sepsis"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Infection covers sepsis.",
     "text": "Admitted to the intensive care unit with proven or suspected infection as the main diagnosis;",
-    "id": 94
+    "id": 94,
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
@@ -1523,10 +1717,11 @@
     "b": [
       "intensive care unit stay"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Satisfied by construction: time zero is within 24 h of ICU admission.",
     "text": "> 24 hours of intensive care unit admission;",
-    "id": 95
+    "id": 95,
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
@@ -1538,10 +1733,11 @@
     "b": [
       "allergy to ascorbic acid"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Known allergy to vitamin C;",
-    "id": 96
+    "id": 96,
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
@@ -1553,10 +1749,11 @@
     "b": [
       "limitation of treatment"
     ],
-    "decision": null,
-    "note": null,
+    "decision": "SKD",
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Same concepts, different wording: keep the investigator's.",
     "text": "Expected death or withdrawal of life-sustaining treatments within 48 hours;",
-    "id": 97
+    "id": 97,
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
@@ -1578,7 +1775,8 @@
     "note": "Rated by the LLM second annotator at SKD's request, 2026-10-31. It wrote one of the two anchors, so it is an interested party: all 12 time-zero ratings go to the clinician audit. Same moment: first time an ICU patient with infection is on a continuous vasopressor, within 24 h of ICU admission. Reference keeps the investigator's anchor.",
     "rating": "same",
     "rating_scale": "same | acceptable alternative | different",
-    "id": 99
+    "id": 99,
+    "audit": true
   },
   {
     "nct_id": "NCT03680274",
@@ -1593,8 +1791,20 @@
       "hydrocortisone",
       "thiamine"
     ],
-    "decision": null,
-    "note": null,
-    "id": 100
+    "decision": {
+      "add": [
+        {
+          "name": "hydrocortisone",
+          "domain": "Drug"
+        },
+        {
+          "name": "thiamine",
+          "domain": "Drug"
+        }
+      ]
+    },
+    "note": "Adjudicated by the LLM second annotator at SKD's request, 2026-10-31 (interested party: flagged for the clinician audit). Use before time zero only (the compiler reads confounders up to time zero).",
+    "id": 100,
+    "audit": true
   }
 ]

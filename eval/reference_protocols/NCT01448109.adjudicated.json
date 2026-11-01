@@ -1,0 +1,434 @@
+{
+  "protocol_id": "NCT01448109-reference-adjudicated",
+  "mode": "replay",
+  "source": {
+    "nct_id": "NCT01448109",
+    "title": "A Randomised Blinded Placebo Controlled Trial of Hydrocortisone in Critically Ill Patients With Septic Shock",
+    "record_sha256": "36ee5515345058510514070fc21a3cedf3749e5e9320ccf683a2b5e893a6c7c1"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Aged 18 years or older",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Age",
+              "domain": "Demographic"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 18
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Documented site of infection, or strong suspicion of infection, with 2 of the 4 clinical signs of inflammation: Core temperature > 38°C or < 35°C; Heart rate > 90 beats per minute; White cell count > 12 x 109/L or < 4 x 109/L or > 10% immature neutrophils; Respiratory rate > 20 breaths per minute, or PaCO2 < 32 mmHg, or mechanical ventilation.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Infection, documented or suspected",
+              "domain": "Condition"
+            }
+          ]
+        },
+        {
+          "concepts": [
+            {
+              "name": "SIRS criteria met (count of temperature, HR, WBC, RR/PaCO2/MV)",
+              "domain": "Measurement"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 2
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Components: T > 38 or < 35 C; HR > 90; WBC > 12 or < 4 x10^9/L or > 10% bands; RR > 20 or PaCO2 < 32 or MV."
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Being treated with mechanical ventilation at the time of randomisation",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Invasive mechanical ventilation",
+              "domain": "Procedure"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Being treated with vasopressors or inotropes to maintain a systolic blood pressure > 90mmHg, or mean arterial blood pressure > 60mmHg, or a MAP target set by the treating clinician for maintaining perfusion",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "norepinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "epinephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "vasopressin",
+              "domain": "Drug"
+            },
+            {
+              "name": "dopamine",
+              "domain": "Drug"
+            },
+            {
+              "name": "phenylephrine",
+              "domain": "Drug"
+            },
+            {
+              "name": "dobutamine",
+              "domain": "Drug"
+            },
+            {
+              "name": "milrinone",
+              "domain": "Drug"
+            }
+          ],
+          "concept_logic": "any",
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "anchor": "time_zero"
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "Administration of vasopressors or inotropes for = 4 hours and present at time of randomisation.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Vasopressor/inotrope continuous infusion duration (h)",
+              "domain": "Drug"
+            }
+          ],
+          "value": {
+            "comparator": ">=",
+            "value": 4
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Registry '= 4 hours' is a lost '>='."
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Met all inclusion criteria more than 24 hours ago",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Time since all inclusion criteria met (h)",
+              "domain": "Observation"
+            }
+          ],
+          "value": {
+            "comparator": ">",
+            "value": 24
+          }
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Really a constraint on time zero; enforced there."
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Clinician expects to prescribe systemic corticosteroids for an indication other than septic shock (not including nebulised or inhaled corticosteroid)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Systemic corticosteroid, other indication",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "Inhaled/nebulised excluded from this concept."
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Patients treated with etomidate",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Etomidate",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": "REVIEW: no window in registry; consider current admission."
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients receiving treatment with Amphotericin B for systemic fungal infections at time of randomisation",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Amphotericin B",
+              "domain": "Drug"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Patients with documented cerebral malaria at the time of randomisation",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Cerebral malaria",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Patients with documented strongyloides infection at the time of randomisation",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Strongyloidiasis",
+              "domain": "Condition"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Death is deemed inevitable or imminent during this admission and either the attending physician, patient or surrogate legal decision maker is not committed to active treatment",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Do not resuscitate / limitation of life-sustaining treatment",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Death from underlying disease is likely within 90 days",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "Life expectancy < 90 days from underlying disease",
+              "domain": "Observation"
+            }
+          ]
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Patient has been previously enrolled in the ADRENAL study.",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "notes": "Previously enrolled in ADRENAL."
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Hydrocortisone",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": null,
+      "components": [
+        {
+          "concept": {
+            "name": "Hydrocortisone",
+            "domain": "Drug"
+          }
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": {
+        "amount": 6,
+        "unit": "hour"
+      },
+      "grace_period_origin": "user",
+      "grace_period_evidence": "Infusion started at randomization."
+    },
+    {
+      "label": "Sterile air filled vial",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": null,
+      "components": [],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [
+      {
+        "name": "age",
+        "domain": "Demographic"
+      },
+      {
+        "name": "sex",
+        "domain": "Demographic"
+      },
+      {
+        "name": "APACHE II",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Operative vs non-operative admission",
+        "domain": "Visit"
+      },
+      {
+        "name": "Catecholamine dose (<= vs > 15 ug/min)",
+        "domain": "Drug"
+      },
+      {
+        "name": "Source of infection",
+        "domain": "Condition"
+      },
+      {
+        "name": "Serum lactate",
+        "domain": "Measurement"
+      },
+      {
+        "name": "Renal replacement therapy",
+        "domain": "Procedure"
+      },
+      {
+        "name": "SOFA score",
+        "domain": "Measurement"
+      },
+      {
+        "name": "time from shock onset to time zero",
+        "domain": "Observation"
+      }
+    ],
+    "origin": "user"
+  },
+  "time_zero": {
+    "anchor_event": "First time all inclusion criteria are met: suspected/documented infection with >= 2 SIRS signs, on mechanical ventilation, and on vasopressor/inotrope for >= 4 h; randomization within 24 h of that.",
+    "offset": null,
+    "rationale": "E1 excludes patients who met all criteria more than 24 h earlier, so time zero is anchored to criteria fulfilment.",
+    "origin": "user",
+    "evidence": null
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 90,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [],
+    "competing_events": [],
+    "origin": "user"
+  },
+  "outcomes": [
+    {
+      "name": "All cause mortality at 90 days after randomisation",
+      "primary": true,
+      "time_frame": "90 days after randomisation",
+      "concept": {
+        "name": "Death",
+        "domain": "Observation"
+      },
+      "horizon": {
+        "amount": 90,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "user",
+  "causal_contrast_evidence": "[paraphrase - paste verbatim] Primary outcome analysed in the intention-to-treat population (Venkatesh et al., NEJM 2018).",
+  "analysis_plan": {
+    "estimand": "risk_difference",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "origin": "user"
+  },
+  "provenance": {
+    "created_by": "adjudication (eval/build_adjudicated_references.py)",
+    "notes": "Investigator's reference (SKD) with the decisions in adjudication.json applied; decisions marked audit=true go to the clinician audit."
+  }
+}
