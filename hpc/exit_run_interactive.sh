@@ -29,10 +29,18 @@ for spec in $EXIT_MODELS; do
   for REP in $(seq "$EXIT_REPS"); do
     CACHE="$ATTE_PROJECT_DIR/exit/$LABEL/$SLUG/rep$REP"
     RUN="runs/exit-$LABEL/$SLUG/rep$REP"
-    exit_fresh_cache "$CACHE" || exit 1
     # A fresh server for every replicate, started with the recorded settings.
     # shellcheck source=/dev/null
     source hpc/interactive_ollama.sh stop > /dev/null
+    # With our server stopped, the GPU must be empty. Another process on it (2026-11-01: a
+    # personal Ollama on port 11434 running qwen3:32b) slowed every call past the timeout.
+    USED="$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n1)"
+    if (( ${USED:-0} > 1024 )) && [[ "${ATTE_ALLOW_SHARED_GPU:-0}" != 1 ]]; then
+      echo "[atte] the GPU already holds ${USED} MiB from another process (nvidia-smi lists it)."
+      echo "[atte] Stop it, or use a batch job; a shared GPU makes calls time out. Not started."
+      exit 1
+    fi
+    exit_fresh_cache "$CACHE" || exit 1
     # shellcheck source=/dev/null
     source hpc/interactive_ollama.sh || exit 1
     export ATTE_CACHE_DIR="$CACHE"          # after interactive_ollama.sh, which resets it

@@ -36,8 +36,8 @@ from agentic_tte.protocol.models import ConceptRef, Domain, TargetTrialProtocol
 from agentic_tte.sources.pubmed.client import Article, PubMedClient
 
 # clinician-v2: the answer schema bounds every length (at most 20 confounders, 2 citations each,
-# quotes under 300 characters). v1 had no bounds, and qwen3:32b ran past the 600-second request
-# timeout on the first two core trials (2026-11-01, before any output was produced).
+# quotes under 300 characters), a guard against runaway output. Added after timeouts on the core
+# trials (2026-11-01) that turned out to be a shared GPU (SCORING.md item 29), not the schema.
 PROMPT_VERSION = "clinician-v2"
 TOP_K = 15  # passages shown to the model
 PER_ARTICLE = 3  # at most this many passages from one abstract
