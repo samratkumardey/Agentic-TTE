@@ -78,3 +78,29 @@ def test_lenient_names():
     assert cr.lenient("Invasive mechanical ventilation", "invasive mechanical ventilation")
     assert cr.lenient("serum lactate", "arterial serum lactate")
     assert not cr.lenient("age", "pregnancy")
+
+
+def test_comparator_error_does_not_hide_the_treatment_arm(nct03872011_study):
+    # A draft that calls every arm a comparator (registry ACTIVE_COMPARATOR labels) is wrong on
+    # the comparator, and its treatment arm is still scored: no grace period, no components.
+    a = _filled(nct03872011_study)
+    a["treatment_strategies"][0]["grace_period"] = {"amount": 6, "unit": "hour"}
+    b = copy.deepcopy(a)
+    for arm in b["treatment_strategies"]:
+        arm["is_comparator"], arm["grace_period"], arm["components"] = True, None, []
+    r = cr.compare(*(TargetTrialProtocol.model_validate(x) for x in (a, b)), {})
+    t = r["treatment"]
+    assert not t["comparator_agree"] and t["grace_agree"] is False
+    assert t["components"].recall == 0
+
+
+def test_e3_eligibility_grade(nct03872011_study):
+    se = _load("score_e3")
+    a = _filled(nct03872011_study)
+    p = TargetTrialProtocol.model_validate(a)
+    assert se.eligibility_grade(p, p)["grade_strict"] == "correct"
+    b = copy.deepcopy(a)
+    for c in b["eligibility"]:
+        c["atoms"][0]["concepts"][0]["name"] = "cardiogenic shock"
+    g = se.eligibility_grade(p, TargetTrialProtocol.model_validate(b))
+    assert g["strict"] == 0 and g["grade_strict"] == "wrong"

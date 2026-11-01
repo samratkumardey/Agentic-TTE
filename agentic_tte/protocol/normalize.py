@@ -42,16 +42,19 @@ _DAY_N_RE = re.compile(r"\b(hour|day|week|month|year)s?\s+(\d+(?:\.\d+)?)\b", re
 
 def parse_duration(text: str | None) -> Duration | None:
     """First "<number> <time unit>" in ``text``: "90 days after randomization" -> 90 day,
-    "28-day mortality" -> 28 day; otherwise "<unit> <number>": "up to Day 14" -> 14 day.
+    "28-day mortality" -> 28 day; otherwise the last "<unit> <number>": "up to Day 14" -> 14 day,
+    "Day 0 to Day 28" -> 28 day.
     Returns None when there is no explicit duration."""
     if not text:
         return None
     m = _DURATION_RE.search(text)
     if m:
         return Duration(amount=float(m.group(1)), unit=_UNIT_ALIASES[m.group(2).lower()])
-    m = _DAY_N_RE.search(text)
-    if m:
-        return Duration(amount=float(m.group(2)), unit=_UNIT_ALIASES[m.group(1).lower()])
+    # Unit first, the last mention: "Day 0 to Day 28" -> 28 day ("Day 0" is the origin).
+    ms = _DAY_N_RE.findall(text)
+    if ms:
+        unit, amount = ms[-1]
+        return Duration(amount=float(amount), unit=_UNIT_ALIASES[unit.lower()])
     return None
 
 

@@ -186,8 +186,10 @@ def compare(a: TargetTrialProtocol, b: TargetTrialProtocol, syn: dict) -> dict:
     if not comp_agree:
         flag("treatment", "comparator", {k: va[k]["is_comparator"] for k in common},
              {k: vb[k]["is_comparator"] for k in common})
-    treat = [k for k in common if not va[k]["is_comparator"] and not vb[k]["is_comparator"]]
-    comp_prf, grace_same = PRF(), True
+    # The first protocol's treatment arms, whatever the second calls them: a comparator error is
+    # scored above, and must not also hide the arm's components and grace period.
+    treat = [k for k in common if not va[k]["is_comparator"]]
+    comp_prf, grace_same = PRF(), True if treat else None
     for k in treat:
         comp_prf += names_prf(vb[k]["components"], va[k]["components"])
         if match_count(vb[k]["components"], va[k]["components"]) < max(
@@ -289,7 +291,7 @@ def render(rows: list[dict], la: str, lb: str) -> str:
         "Disagreements |",
         "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
-    yn = {True: "same", False: "differs"}
+    yn = {True: "same", False: "differs", None: "n/a"}
     for r in rows:
         e, t = r["eligibility"], r["treatment"]
         lines.append(

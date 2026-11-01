@@ -16,6 +16,8 @@ from agentic_tte.protocol.normalize import parse_age, parse_duration, parse_temp
         ("Randomization to Day 30", 30, "day"),
         ("Up to Day 14", 14, "day"),
         ("Week 12", 12, "week"),
+        # A range: the origin "Day 0" is not the horizon (BICAR-ICU, NCT02476253).
+        ("Day 0 to Day 28", 28, "day"),
     ],
 )
 def test_parse_duration(text, amount, unit):
