@@ -443,8 +443,8 @@
     "item": "arm '2' grace period (hours)",
     "a": null,
     "b": 6.0,
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "SKD accepted in chat, 2026-10-31. 6 h. Rule: where treatment starts at randomization, a short grace period absorbs EHR charting lag; analysed with clone-censor-weight.",
     "id": 28
   },
   {
@@ -704,8 +704,8 @@
     "item": "arm 'Hydrocortisone' grace period (hours)",
     "a": null,
     "b": 6.0,
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "SKD accepted in chat, 2026-10-31. 6 h. Rule: where treatment starts at randomization, a short grace period absorbs EHR charting lag; analysed with clone-censor-weight.",
     "id": 44
   },
   {
@@ -791,7 +791,7 @@
     "a": null,
     "b": 1.0,
     "decision": null,
-    "note": null,
+    "note": "Unresolved (2026-10-31): hydration starts 1 h BEFORE contrast. With time zero at contrast, the compiler counts only treatment started at or after time zero, so no patient is treated; with time zero at hydration start, the contrast criterion lies after time zero (look-ahead). Neither reference is emulable as written: needs a pre-time-zero assignment window (pipeline extension) or the trial is reported as not emulable.",
     "id": 50
   },
   {
@@ -941,8 +941,10 @@
     "item": "arm 'Intervention' grace period (hours)",
     "a": null,
     "b": 24.0,
-    "decision": null,
-    "note": null,
+    "decision": {
+      "value_hours": 6.0
+    },
+    "note": "SKD accepted in chat, 2026-10-31. 6 h, not the AI's 24 h: the 24 h in the paper caps the dose, it is not when treatment starts (first infusion at inclusion). A 24 h window would also count the control group's salvage bicarbonate as initiation. Rule: where treatment starts at randomization, a short grace period absorbs EHR charting lag; analysed with clone-censor-weight.",
     "id": 59
   },
   {
@@ -1314,8 +1316,8 @@
     "item": "arm 'Ketamine' grace period (hours)",
     "a": null,
     "b": 1.0,
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "SKD accepted in chat, 2026-10-31. 1 h: induction drug given immediately before intubation. Rule: where treatment starts at randomization, a short grace period absorbs EHR charting lag; analysed with clone-censor-weight.",
     "id": 83
   },
   {
@@ -1444,8 +1446,8 @@
     "item": "arm 'ECLS' grace period (hours)",
     "a": null,
     "b": 6.0,
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "SKD accepted in chat, 2026-10-31. 6 h: ECLS implanted after angiography, before or during revascularization. Rule: where treatment starts at randomization, a short grace period absorbs EHR charting lag; analysed with clone-censor-weight.",
     "id": 91
   },
   {
@@ -1555,8 +1557,8 @@
     "item": "arm 'Vitamin C' grace period (hours)",
     "a": null,
     "b": 6.0,
-    "decision": null,
-    "note": null,
+    "decision": "AI",
+    "note": "SKD accepted in chat, 2026-10-31. 6 h. Rule: where treatment starts at randomization, a short grace period absorbs EHR charting lag; analysed with clone-censor-weight.",
     "id": 98
   },
   {
