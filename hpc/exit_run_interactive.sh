@@ -5,6 +5,8 @@
 #
 #   ATTE_EXIT_TAG=final bash hpc/exit_run_interactive.sh
 #
+# ATTE_EXIT_FIRST_REP=2 starts at replicate 2 (e.g. after rep1 finished and the run stopped).
+#
 # Reproducibility settings (repro test 2026-10-24, hpc/HELLBENDER.md): Ollama runs with
 # OLLAMA_NUM_PARALLEL=1, is restarted before every replicate, and the model is unloaded before
 # every trial. All three are recorded in each manifest.txt.
@@ -26,7 +28,7 @@ echo "[atte] benchmark run on $GPU_NAME -> runs/exit-$LABEL"
 for spec in $EXIT_MODELS; do
   MODEL="${spec%|*}"; THINK="${spec#*|}"; SLUG="$(exit_slug "$MODEL" "$THINK")"
   export ATTE_MODEL="$MODEL" ATTE_THINK="$THINK"
-  for REP in $(seq "$EXIT_REPS"); do
+  for REP in $(seq "${ATTE_EXIT_FIRST_REP:-1}" "$EXIT_REPS"); do  # FIRST_REP: resume a run
     CACHE="$ATTE_PROJECT_DIR/exit/$LABEL/$SLUG/rep$REP"
     RUN="runs/exit-$LABEL/$SLUG/rep$REP"
     # A fresh server for every replicate, started with the recorded settings.
@@ -34,7 +36,12 @@ for spec in $EXIT_MODELS; do
     source hpc/interactive_ollama.sh stop > /dev/null
     # With our server stopped, the GPU must be empty. Another process on it (2026-11-01: a
     # personal Ollama on port 11434 running qwen3:32b) slowed every call past the timeout.
-    USED="$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n1)"
+    # Our stopped runner can take a while to release its memory: wait up to a minute.
+    for _ in $(seq 12); do
+      USED="$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n1)"
+      (( ${USED:-0} > 1024 )) || break
+      sleep 5
+    done
     if (( ${USED:-0} > 1024 )) && [[ "${ATTE_ALLOW_SHARED_GPU:-0}" != 1 ]]; then
       echo "[atte] the GPU already holds ${USED} MiB from another process (nvidia-smi lists it)."
       echo "[atte] Stop it, or use a batch job; a shared GPU makes calls time out. Not started."
