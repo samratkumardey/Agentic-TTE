@@ -78,6 +78,29 @@ def draft(
         typer.echo(f"[protocol] default or missing: {', '.join(unspecified)}", err=True)
 
 
+@app.command()
+def literature(
+    nct_id: str,
+    protocol: Path = typer.Option(..., help="The trial's protocol (e.g. the Trialist draft): "
+                                            "its conditions and treatments make the queries."),
+    out: Path = typer.Option(..., "--out", "-o", help="Write the literature JSON here."),
+    per_query: int = typer.Option(40, help="PubMed results per query."),
+):
+    """Build the Clinician's result-blind PubMed literature for a trial (public abstracts;
+    cached under the cache directory, kept out of git)."""
+    from agentic_tte.agents.clinician import build_literature
+    from agentic_tte.protocol import TargetTrialProtocol
+    from agentic_tte.sources.pubmed import PubMedClient
+
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    lit = build_literature(_ctgov().get_study(nct_id), p,
+                           PubMedClient(get_settings().cache_dir), per_query=per_query)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(lit.model_dump_json(indent=1), encoding="utf-8")
+    typer.echo(f"wrote {out}: {len(lit.articles)} abstracts, {len(lit.excluded)} left out "
+               f"(result-revealing), cutoff {lit.cutoff or 'none'}", err=True)  # fmt: skip
+
+
 @app.command("llm-check")
 def llm_check():
     """Check that the configured Ollama server is reachable and the model is pulled."""
@@ -513,10 +536,16 @@ def _replay_graph(run: dict, llm=None):
     con = _open_db(Path(run["db"]), Path(run["vocab"]) if run.get("vocab") else None)
     ctx = DataContext(data_classification=run["classification"], approved_by_rcss=run["approved"])
     auto = AutoApprove.model_validate(run["auto"]) if run.get("auto") else None
+    lit = None
+    if run.get("literature"):
+        from agentic_tte.agents.clinician import Literature
+
+        lit = Literature.model_validate_json(Path(run["literature"]).read_text(encoding="utf-8"))
     graph = build_replay(con, llm=llm, ctgov=_ctgov() if llm else None, context=ctx,
                          design_hr=run.get("design_hr"), checkpointer=saver, auto=auto,
                          n_bootstrap=run.get("bootstrap", 0),
-                         abbreviations=_abbreviations(run.get("abbreviations")))  # fmt: skip
+                         abbreviations=_abbreviations(run.get("abbreviations")),
+                         literature=lit)  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -535,6 +564,9 @@ def _replay_pause(graph, cfg, out: Path) -> None:
         (out / "protocol.json").write_text(json.dumps(ask["protocol"], indent=2), "utf-8")
         tmpl = {"reviewer": "", "confounders": None, "changes": {}}
         files = ["protocol.json", "design.json"]
+        if ask.get("clinician"):  # the Clinician's confounders, with citations
+            (out / "clinician.md").write_text(ask["clinician"], encoding="utf-8")
+            files.insert(0, "clinician.md")
         if ask.get("audit"):  # the Protocol Auditor failed the design: fix it or override
             (out / "audit.md").write_text(ask["audit"], encoding="utf-8")
             tmpl["override_audit"] = None
@@ -578,6 +610,9 @@ def replay_start(
                                                   "entries are expanded in concept search."),
     bootstrap: int = typer.Option(500, help="Bootstrap resamples for the RR/OR/RD CIs "
                                             "(eval/SCORING.md R4); 0 skips them."),
+    literature: Path = typer.Option(None, help="Result-blind literature (`agentic-tte "
+                                               "literature`): the Clinician proposes the "
+                                               "confounders (needs the LLM)."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -598,16 +633,19 @@ def replay_start(
            "classification": classification, "approved": approved, "design_hr": design_hr,
            "auto": policy.model_dump(mode="json") if policy else None,
            "abbreviations": str(abbreviations) if abbreviations else None,
-           "bootstrap": bootstrap}
+           "bootstrap": bootstrap,
+           "literature": str(literature) if literature else None}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}
     if protocol is not None:
         state["protocol"] = json.loads(protocol.read_text(encoding="utf-8"))
     else:
+        state["nct_id"] = nct
+    if nct is not None or literature is not None:
         from agentic_tte.llm import make_client
 
-        llm, state["nct_id"] = make_client(get_settings()), nct
+        llm = make_client(get_settings())
     graph, cfg = _replay_graph(run, llm)
     graph.invoke(state, cfg)
     _replay_pause(graph, cfg, out)

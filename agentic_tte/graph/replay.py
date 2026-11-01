@@ -1,8 +1,13 @@
 """Replay as a LangGraph workflow (PLAN.md §3, §13; Phase 2 exit criterion).
 
-    draft -> design_review* -> propose_concepts -> concept_review* -> compile -> audit
-          -> [fail: back to design_review*] -> gate
+    draft -> [clinician] -> design_review* -> propose_concepts -> concept_review* -> compile
+          -> audit -> [fail: back to design_review*] -> gate
           -> [red: report, stop] [amber: gate_review*] -> analyze -> report -> signoff*
+
+``[clinician]`` runs only when the graph is built with ``literature``: the Clinician agent
+(``agentic_tte.agents.clinician``) proposes baseline confounders with cited passages, as a new
+protocol version (origin ``agent``), unless the protocol already names confounders. Its sheet
+is shown at design review, where the reviewer approves the list or replaces it.
 
 ``*`` marks a human review. Each one is a LangGraph ``interrupt()``: the run stops, its state is
 saved by the checkpointer, and it resumes with the reviewer's answer
@@ -31,7 +36,8 @@ without an override stop the run. Under ``AutoApprove`` a failed audit is overri
 automatically (``audit="override"``, labelled in the report) or stops the run
 (``audit="stop"``).
 
-The LLM is used only by the Trialist, on registry text. The database connection is closed over
+The LLM is used only by the Trialist, on registry text, and by the Clinician, on registry
+text and result-blind abstracts. The database connection is closed over
 when the graph is built, never put in the state. The state holds the protocol, concept sets,
 SQL and aggregates (suppressed counts, estimates): no patient rows. The supervisor is the
 fixed routing below for now; an LLM supervisor can replace it later.
@@ -80,6 +86,8 @@ class ReplayState(TypedDict, total=False):
     audit_md: str
     audit_rounds: int  # failed audits so far
     audit_override: dict  # {"checks": [...], "reason": ..., "reviewer": ..., "auto": bool}
+    clinician: dict  # the Clinician's confounder sheet
+    clinician_md: str
     report: str
     status: str  # running, blocked, stopped, done, signed_off, returned, auto_approved
     log: Annotated[list[str], operator.add]
@@ -157,13 +165,14 @@ def _record(stage: str, answer: dict, auto: bool, decision: str) -> dict:
 def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = None,
                  design_hr: float | None = None, checkpointer=None,
                  auto: AutoApprove | None = None, abbreviations=None,
-                 n_bootstrap: int = 0):  # fmt: skip
+                 n_bootstrap: int = 0, literature=None):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
     ``AbbreviationList`` whose approved entries the concept search may expand.
     ``n_bootstrap``: resamples for the risk-measure CIs (eval/SCORING.md R4: 500 for scored
-    runs; 0 skips them)."""
+    runs; 0 skips them). ``literature``: a result-blind ``Literature`` for the trial; with it,
+    the Clinician proposes the confounders before design review."""
     context = context or DataContext()
 
     def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
@@ -183,6 +192,25 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         p = t.draft_from_study(state["study"]) if state.get("study") else t.draft(state["nct_id"])
         return {**_version(p, f"drafted by the Trialist ({llm.model})"), "status": "running"}
 
+    def clinician(state: ReplayState) -> dict:
+        from agentic_tte.agents.clinician import Clinician
+
+        p = _p(state)
+        if p.assignment.confounders:
+            return {"log": ["Clinician skipped: the protocol already names confounders"]}
+        if llm is None:
+            raise ValueError("the Clinician needs an LLM client")
+        sheet = Clinician(llm).propose(p, literature)
+        refs = [r.model_dump(mode="json") for r in sheet.refs()]
+        v = new_version(p, created_by=f"Clinician ({llm.model})",
+                        notes=f"confounders proposed ({len(refs)})",
+                        assignment={**p.assignment.model_dump(mode="json"), "confounders": refs,
+                                    "origin": Origin.AGENT.value})  # fmt: skip
+        cited = sum(i.status == "cited" for i in sheet.items)
+        return {**_version(v, f"confounders proposed by the Clinician ({len(refs)}, {cited} "
+                              f"cited, {len(sheet.dropped)} dropped by the checks)"),
+                "clinician": sheet.model_dump(mode="json"), "clinician_md": sheet.to_markdown()}
+
     def design_review(state: ReplayState) -> dict:
         p = _p(state)
         failed = (state.get("audit") or {}).get("failed") or []
@@ -194,6 +222,10 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             "ask": "Approve with {\"reviewer\": \"...\"}, or also change elements: "
                    "{\"changes\": {field: value}, \"confounders\": [{\"name\", \"domain\"}]}",
         }  # fmt: skip
+        if state.get("clinician_md"):
+            payload["clinician"] = state["clinician_md"]
+            payload["ask"] += (". The confounders are the Clinician's proposal: approving keeps "
+                               "them, \"confounders\" replaces them.")
         if failed:
             payload["audit"] = state["audit_md"]
             payload["ask"] = ("The Protocol Auditor failed checks " + ", ".join(failed) + ". "
@@ -386,6 +418,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         parts += [f"| {r['stage']} | {r['reviewer']} | {'yes' if r['auto'] else 'no'} | "
                   f"{r['decision']} | {r['note'] or '–'} | {r['at']} |" for r in reviews]
         parts += ["", "## Run log", ""] + [f"- {m}" for m in state.get("log", [])]
+        if state.get("clinician_md"):
+            parts += ["", state["clinician_md"].rstrip()]
         if state.get("audit_md"):
             parts += ["", state["audit_md"]]
             ov = state.get("audit_override")
@@ -432,12 +466,17 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     for name, fn in (("draft", draft), ("design_review", design_review),
                      ("propose_concepts", propose_concepts), ("concept_review", concept_review),
                      ("compile", compile_node), ("audit", audit_node), ("gate", gate),
+                     *([("clinician", clinician)] if literature is not None else []),
                      ("gate_review", gate_review),
                      ("analyze", analyze_node), ("report", report),
                      ("signoff", signoff)):  # fmt: skip
         g.add_node(name, fn)
     g.add_edge(START, "draft")
-    g.add_edge("draft", "design_review")
+    if literature is not None:
+        g.add_edge("draft", "clinician")
+        g.add_edge("clinician", "design_review")
+    else:
+        g.add_edge("draft", "design_review")
     g.add_conditional_edges("design_review", after_design_review, ["propose_concepts", "compile"])
     g.add_edge("propose_concepts", "concept_review")
     g.add_edge("concept_review", "compile")

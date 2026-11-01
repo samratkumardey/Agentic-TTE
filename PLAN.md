@@ -703,7 +703,7 @@ The MIMIC OMOP CDM exists (§16). What is missing for an end-to-end Replay of th
 | Supervisor | yes | yes | to build |
 | Trialist | LLM parse | schema-constrained protocol with 7 TTE elements, versioned | built |
 | Informatician | LLM writes SQL | LLM proposes concepts, vocabulary grounds them, a deterministic compiler writes the SQL | built |
-| Clinician | RAG | RAG with citations | to build |
+| Clinician | RAG | RAG with citations: result-blind PubMed literature, quotes verified verbatim, treatment, outcome and post-baseline variables dropped by checks | confounders built (2026-11-01); surrogates and the Statistician loop to build |
 | Statistician | PSM/IPTW + Cox | adds CCW for grace periods, E-values, PH test and immortal-time flag; the LLM never produces a number | built |
 | **Protocol Auditor** | no | checks time-zero alignment, immortal time, look-ahead, estimand vs the trial's | to build |
 | **Data Support Gate** | no | feasibility, attrition, positivity, small-cell suppression | built |
@@ -803,7 +803,7 @@ The count is not the contribution. Each new agent gets an ablation (run without 
        - Age, lactate, norepinephrine and ventilation differ only in the directions their data sources predict (κ 0.72–0.98).
        - **Every gap traced** (changelog items 19–22): age = anchor year; lactate = ED blood gases without a hospital admission; norepinephrine = prescriptions; ventilation = timing and procedureevents vs ventilator settings. None comes from the compiler.
        - For the ventilation, lactate and vasopressor concepts of the core trials, the concept review must say which sources count;
-   - then the Clinician (RAG) and Supervisor.
+   - **done 2026-11-01:** the Clinician's confounder proposals (`agents/clinician.py`, `agentic-tte literature`, `replay start --literature`; SCORING.md Phase 3 changelog item 29). Tested with a scripted model on synthetic OMOP, not yet run with a real model. Still to do: its surrogate answers to the Informatician and the Statistician ↔ Clinician loop; then the Supervisor.
 
    Tests on synthetic OMOP first.
 5. **User:** write the 12 reference protocols from a template (E3), blind to model outputs; a clinician adjudicates the uncertain items and audits 20%.

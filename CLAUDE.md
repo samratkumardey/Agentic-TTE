@@ -65,6 +65,11 @@ The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its 
 - The Protocol Auditor (`agents/auditor.py`) runs between compile and the gate. A failure goes back to design review, where the reviewer fixes the design or overrides it with a reason.
 - Never let a run reach the gate with an unexplained audit failure.
 
+The Clinician agent (`agents/clinician.py`, 2026-11-01) proposes confounders from a result-blind PubMed literature (`agentic-tte literature`; SCORING.md changelog item 29). It is tested only with a scripted model so far.
+- Never give it the trial's own papers or anything published after the trial's primary completion date.
+- Abstracts stay under `runs/` or the cache, never in git.
+- Its proposals are drafts for design review. Report its confounder score against the references as "Trialist + Clinician", with the item 29 disclosure.
+
 Rules for the graph:
 - Keep the state and interrupt payloads plain JSON (`model_dump(mode="json")`).
 - Never put the database connection or patient rows in the state.
