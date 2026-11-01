@@ -402,17 +402,22 @@ def check(answer: ClinicianAnswer, p: TargetTrialProtocol, lit: Literature,
     return sheet
 
 
+def request(p: TargetTrialProtocol, lit: Literature) -> tuple[list[Message], list[Passage]]:
+    """The messages the Clinician sends, and the passages they show."""
+    shown = retrieve(p, lit)
+    ctx = "\n\n".join(f"[PMID {x.pmid}] {x.text}" for x in shown) or "(no passages)"
+    msgs = [Message(role="system", content=SYSTEM),
+            Message(role="user", content=f"Protocol:\n{_summary(p)}\n\nPassages:\n{ctx}")]
+    return msgs, shown
+
+
 class Clinician:
     def __init__(self, llm: LLMClient):
         self.llm = llm
 
     def propose(self, p: TargetTrialProtocol, lit: Literature) -> ConfounderSheet:
-        shown = retrieve(p, lit)
-        ctx = "\n\n".join(f"[PMID {x.pmid}] {x.text}" for x in shown) or "(no passages)"
-        answer = self.llm.structured([
-            Message(role="system", content=SYSTEM),
-            Message(role="user", content=f"Protocol:\n{_summary(p)}\n\nPassages:\n{ctx}")],
-            ClinicianAnswer)  # fmt: skip
+        msgs, shown = request(p, lit)
+        answer = self.llm.structured(msgs, ClinicianAnswer)
         sheet = check(answer, p, lit, self.llm.model, shown)
         sheet.model_digest = self.llm.model_digest()
         return sheet

@@ -135,6 +135,69 @@ def clinician(
                f"completion_tokens={u.completion_tokens} failures={u.failures}", err=True)
 
 
+@app.command("clinician-probe")
+def clinician_probe(
+    protocol: Path = typer.Argument(..., help="Protocol JSON (e.g. a Trialist draft)."),
+    literature: Path = typer.Option(..., help="Its literature (`agentic-tte literature`)."),
+    seconds: float = typer.Option(120, help="Stop streaming after this long."),
+    schema: bool = typer.Option(True, help="Constrain to the answer schema, as the agent does."),
+):
+    """Diagnose a slow Clinician call: send the agent's exact request, streamed, and print the
+    prompt size, time to the first token, the token rate and what the model writes. Writes no
+    files and uses no cache."""
+    import time
+
+    import httpx
+
+    from agentic_tte.agents.clinician import ClinicianAnswer, Literature, request
+    from agentic_tte.llm.base import inline_refs
+    from agentic_tte.protocol import TargetTrialProtocol
+
+    st = get_settings()
+    p = TargetTrialProtocol.model_validate_json(protocol.read_text(encoding="utf-8"))
+    lit = Literature.model_validate_json(literature.read_text(encoding="utf-8"))
+    msgs, shown = request(p, lit)
+    chars = sum(len(m.content) for m in msgs)
+    typer.echo(f"[probe] {st.model} at {st.ollama_host}; {len(shown)} passages, {chars} prompt "
+               f"characters; schema={'on' if schema else 'off'}; think={st.think}", err=True)
+    body = {"model": st.model, "messages": [m.model_dump() for m in msgs], "stream": True,
+            "options": {"temperature": 0.0, "seed": 42, "num_ctx": st.num_ctx,
+                        "num_predict": st.num_predict}}  # fmt: skip
+    if schema:
+        body["format"] = inline_refs(ClinicianAnswer.model_json_schema())
+    if st.think is not None:
+        body["think"] = st.think
+    t0, first, n, text, last = time.monotonic(), None, 0, "", 0.0
+    with httpx.stream("POST", f"{st.ollama_host.rstrip('/')}/api/chat", json=body,
+                      timeout=httpx.Timeout(10, read=seconds + 30)) as r:  # fmt: skip
+        for line in r.iter_lines():
+            if not line:
+                continue
+            d = json.loads(line)
+            msg = d.get("message", {})
+            piece = msg.get("content", "") or msg.get("thinking", "")
+            now = time.monotonic() - t0
+            if piece:
+                first = now if first is None else first
+                n += 1
+                text += piece
+            if d.get("done"):
+                typer.echo(f"[probe] done at {now:.0f}s: prompt_eval_count="
+                           f"{d.get('prompt_eval_count')} eval_count={d.get('eval_count')} "
+                           f"done_reason={d.get('done_reason')}", err=True)
+                break
+            if now - last >= 10:
+                last = now
+                ft = "-" if first is None else f"{first:.0f}s"
+                typer.echo(f"[probe] {now:5.0f}s first_token={ft} chunks={n} "
+                           f"tail={text[-120:]!r}", err=True)
+            if now > seconds:
+                typer.echo(f"[probe] stopped after {seconds:.0f}s", err=True)
+                break
+    typer.echo(f"[probe] {n} chunks; output starts {text[:300]!r}", err=True)
+    typer.echo(f"[probe] output ends {text[-300:]!r}", err=True)
+
+
 @app.command("llm-check")
 def llm_check():
     """Check that the configured Ollama server is reachable and the model is pulled."""
