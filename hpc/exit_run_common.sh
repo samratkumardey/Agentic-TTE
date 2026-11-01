@@ -78,6 +78,13 @@ exit_write_manifest() {
     echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
     echo "ollama_flash_attention=$OLLAMA_FLASH_ATTENTION"
     echo "unload_per_trial=$EXIT_UNLOAD_PER_TRIAL"
+    echo "task=${ATTE_TASK:-draft}"
+    if [[ "${ATTE_TASK:-draft}" == clinician ]]; then
+      echo "drafts=$ATTE_DRAFTS"
+      echo "literature=$ATTE_LITERATURE"
+      # one hash over the trials' literature files, in trial order (as replay_phase0.sbatch)
+      echo "literature_sha256=$(for t in $EXIT_TRIALS; do sha256sum "$ATTE_LITERATURE/$t.json"; done | sha256sum | cut -d' ' -f1)"
+    fi
     echo "model=$model"
     echo "think=$think"
     echo "num_predict=${ATTE_NUM_PREDICT:-8192}"
@@ -90,13 +97,21 @@ exit_write_manifest() {
   } | tee "$run/manifest.txt"
 }
 
-# Draft every trial into $run, then close the manifest with the finish time and failures.
+# Draft every trial into $run (or, with ATTE_TASK=clinician, run the Clinician on each draft in
+# $ATTE_DRAFTS with its literature in $ATTE_LITERATURE), then close the manifest with the
+# finish time and failures.
 exit_draft_trials() {
-  local run="$1" model="$2" rep="$3" failed=0 t
+  local run="$1" model="$2" rep="$3" failed=0 t cmd
   for t in $EXIT_TRIALS; do
-    echo "[atte] $(date +%T) $model rep$rep $t"
+    echo "[atte] $(date +%T) ${ATTE_TASK:-draft} $model rep$rep $t"
     [[ "$EXIT_UNLOAD_PER_TRIAL" == "1" ]] && exit_unload_model "$model"
-    if ! uv run agentic-tte draft "$t" -o "$run/$t.protocol.json" 2> "$run/$t.log"; then
+    if [[ "${ATTE_TASK:-draft}" == clinician ]]; then
+      cmd=(uv run agentic-tte clinician "$ATTE_DRAFTS/$t.protocol.json"
+           --literature "$ATTE_LITERATURE/$t.json" -o "$run/$t.clinician")
+    else
+      cmd=(uv run agentic-tte draft "$t" -o "$run/$t.protocol.json")
+    fi
+    if ! "${cmd[@]}" 2> "$run/$t.log"; then
       echo "[atte] $t failed, see $run/$t.log"
       failed=$((failed + 1))
     fi

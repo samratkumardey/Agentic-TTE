@@ -6,7 +6,12 @@
 # Run from the repository root after `source hpc/env.sh`, on a node with internet (login or
 # OnDemand), so the literature can be built from PubMed first:
 #
-#   bash hpc/clinician_core_submit.sh gpu gpu:H100:1
+#   bash hpc/clinician_core_submit.sh gpu gpu:H100:1             # batch job, any partition/GPU
+#   bash hpc/clinician_core_submit.sh interactive                # now, on this session's GPU
+#
+# "interactive" runs both replicates one after the other in the current GPU session (Open
+# OnDemand), through exit_run_interactive.sh with the same settings, so nothing waits in the
+# queue; run it inside tmux. Outputs then go to runs/exit-<this GPU>-core-clinician/.
 #
 # Inputs:
 # - drafts: runs/exit-H100-core/qwen3_32b/rep1/<NCT>.protocol.json (the scored E3 drafts;
@@ -18,8 +23,11 @@
 # replicates (the second checks determinism only). Space: well under 100 MB (abstracts cached
 # under $ATTE_PROJECT_DIR/cache/pubmed, sheets, logs, LLM caches).
 set -euo pipefail
-PARTITION="${1:?usage: bash hpc/clinician_core_submit.sh <partition> <gres, e.g. gpu:H100:1>}"
-GRES="${2:?usage: bash hpc/clinician_core_submit.sh <partition> <gres, e.g. gpu:H100:1>}"
+USAGE="usage: bash hpc/clinician_core_submit.sh <partition> <gres, e.g. gpu:H100:1> | interactive"
+PARTITION="${1:?$USAGE}"
+if [[ "$PARTITION" != interactive ]]; then
+  GRES="${2:?$USAGE}"
+fi
 [[ -n "${ATTE_PROJECT_DIR:-}" ]] || { echo "[atte] source hpc/env.sh first"; exit 1; }
 export PATH="$HOME/.local/bin:$PATH"   # uv
 
@@ -50,4 +58,7 @@ export ATTE_TRIALS="$CORE"
 export ATTE_EXIT_MODELS="${ATTE_EXIT_MODELS:-qwen3:32b|false}"
 export ATTE_EXIT_REPS="${ATTE_EXIT_REPS:-2}"
 export ATTE_EXIT_TAG="${ATTE_EXIT_TAG:-core-clinician}"
+if [[ "$PARTITION" == interactive ]]; then
+  exec bash hpc/exit_run_interactive.sh
+fi
 exec bash hpc/exit_run_submit.sh "$PARTITION" "$GRES"
