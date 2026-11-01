@@ -4,7 +4,9 @@
 What is deterministic and what uses the LLM:
 - deterministic: the literature (PubMed searches built from the protocol, cached), retrieval
   (BM25 over abstract passages), and every check on the answer:
-  - each citation's quote must occur verbatim in the cited abstract, or it is dropped;
+  - each citation's quote must occur verbatim in the cited abstract (whole words in order; case,
+    punctuation and symbols ignored; fragments joined by "..." each of four or more words and in
+    order), or it is dropped;
   - the treatment itself and the primary outcome are never confounders (fault F-h);
   - variables named as measured after time zero are dropped (post-baseline adjustment);
   - duplicates are merged; age and sex are always included.
@@ -38,7 +40,11 @@ from agentic_tte.sources.pubmed.client import Article, PubMedClient
 # clinician-v2: the answer schema bounds every length (at most 20 confounders, 2 citations each,
 # quotes under 300 characters), a guard against runaway output. Added after timeouts on the core
 # trials (2026-11-01) that turned out to be a shared GPU (SCORING.md item 29), not the schema.
-PROMPT_VERSION = "clinician-v2"
+# clinician-v3: the quote check ignores punctuation and symbols and accepts "..." between
+# verbatim fragments of four or more words; the prompt asks for one contiguous sentence and says
+# another study's selection criteria are not evidence. Changed after rep1 of the v2 run showed
+# half the citations failing on punctuation, joined fragments or paraphrase (SCORING.md item 29).
+PROMPT_VERSION = "clinician-v3"
 TOP_K = 15  # passages shown to the model
 PER_ARTICLE = 3  # at most this many passages from one abstract
 
@@ -305,9 +311,11 @@ inclusion condition itself).
 exactly one domain: Demographic, Condition, Drug, Procedure, Device, Measurement, Observation \
 or Visit.
 6. rationale: one sentence on why the variable affects both treatment choice and outcome.
-7. citations: one or two quotes copied word for word from the passages (at least four words, \
-under 300 characters each), with the passage's PMID. Cite only what a passage actually says; \
-leave citations empty rather than invent one.
+7. citations: one or two quotes, each one contiguous sentence or clause copied word for word \
+from a passage (at least four words, under 300 characters), with the passage's PMID. Do not \
+paraphrase, summarise or join pieces of text. Cite a passage only if it reports the variable as \
+a predictor of the outcome or of treatment choice; another study's inclusion or exclusion \
+criteria are not evidence. Leave citations empty rather than invent one.
 8. List the 8 to 20 most important variables.
 Return only the JSON object."""
 
@@ -332,8 +340,25 @@ def _norm(s: str) -> str:
     return " ".join(_TOK.findall(s.lower()))
 
 
-def _ws(s: str) -> str:
-    return " ".join(s.split()).lower()
+_ELLIPSIS = re.compile(r"\[\.\.\.\]|\.\.\.|…")
+
+
+def verbatim(quote: str, text: str) -> bool:
+    """Whether ``quote`` occurs in ``text``: whole words in order, case, punctuation and symbols
+    ignored. Fragments joined by "..." must each be four or more words and occur in order."""
+    hay, pos = f" {_norm(text)} ", 0
+    frags = [f for f in _ELLIPSIS.split(quote) if _norm(f)]
+    if not frags:
+        return False
+    for f in frags:
+        words = _norm(f)
+        if len(words.split()) < 4:
+            return False
+        i = hay.find(f" {words} ", pos)
+        if i < 0:
+            return False
+        pos = i + len(words) + 1
+    return True
 
 
 _POST = re.compile(
@@ -379,7 +404,7 @@ def check(answer: ClinicianAnswer, p: TargetTrialProtocol, lit: Literature,
             art = lit.get(cit.pmid.strip())
             if art is None:
                 notes.append(f"citation to PMID {cit.pmid} dropped: not in the literature")
-            elif len(cit.quote.split()) < 4 or _ws(cit.quote) not in _ws(art.text):
+            elif not verbatim(cit.quote, art.text):
                 notes.append(f"citation to PMID {cit.pmid} dropped: quote not found verbatim: "
                              f"{cit.quote[:200]!r}")
             else:

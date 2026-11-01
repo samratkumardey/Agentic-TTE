@@ -15,6 +15,7 @@ from agentic_tte.agents.clinician import (
     build_literature,
     check,
     retrieve,
+    verbatim,
 )
 from agentic_tte.graph import build_replay, pending
 from agentic_tte.llm import ScriptedClient
@@ -263,3 +264,22 @@ def test_answer_schema_is_bounded():
     with pytest.raises(ValueError):
         ClinicianAnswer.model_validate({"confounders": [
             {"name": f"v{i}", "domain": "Measurement", "rationale": "r"} for i in range(21)]})
+
+
+def test_quote_check_v3():
+    text = ("Plasma citrulline ≤ 10 µmol/l at 24 h (OR 2.1) and the SOFA score were "
+            "independent predictors of 28-day mortality. Exclusion criteria were COPD, "
+            "liver cirrhosis and pregnancy.")
+    # punctuation and symbols are ignored, words must be whole and in order
+    assert verbatim("plasma citrulline 10 umol/l at 24 h", text) is False  # a different word
+    assert verbatim("Plasma citrulline <= 10 µmol/l at 24 h", text)
+    assert verbatim("SOFA score were independent predictors", text)
+    assert not verbatim("ore were independent predictors", text)  # a part-word
+    # "..." joins fragments that are each four or more words, in order
+    assert verbatim("Plasma citrulline ≤ 10 µmol/l ... were independent predictors of", text)
+    assert not verbatim("Plasma citrulline ≤ 10 ... were independent predictors of", text)
+    assert not verbatim("were independent predictors of 28-day ... Plasma citrulline ≤ 10",
+                        text)  # fmt: skip
+    assert not verbatim("Exclusion criteria ... liver cirrhosis", text)  # short fragments
+    assert not verbatim("SOFA predicted mortality", text)
+    assert not verbatim("...", text)

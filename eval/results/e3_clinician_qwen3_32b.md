@@ -1,6 +1,6 @@
 # Trialist + Clinician: qwen3_32b confounders vs the adjudicated references
 
-Run `runs/exit-H100-core-clinician-v2b`, replicate 1; replicate 2 not run yet. Prompt clinician-v2. Lenient one-to-one name matching. The frozen E3 result (`e3_qwen3_32b.md`, confounder recall 0) is unchanged.
+Run `runs/exit-H100-core-clinician-v2b`, replicate 1; replicate 2 identical in 12/12 trials. Prompt clinician-v2. Lenient one-to-one name matching. The frozen E3 result (`e3_qwen3_32b.md`, confounder recall 0) is unchanged.
 
 **Disclosure (changelog item 29):** the Clinician was built by the LLM that wrote the second annotation and adjudicated these references, after E3 showed the confounders missing. Its prompt holds no trial-specific content, but its developer had seen the reference lists, so this score is not blind to development. The references await the clinician audit.
 
