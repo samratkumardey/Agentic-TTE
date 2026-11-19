@@ -18,8 +18,9 @@ set -uo pipefail
 # shellcheck source=/dev/null
 source hpc/exit_run_common.sh
 exit_preflight || exit 1
+exit_refuse_mig || exit 1
 
-GPU_NAME="$(nvidia-smi --query-gpu=name --format=csv,noheader | head -n1)"
+GPU_NAME="$(exit_gpu_query --query-gpu=name --format=csv,noheader)"
 [[ -n "$GPU_NAME" ]] || { echo "[atte] no GPU in this session"; exit 1; }
 GPU="$(echo "$GPU_NAME" | grep -oE 'H100|H200|A100|L40S' | head -n1)"
 LABEL="$(exit_label "${GPU:-$(echo "$GPU_NAME" | tr -c 'A-Za-z0-9\n' '_')}")"
@@ -34,11 +35,11 @@ for spec in $EXIT_MODELS; do
     # A fresh server for every replicate, started with the recorded settings.
     # shellcheck source=/dev/null
     source hpc/interactive_ollama.sh stop > /dev/null
-    # With our server stopped, the GPU must be empty. Another process on it (2026-11-01: a
+    # With our server stopped, this session's GPU must be empty. Another process on it (2026-11-01: a
     # personal Ollama on port 11434 running qwen3:32b) slowed every call past the timeout.
     # Our stopped runner can take a while to release its memory: wait up to a minute.
     for _ in $(seq 12); do
-      USED="$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n1)"
+      USED="$(exit_gpu_query --query-gpu=memory.used --format=csv,noheader,nounits)"
       (( ${USED:-0} > 1024 )) || break
       sleep 5
     done

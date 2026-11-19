@@ -24,6 +24,31 @@ exit_slug() {
   echo "$slug"
 }
 
+# nvidia-smi for this session's GPU only. Hellbender does not hide a node's other GPUs, so an
+# unqualified query reads GPU 0, which may be another job's (2026-11-18, g003: 4 A100s, the
+# session on one of them). CUDA_VISIBLE_DEVICES names the session's GPU by index.
+exit_gpu_query() {
+  local dev="${CUDA_VISIBLE_DEVICES%%,*}"
+  if [[ "$dev" =~ ^[0-9]+$ ]]; then
+    nvidia-smi -i "$dev" "$@"
+  else
+    nvidia-smi "$@" | head -n1
+  fi
+}
+
+# A MIG slice (e.g. 1g.10gb) is too small for the models and shares its GPU with other jobs
+# (CLAUDE.md rule 5). OnDemand can hand one out; refuse it.
+exit_refuse_mig() {
+  local tres
+  [[ -n "${SLURM_JOB_ID:-}" ]] || return 0
+  tres="$(scontrol show job "$SLURM_JOB_ID" 2>/dev/null | grep -oE 'gres/gpu:[0-9]+g\.[0-9]+gb' | head -n1)"
+  if [[ -n "$tres" ]]; then
+    echo "[atte] this session has a MIG slice (${tres#gres/gpu:}), not a whole GPU. Start a new"
+    echo "[atte] session with a full GPU, or use a batch job. Not started."
+    return 1
+  fi
+}
+
 # Free the model's runner (and its prompt cache) without stopping the server.
 exit_unload_model() {
   curl -sf "$ATTE_OLLAMA_HOST/api/generate" -d "{\"model\": \"$1\", \"keep_alive\": 0}" \
@@ -71,7 +96,7 @@ exit_write_manifest() {
     echo "job_id=${SLURM_JOB_ID:-interactive}"
     echo "partition=${SLURM_JOB_PARTITION:-}"
     echo "node=$(hostname -s)"
-    echo "gpu=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader | head -n1)"
+    echo "gpu=$(exit_gpu_query --query-gpu=name,memory.total --format=csv,noheader)"
     echo "git_commit=$(git rev-parse --short HEAD)$(git diff --quiet || echo -dirty)"
     echo "ollama_image=$OLLAMA_SIF"
     echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
