@@ -6,7 +6,8 @@ references (eval/SCORING.md, Phase 3 changelog item 29).
 Replicate 1 is the analysis set; replicate 2 is checked for identity only. Names are matched
 leniently, one to one, as the annotators' lists were (``compare_references.names_prf``). The
 frozen E3 result (item 28) is not changed by this score. Writes
-``eval/results/e3_clinician_<model>.md``. Uses protocols and public abstracts only, no data.
+``eval/results/e3_clinician_<model>_<prompt version>.md`` (e.g. ``..._v3.md``), so a new prompt
+version never overwrites an earlier result. Uses protocols and public abstracts only, no data.
 """
 
 from __future__ import annotations
@@ -93,9 +94,11 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 2
     run = Path(args[0])
-    report = render(score(run, model), run, model)
+    rows = score(run, model)
+    report = render(rows, run, model)
+    version = rows[0]["prompt_version"].removeprefix("clinician-") if rows else "unknown"
     RESULTS.mkdir(exist_ok=True)
-    (RESULTS / f"e3_clinician_{model}.md").write_text(report, encoding="utf-8")
+    (RESULTS / f"e3_clinician_{model}_{version}.md").write_text(report, encoding="utf-8")
     print(report)
     return 0
 
