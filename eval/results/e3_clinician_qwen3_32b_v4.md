@@ -20,3 +20,7 @@ Run `runs/exit-A100-core-clinician-v4`, replicate 1; replicate 2 identical in 12
 | EvK | 20 (19) | 10 | 5 | 25% | 50% | Mechanical Ventilation (the treatment itself (F-h)) |
 | ECLS-SHOCK | 21 (20) | 13 | 6 | 29% | 46% | – |
 | LOVIT | 20 (20) | 12 | 7 | 35% | 58% | – |
+
+## Match review (rated, not automatic)
+
+Match review: 0/72 rated: not reported.

@@ -301,3 +301,31 @@ def test_quote_check_v3():
     assert not verbatim("Exclusion criteria ... liver cirrhosis", text)  # short fragments
     assert not verbatim("SOFA predicted mortality", text)
     assert not verbatim("...", text)
+
+
+def test_match_review_adds_rated_synonyms():
+    import importlib.util
+    import sys
+    from pathlib import Path
+
+    ev = Path(__file__).parents[1] / "eval"
+    sys.path.insert(0, str(ev))
+    spec = importlib.util.spec_from_file_location("score_clinician", ev / "score_clinician.py")
+    sc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sc)
+    assert sc.unmatched(["gender", "serum lactate", "troponin"], ["sex", "Serum lactate"]) == (
+        ["sex"], ["gender", "troponin"])
+    prf = sc.names_prf(["gender", "serum lactate", "troponin"], ["sex", "Serum lactate"])
+    rows = [{"nct_id": "N1", "name": "T1", "prf": prf, "missed": ["sex"], "n": 3, "cited": 0,
+             "dropped": [], "rep_identical": None, "prompt_version": "clinician-v4",
+             "left": [{"name": "gender", "rationale": "r"}, {"name": "troponin",
+                                                            "rationale": "r"}]}]  # fmt: skip
+    sheet = sc.review_template(rows)
+    assert sc.reviewed(rows, sheet) == "0/1 rated: not reported"
+    sheet[0].update(match="gender", rater="test")
+    assert sc.reviewed(rows, sheet) == {"N1": 1}
+    assert "recall 100%" in sc.render(rows, Path("run"), "m", sheet)
+    sheet[0]["match"] = "sodium"
+    assert "not a candidate" in sc.reviewed(rows, sheet)
+    other = sc.review_template([{**rows[0], "missed": ["age"]}])
+    assert "different run" in sc.reviewed(rows, other)
