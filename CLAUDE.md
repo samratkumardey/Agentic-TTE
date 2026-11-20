@@ -69,6 +69,7 @@ The Clinician agent (`agents/clinician.py`, 2026-11-01) proposes confounders fro
 - Never give it the trial's own papers or anything published after the trial's primary completion date.
 - Abstracts stay under `runs/` or the cache, never in git.
 - Its proposals are drafts for design review. Report its confounder score against the references as "Trialist + Clinician", with the item 29 disclosure.
+- Its surrogate answers (`agents/surrogates.py`, `replay start --surrogates`) are proposals for concept review: concept IDs come only from the vocabulary, never from the model, and `AutoApprove` keeps them only with `accept_surrogates`, labelled. Never present an auto-accepted surrogate as reviewed.
 
 Rules for the graph:
 - Keep the state and interrupt payloads plain JSON (`model_dump(mode="json")`).

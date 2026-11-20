@@ -9,6 +9,12 @@
 protocol version (origin ``agent``), unless the protocol already names confounders. Its sheet
 is shown at design review, where the reviewer approves the list or replaces it.
 
+With ``surrogates=True``, the Clinician also answers the Informatician after concept search:
+for each eligibility concept or confounder with no vocabulary match it proposes a stand-in
+variable (``agentic_tte.agents.surrogates``), whose concept IDs come from the vocabulary. The
+proposals are pre-filled in the concept-review decisions as ``surrogate`` with their rationale
+and limitation; the reviewer keeps, changes or rejects them.
+
 ``*`` marks a human review. Each one is a LangGraph ``interrupt()``: the run stops, its state is
 saved by the checkpointer, and it resumes with the reviewer's answer
 (``Command(resume=...)``):
@@ -37,10 +43,10 @@ automatically (``audit="override"``, labelled in the report) or stops the run
 (``audit="stop"``).
 
 The LLM is used only by the Trialist, on registry text, and by the Clinician, on registry
-text and result-blind abstracts. The database connection is closed over
-when the graph is built, never put in the state. The state holds the protocol, concept sets,
-SQL and aggregates (suppressed counts, estimates): no patient rows. The supervisor is the
-fixed routing below for now; an LLM supervisor can replace it later.
+text, result-blind abstracts and the names of unmapped concepts. The database connection is
+closed over when the graph is built, never put in the state. The state holds the protocol,
+concept sets, SQL and aggregates (suppressed counts, estimates): no patient rows. The
+supervisor is the fixed routing below for now; an LLM supervisor can replace it later.
 """
 
 from __future__ import annotations
@@ -88,6 +94,8 @@ class ReplayState(TypedDict, total=False):
     audit_override: dict  # {"checks": [...], "reason": ..., "reviewer": ..., "auto": bool}
     clinician: dict  # the Clinician's confounder sheet
     clinician_md: str
+    surrogates: dict  # the Clinician's surrogate answers to unmapped concepts
+    surrogates_md: str
     report: str
     status: str  # running, blocked, stopped, done, signed_off, returned, auto_approved
     log: Annotated[list[str], operator.add]
@@ -109,7 +117,9 @@ class AutoApprove(BaseModel):
     - gate: proceed on amber if ``proceed_on_amber``;
     - signoff: approve if ``sign_off``;
     - a failed Protocol Auditor: ``audit="override"`` accepts the findings (labelled in the
-      report), ``"stop"`` ends the run."""
+      report), ``"stop"`` ends the run;
+    - the Clinician's surrogate proposals: kept only if ``accept_surrogates`` (labelled in the
+      note), otherwise unmappable."""
 
     stages: set[Stage] = Field(default_factory=lambda: {"design", "concepts", "gate",
                                                         "signoff"})  # fmt: skip
@@ -120,6 +130,7 @@ class AutoApprove(BaseModel):
     proceed_on_amber: bool = True
     sign_off: bool = True
     audit: Literal["override", "stop"] = "override"
+    accept_surrogates: bool = False
 
     def answer(self, stage: Stage, payload: dict) -> dict:
         if stage == "design":
@@ -134,6 +145,12 @@ class AutoApprove(BaseModel):
                 elif d["action"] == "approve":
                     decisions[key] = {"action": "approve", "concept_ids": d["concept_ids"],
                                       "note": "auto: vocabulary proposal accepted"}
+                elif d["action"] == "surrogate" and self.accept_surrogates:
+                    decisions[key] = {**d, "note": "auto: Clinician surrogate accepted "
+                                                   "unreviewed. " + (d.get("note") or "")}
+                elif d["action"] == "surrogate":
+                    decisions[key] = {"action": "unmappable",
+                                      "note": "auto: Clinician surrogate not accepted unreviewed"}
                 else:
                     decisions[key] = {"action": "unmappable",
                                       "note": "auto: no vocabulary proposal"}
@@ -165,14 +182,15 @@ def _record(stage: str, answer: dict, auto: bool, decision: str) -> dict:
 def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = None,
                  design_hr: float | None = None, checkpointer=None,
                  auto: AutoApprove | None = None, abbreviations=None,
-                 n_bootstrap: int = 0, literature=None):  # fmt: skip
+                 n_bootstrap: int = 0, literature=None, surrogates: bool = False):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
     ``AbbreviationList`` whose approved entries the concept search may expand.
     ``n_bootstrap``: resamples for the risk-measure CIs (eval/SCORING.md R4: 500 for scored
     runs; 0 skips them). ``literature``: a result-blind ``Literature`` for the trial; with it,
-    the Clinician proposes the confounders before design review."""
+    the Clinician proposes the confounders before design review. ``surrogates``: the
+    Clinician proposes stand-ins for concepts the vocabulary cannot map (needs ``llm``)."""
     context = context or DataContext()
 
     def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
@@ -268,20 +286,43 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         return "compile" if keys <= have else "propose_concepts"
 
     def propose_concepts(state: ReplayState) -> dict:
-        book = propose(con, _p(state), abbreviations=abbreviations)
-        return {"book": book.model_dump(mode="json"), "log": [f"concepts proposed: "
-                                                              f"{book.summary()}"]}  # fmt: skip
+        p = _p(state)
+        book = propose(con, p, abbreviations=abbreviations)
+        out = {"book": book.model_dump(mode="json"), "log": [f"concepts proposed: "
+                                                             f"{book.summary()}"]}  # fmt: skip
+        if surrogates:
+            from agentic_tte.agents.surrogates import Surrogates
+
+            if llm is None:
+                raise ValueError("surrogate proposals need an LLM client")
+            sheet = Surrogates(llm).propose(p, book, con, abbreviations)
+            n = sum(i.status == "suggested" for i in sheet.items)
+            out |= {"surrogates": sheet.model_dump(mode="json"),
+                    "surrogates_md": sheet.to_markdown(),
+                    "log": [*out["log"], f"Clinician surrogates: {n} suggested for "
+                                         f"{len(sheet.items)} unmapped concepts"]}  # fmt: skip
+        return out
 
     def concept_review(state: ReplayState) -> dict:
         book = ConceptSetBook.model_validate(state["book"])
         p = _p(state)
-        answer, is_auto = review("concepts", {
+        template = decisions_template(book)
+        payload = {
             "stage": "concepts",
             "review_sheet": review_sheet(book),
-            "decisions_template": decisions_template(book),
+            "decisions_template": template,
             "spec_template": spec_template(p),
             "ask": "Answer {\"decisions\": <filled decisions file>, \"spec\": <compile spec>}",
-        })  # fmt: skip
+        }  # fmt: skip
+        if state.get("surrogates_md"):
+            from agentic_tte.agents.surrogates import SurrogateSheet
+
+            template["decisions"].update(
+                SurrogateSheet.model_validate(state["surrogates"]).decisions())
+            payload["surrogates"] = state["surrogates_md"]
+            payload["ask"] += (". Entries with action \"surrogate\" are the Clinician's "
+                               "proposals: keep, change or replace them.")
+        answer, is_auto = review("concepts", payload)
         reviewed = apply_decisions(book, answer["decisions"])
         spec = CompileSpec.model_validate({**answer["spec"], "concept_sets": {
             **reviewed.gate_sets(), **(answer["spec"].get("concept_sets") or {})}})
@@ -420,6 +461,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         parts += ["", "## Run log", ""] + [f"- {m}" for m in state.get("log", [])]
         if state.get("clinician_md"):
             parts += ["", state["clinician_md"].rstrip()]
+        if state.get("surrogates_md"):
+            parts += ["", state["surrogates_md"].rstrip()]
         if state.get("audit_md"):
             parts += ["", state["audit_md"]]
             ov = state.get("audit_override")

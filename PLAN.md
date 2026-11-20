@@ -703,7 +703,7 @@ The MIMIC OMOP CDM exists (§16). What is missing for an end-to-end Replay of th
 | Supervisor | yes | yes | to build |
 | Trialist | LLM parse | schema-constrained protocol with 7 TTE elements, versioned | built |
 | Informatician | LLM writes SQL | LLM proposes concepts, vocabulary grounds them, a deterministic compiler writes the SQL | built |
-| Clinician | RAG | RAG with citations: result-blind PubMed literature, quotes verified verbatim, treatment, outcome and post-baseline variables dropped by checks | confounders built (2026-11-01); surrogates and the Statistician loop to build |
+| Clinician | RAG | RAG with citations: result-blind PubMed literature, quotes verified verbatim, treatment, outcome and post-baseline variables dropped by checks | confounders built (2026-11-01; v4 on qwen3:32b, reviewed recall 61%, development result); surrogate answers built (2026-11-20, scripted model only); the Statistician loop to build |
 | Statistician | PSM/IPTW + Cox | adds CCW for grace periods, E-values, PH test and immortal-time flag; the LLM never produces a number | built |
 | **Protocol Auditor** | no | checks time-zero alignment, immortal time, look-ahead, estimand vs the trial's | to build |
 | **Data Support Gate** | no | feasibility, attrition, positivity, small-cell suppression | built |
@@ -803,7 +803,8 @@ The count is not the contribution. Each new agent gets an ablation (run without 
        - Age, lactate, norepinephrine and ventilation differ only in the directions their data sources predict (κ 0.72–0.98).
        - **Every gap traced** (changelog items 19–22): age = anchor year; lactate = ED blood gases without a hospital admission; norepinephrine = prescriptions; ventilation = timing and procedureevents vs ventilator settings. None comes from the compiler.
        - For the ventilation, lactate and vasopressor concepts of the core trials, the concept review must say which sources count;
-   - **done 2026-11-01:** the Clinician's confounder proposals (`agents/clinician.py`, `agentic-tte literature`, `replay start --literature`; SCORING.md Phase 3 changelog item 29). Tested with a scripted model on synthetic OMOP, not yet run with a real model. Still to do: its surrogate answers to the Informatician and the Statistician ↔ Clinician loop; then the Supervisor.
+   - **done 2026-11-01:** the Clinician's confounder proposals (`agents/clinician.py`, `agentic-tte literature`, `replay start --literature`; SCORING.md Phase 3 changelog item 29). Run with qwen3:32b on the 12 core drafts (v2 to v4, SCORING item 29): v4 automatic recall 48%, reviewed recall 61% (investigator rating); the core trials are now its development set.
+   - **done 2026-11-20:** the Clinician's surrogate answers to the Informatician (`agents/surrogates.py`, `replay start --surrogates`). For each eligibility concept or confounder with no vocabulary match, one LLM call proposes a stand-in variable with a rationale and a limitation, or none; checks drop the treatment, the primary outcome, the concept itself and post-baseline variables; concept IDs come only from the vocabulary search for the stand-in's name. Proposals are pre-filled as `surrogate` decisions at concept review; `AutoApprove` keeps them only with `accept_surrogates` and labels them. Treatment and outcome concepts are not asked about (a stand-in there changes the estimand). Tested with a scripted model on synthetic OMOP only. Still to do: the Statistician ↔ Clinician loop; then the Supervisor.
 
    Tests on synthetic OMOP first.
 5. **User:** write the 12 reference protocols from a template (E3), blind to model outputs; a clinician adjudicates the uncertain items and audits 20%.

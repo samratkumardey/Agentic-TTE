@@ -644,7 +644,7 @@ def _replay_graph(run: dict, llm=None):
                          design_hr=run.get("design_hr"), checkpointer=saver, auto=auto,
                          n_bootstrap=run.get("bootstrap", 0),
                          abbreviations=_abbreviations(run.get("abbreviations")),
-                         literature=lit)  # fmt: skip
+                         literature=lit, surrogates=bool(run.get("surrogates")))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -676,6 +676,9 @@ def _replay_pause(graph, cfg, out: Path) -> None:
                                             encoding="utf-8")  # fmt: skip
         (out / "spec.json").write_text(json.dumps(ask["spec_template"], indent=2), "utf-8")
         tmpl, files = None, ["review.md", "decisions.json", "spec.json"]
+        if ask.get("surrogates"):  # the Clinician's stand-ins, pre-filled in decisions.json
+            (out / "surrogates.md").write_text(ask["surrogates"], encoding="utf-8")
+            files.insert(0, "surrogates.md")
     elif stage == "gate":
         (out / "gate.md").write_text(ask["gate"] + "\n" + ask["attrition"], encoding="utf-8")
         tmpl = {"proceed": False, "reviewer": "", "note": ""}
@@ -712,6 +715,9 @@ def replay_start(
     literature: Path = typer.Option(None, help="Result-blind literature (`agentic-tte "
                                                "literature`): the Clinician proposes the "
                                                "confounders (needs the LLM)."),
+    surrogates: bool = typer.Option(False, help="The Clinician proposes stand-ins for "
+                                                "concepts the vocabulary cannot map, for the "
+                                                "concept review (needs the LLM)."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -733,7 +739,7 @@ def replay_start(
            "auto": policy.model_dump(mode="json") if policy else None,
            "abbreviations": str(abbreviations) if abbreviations else None,
            "bootstrap": bootstrap,
-           "literature": str(literature) if literature else None}
+           "literature": str(literature) if literature else None, "surrogates": surrogates}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}
@@ -741,7 +747,7 @@ def replay_start(
         state["protocol"] = json.loads(protocol.read_text(encoding="utf-8"))
     else:
         state["nct_id"] = nct
-    if nct is not None or literature is not None:
+    if nct is not None or literature is not None or surrogates:
         from agentic_tte.llm import make_client
 
         llm = make_client(get_settings())
@@ -771,7 +777,12 @@ def replay_resume(
     if not (who or "").strip():
         typer.echo(f"the {stage} answer needs a reviewer", err=True)
         raise typer.Exit(2)
-    graph, cfg = _replay_graph(run)
+    llm = None
+    if run.get("surrogates"):  # concept search, and so the Clinician, can run again
+        from agentic_tte.llm import make_client
+
+        llm = make_client(get_settings())
+    graph, cfg = _replay_graph(run, llm)
     graph.invoke(Command(resume=value), cfg)
     (out / "pending.txt").unlink()
     _replay_pause(graph, cfg, out)
