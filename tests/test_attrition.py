@@ -69,8 +69,11 @@ def test_synthetic_arms_match_the_reference_frame():
     assert rep.eligible == len(expected)
     arms = {a.arm: a for a in rep.arms}
     assert arms["treatment"].patients == int(expected.treated.sum())
-    assert arms["treatment"].events == int(expected[expected.treated == 1].event.sum())
     assert rep.events == int(expected.event.sum())
+    # Outcomes are pooled: nothing by arm before the analysis (S8).
+    assert set(arms["treatment"].model_dump()) == {"arm", "patients"}
+    assert "Events" not in rep.to_markdown().split("| Arm |")[1].splitlines()[0]
+    assert all(set(v) == {"patients"} for v in feasibility(rep, p).values["arms"].values())
     assert sum(rep.end_reasons.values()) == rep.eligible
     assert 0 < rep.risk_at_horizon < 1 and rep.confounders == 4
     assert rep.risk_at_horizon >= expected.event.mean()  # KM accounts for censoring
@@ -93,6 +96,21 @@ def test_red_when_nobody_or_no_events():
     rep = attrition(con, compile_protocol(p, SYNTH_SPEC))
     check = feasibility(rep, p)
     assert rep.events == 0 and check.status == "red" and "no outcome events" in check.detail
+
+
+def test_s8_threshold_is_red_below_and_says_so():
+    _, con = _synth(n=1500)
+    p = _synth_protocol([crit("I1", "inclusion", atom(ref("septic shock", "Condition")))])
+    rep = attrition(con, compile_protocol(p, SYNTH_SPEC))
+    met = feasibility(rep, p, s8=True)
+    assert met.values["s8"] == "met" and met.status != "red"
+    small = rep.model_copy(update={"arms": [a.model_copy(update={"patients": 49})
+                                            if a.arm == "treatment" else a for a in rep.arms]})
+    low = feasibility(small, p, s8=True)
+    assert low.status == "red" and low.values["s8"] == "not met" and "below S8" in low.detail
+    few = feasibility(rep.model_copy(update={"events": 19}), p, s8=True)
+    assert few.status == "red" and few.values["s8"] == "not met"
+    assert "s8" not in feasibility(small, p).values  # off unless asked for
 
 
 def test_few_events_per_confounder_is_amber():
@@ -129,7 +147,7 @@ def test_small_arms_are_suppressed_everywhere(n):
     rep = attrition(con, compile_protocol(p, SYNTH_SPEC))
     pub = rep.public()
     assert all(a["patients"] in ("<11", 0) for a in pub["arms"])
-    assert all(a["person_days"] is None for a in pub["arms"] if a["patients"] == "<11")
+    assert pub["events"] in ("<11", 0) and (pub["person_days"] is None or pub["events"] == 0)
     check = feasibility(rep, p)
     assert check.status in ("amber", "red")
     assert all(str(v["patients"]) in ("<11", "0") for v in check.values["arms"].values())

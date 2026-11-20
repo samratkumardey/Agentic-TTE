@@ -487,13 +487,14 @@ def _governance(ctx: DataContext) -> GateCheck:
 def run_gate(con, protocol: TargetTrialProtocol | None = None, *,
              concept_sets: dict[str, list[int]] | None = None,
              context: DataContext | None = None, attrition=None,
-             design_hr: float | None = None) -> GateReport:  # fmt: skip
+             design_hr: float | None = None, s8: bool = False) -> GateReport:  # fmt: skip
     """Run every check on an open DuckDB connection to an OMOP CDM database.
 
     ``concept_sets`` maps ``concept_key(criterion, concept_name)`` to OMOP concept IDs, as the
     Phase 2 vocabulary step produces them; concepts already carrying ``omop_concept_id`` in the
     protocol are used as they are. ``attrition`` (an ``AttritionReport`` from the compiled
-    cohort) runs the feasibility check, with power for ``design_hr`` when given."""
+    cohort) runs the feasibility check, with power for ``design_hr`` when given; ``s8`` applies
+    the pre-registered S8 threshold (eval/SCORING.md R3)."""
     context = context or DataContext()
     tables = _tables(con)
     report = GateReport(protocol_id=protocol.protocol_id if protocol else None, context=context)
@@ -524,7 +525,7 @@ def run_gate(con, protocol: TargetTrialProtocol | None = None, *,
     if attrition is not None:
         from agentic_tte.omop.attrition import feasibility
 
-        report.checks.append(feasibility(attrition, protocol, design_hr=design_hr))
+        report.checks.append(feasibility(attrition, protocol, design_hr=design_hr, s8=s8))
     else:
         report.checks.append(GateCheck(
             id="feasibility", title="Feasibility", status=GateStatus.NOT_RUN,

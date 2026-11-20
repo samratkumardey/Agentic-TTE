@@ -5,7 +5,8 @@
           -> [red: report, stop] [amber: gate_review*] -> balance
           -> [flagged: balance_advice -> design_review*] -> analyze -> report -> signoff*
 
-``[clinician]`` runs only when the graph is built with ``literature``: the Clinician agent
+``[clinician]`` runs only when the graph is built with ``literature`` (or ``clinician_sheet``,
+a sheet the Clinician already wrote for this trial, e.g. a scored run's): the Clinician agent
 (``agentic_tte.agents.clinician``) proposes baseline confounders with cited passages, as a new
 protocol version (origin ``agent``), unless the protocol already names confounders. Its sheet
 is shown at design review, where the reviewer approves the list or replaces it.
@@ -223,7 +224,9 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                  design_hr: float | None = None, checkpointer=None,
                  auto: AutoApprove | None = None, abbreviations=None,
                  n_bootstrap: int = 0, literature=None, surrogates: bool = False,
-                 budget: Budget | None = None, balance_advice: bool = False):  # fmt: skip
+                 budget: Budget | None = None, balance_advice: bool = False,
+                 s8: bool = False, clinician_sheet=None,
+                 clinician_source: str | None = None):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
@@ -234,9 +237,14 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     Clinician proposes stand-ins for concepts the vocabulary cannot map (needs ``llm``).
     ``budget``: the Supervisor's loop caps and LLM budget (defaults: ``Budget()``).
     ``balance_advice``: the Clinician advises on confounders the balance check flags (needs
-    ``llm``)."""
+    ``llm``). ``s8``: the gate applies the pre-registered S8 threshold; below it at the first
+    gate the trial leaves the agreement set (status ``excluded_s8``), and below it at a later
+    gate (after a design change) the run is blocked, which counts as a failure (R4).
+    ``clinician_sheet``: a ``ConfounderSheet`` the Clinician already wrote for this trial, used
+    instead of a new call (no LLM needed); ``clinician_source`` names it in the log."""
     context = context or DataContext()
-    sup = Supervisor(budget, clinician=literature is not None, balance_advice=balance_advice,
+    with_clinician = literature is not None or clinician_sheet is not None
+    sup = Supervisor(budget, clinician=with_clinician, balance_advice=balance_advice,
                      llm_nodes={"draft", "clinician"}
                      | ({"propose_concepts"} if surrogates else set())
                      | ({"balance_advice"} if balance_advice else set()))  # fmt: skip
@@ -264,11 +272,19 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         p = _p(state)
         if p.assignment.confounders:
             return {"log": ["Clinician skipped: the protocol already names confounders"]}
-        if llm is None:
+        if clinician_sheet is not None:
+            if clinician_sheet.nct_id != p.source.nct_id:
+                raise ValueError(f"the Clinician sheet is for {clinician_sheet.nct_id}, the "
+                                 f"protocol for {p.source.nct_id}")
+            sheet, by = clinician_sheet, (f"{clinician_sheet.model}, "
+                                          f"{clinician_sheet.prompt_version}, from "
+                                          f"{clinician_source or 'an existing sheet'}")
+        elif llm is None:
             raise ValueError("the Clinician needs an LLM client")
-        sheet = Clinician(llm).propose(p, literature)
+        else:
+            sheet, by = Clinician(llm).propose(p, literature), llm.model
         refs = [r.model_dump(mode="json") for r in sheet.refs()]
-        v = new_version(p, created_by=f"Clinician ({llm.model})",
+        v = new_version(p, created_by=f"Clinician ({by})",
                         notes=f"confounders proposed ({len(refs)})",
                         assignment={**p.assignment.model_dump(mode="json"), "confounders": refs,
                                     "origin": Origin.AGENT.value})  # fmt: skip
@@ -436,12 +452,19 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         p = _p(state)
         rep = attrition(con, cc)
         report = run_gate(con, p, concept_sets=cc.spec.concept_sets, context=context,
-                          attrition=rep, design_hr=design_hr)  # fmt: skip
+                          attrition=rep, design_hr=design_hr, s8=s8)  # fmt: skip
         out = {"attrition": rep.public(), "attrition_md": rep.to_markdown(),
                "gate": report.model_dump(mode="json"), "gate_md": report.to_markdown(),
                "log": [f"gate: {report.overall}"]}  # fmt: skip
         if report.blocks_run:
             out["status"] = "blocked"
+            red = [c for c in report.checks if c.status == "red"]
+            first = (state.get("visits") or {}).get("gate", 0) <= 1
+            if first and [c.id for c in red] == ["feasibility"] \
+                    and red[0].values.get("s8") == "not met":  # fmt: skip
+                out["status"] = "excluded_s8"
+                out["log"] = out["log"] + ["S8 not met at the first gate: the trial leaves the "
+                                           "agreement set (eval/SCORING.md R3)"]
         return out
 
     def gate_review(state: ReplayState) -> dict:
@@ -591,7 +614,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
              "gate_review": gate_review, "balance": balance_node, "analyze": analyze_node,
              "report": report,
              "signoff": signoff}  # fmt: skip
-    if literature is not None:
+    if with_clinician:
         nodes["clinician"] = clinician
     if balance_advice:
         nodes["balance_advice"] = balance_advice_node

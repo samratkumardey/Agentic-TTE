@@ -6,13 +6,19 @@
   remaining and removed, and how many patients meet each criterion on its own (which criterion
   is binding);
 - the criteria that were not applied (not compiled or not emulable), with their reasons;
-- for the analysis frame: patients, events and person-time per arm, end-of-follow-up reasons
-  and the pooled Kaplan-Meier risk at the horizon.
+- for the analysis frame: patients per arm; events, person-time, end-of-follow-up reasons and
+  the Kaplan-Meier risk at the horizon pooled over arms.
 
-``feasibility(report, protocol, design_hr=...)`` turns that into the gate's last check
-(PLAN.md §14): red when no eligible patients, an empty arm or no events; amber when counts are
-small, events fall short of the Schoenfeld requirement for the design HR, there are fewer than
-10 events per confounder, or criteria were left out; green otherwise.
+Outcome counts are never split by arm here (eval/SCORING.md S8): events or person-time by arm
+are a crude effect estimate, and the gate is seen before the analysis, by reviewers who may
+still change the design. Only the Statistician's analysis reports outcomes by arm.
+
+``feasibility(report, protocol, design_hr=..., s8=...)`` turns that into the gate's last check
+(PLAN.md §14): red when no eligible patients, an empty arm or no events, and with ``s8`` when
+an arm has fewer than 50 patients or there are fewer than 20 events pooled (the pre-registered
+S8 threshold); amber when counts are small, events fall short of the Schoenfeld requirement for
+the design HR, there are fewer than 10 events per confounder, or criteria were left out; green
+otherwise.
 
 Counts below 11 are suppressed in everything shown or sent on (``public()``, ``to_markdown``,
 the gate check). The raw counts stay in the report object on the data side. Complementary
@@ -43,9 +49,11 @@ class AttritionStep(BaseModel):
 
 class ArmSummary(BaseModel):
     arm: str
-    patients: int
-    events: int
-    person_days: float
+    patients: int  # no outcome by arm (S8)
+
+
+S8_MIN_ARM = 50  # eval/SCORING.md R3, S8: eligible patients per arm
+S8_MIN_EVENTS = 20  # outcome events pooled over arms
 
 
 class AttritionReport(BaseModel):
@@ -55,14 +63,12 @@ class AttritionReport(BaseModel):
     not_applied: list[dict] = Field(default_factory=list)
     eligible: int
     arms: list[ArmSummary] | None = None  # None when the frame was not compiled
-    end_reasons: dict[str, int] = Field(default_factory=dict)
+    events: int | None = None  # pooled over arms
+    person_days: float | None = None  # pooled over arms
+    end_reasons: dict[str, int] = Field(default_factory=dict)  # pooled over arms
     horizon_days: float | None = None
     risk_at_horizon: float | None = None  # pooled Kaplan-Meier risk
     confounders: int = 0
-
-    @property
-    def events(self) -> int | None:
-        return sum(a.events for a in self.arms) if self.arms is not None else None
 
     def public(self) -> dict:
         """The report with every count below 11 suppressed: what may leave the data side."""
@@ -73,8 +79,10 @@ class AttritionReport(BaseModel):
                     s[k] = suppress(s[k])
         d["eligible"] = suppress(d["eligible"])
         for a in d["arms"] or []:
-            a["patients"], a["events"] = suppress(a["patients"]), suppress(a["events"])
-            a["person_days"] = round(a["person_days"]) if a["patients"] != f"<{SMALL_CELL}" \
+            a["patients"] = suppress(a["patients"])
+        if d["events"] is not None:
+            d["events"] = suppress(d["events"])
+            d["person_days"] = round(d["person_days"]) if d["events"] != f"<{SMALL_CELL}" \
                 else None  # fmt: skip
         d["end_reasons"] = {k: suppress(v) for k, v in d["end_reasons"].items()}
         return d
@@ -92,10 +100,11 @@ class AttritionReport(BaseModel):
             lines += [f"- {c['id']} ({c['status']}): {'; '.join(c['reasons'])}"
                       for c in p["not_applied"]]  # fmt: skip
         if p["arms"] is not None:
-            lines += ["", "| Arm | Patients | Events | Person-days |", "|---|---|---|---|"]
-            for a in p["arms"]:
-                pd_ = "–" if a["person_days"] is None else f"{a['person_days']:,}"
-                lines.append(f"| {a['arm']} | {a['patients']} | {a['events']} | {pd_} |")
+            lines += ["", "| Arm | Patients |", "|---|---|"]
+            lines += [f"| {a['arm']} | {a['patients']} |" for a in p["arms"]]
+            pd_ = "–" if p["person_days"] is None else f"{p['person_days']:,}"
+            lines += ["", f"Pooled over arms (outcomes are not split by arm before the analysis): "
+                          f"{p['events']} events, {pd_} person-days."]
             reasons = ", ".join(f"{k} {v}" for k, v in p["end_reasons"].items())
             lines += ["", f"End of follow-up: {reasons}."]
             if self.risk_at_horizon is not None:
@@ -149,11 +158,9 @@ def attrition(con, compiled: CompiledCohort) -> AttritionReport:
         return rep
     frame = con.execute(f"SELECT treated, time, event, end_reason FROM ({compiled.frame_sql})"
                         ).df()  # fmt: skip
-    rep.arms = []
-    for treated, label in ((1, "treatment"), (0, "comparator")):
-        g = frame[frame.treated == treated]
-        rep.arms.append(ArmSummary(arm=label, patients=len(g), events=int(g.event.sum()),
-                                   person_days=float(g.time.sum())))  # fmt: skip
+    rep.arms = [ArmSummary(arm=label, patients=int((frame.treated == t).sum()))
+                for t, label in ((1, "treatment"), (0, "comparator"))]  # fmt: skip
+    rep.events, rep.person_days = int(frame.event.sum()), float(frame.time.sum())
     rep.end_reasons = {k: int(v) for k, v in frame.end_reason.value_counts().sort_index().items()}
     if compiled.horizon_days:
         rep.risk_at_horizon = _km_risk(frame.time.to_numpy(), frame.event.to_numpy(),
@@ -163,8 +170,9 @@ def attrition(con, compiled: CompiledCohort) -> AttritionReport:
 
 def feasibility(rep: AttritionReport, protocol: TargetTrialProtocol | None = None, *,
                 design_hr: float | None = None, alpha: float = 0.05,
-                power: float = 0.8) -> GateCheck:  # fmt: skip
-    """The gate's feasibility check from an attrition report (aggregates only)."""
+                power: float = 0.8, s8: bool = False) -> GateCheck:  # fmt: skip
+    """The gate's feasibility check from an attrition report (aggregates only). ``s8``: apply
+    the pre-registered S8 threshold (red below it; ``values["s8"]`` says which)."""
     values: dict = {"eligible": suppress(rep.eligible), "design_hr": design_hr}
     notes: list[str] = []
     status = GateStatus.GREEN
@@ -196,19 +204,26 @@ def feasibility(rep: AttritionReport, protocol: TargetTrialProtocol | None = Non
         return GateCheck(id="feasibility", title="Feasibility", status=status,
                          detail="; ".join(notes), values=values)
     arms = {a.arm: a for a in rep.arms}
-    values["arms"] = {k: {"patients": suppress(a.patients), "events": suppress(a.events)}
-                      for k, a in arms.items()}  # fmt: skip
-    notes.append(", ".join(f"{k}: {suppress(a.patients)} patients, {suppress(a.events)} events"
-                           for k, a in arms.items()))
+    values["arms"] = {k: {"patients": suppress(a.patients)} for k, a in arms.items()}
+    values["events"] = suppress(rep.events)
+    notes.append(", ".join(f"{k}: {suppress(a.patients)} patients" for k, a in arms.items())
+                 + f"; {suppress(rep.events)} events pooled")
     if any(a.patients == 0 for a in rep.arms):
         worse(GateStatus.RED)
         notes.append("an arm is empty")
     if rep.events == 0:
         worse(GateStatus.RED)
         notes.append("no outcome events")
-    elif any(a.events < SMALL_CELL for a in rep.arms):
+    elif rep.events < 2 * SMALL_CELL:
         worse(GateStatus.AMBER)
-        notes.append("fewer than 11 events in an arm")
+        notes.append(f"fewer than {2 * SMALL_CELL} events pooled")
+    if s8:
+        ok = min(a.patients for a in rep.arms) >= S8_MIN_ARM and rep.events >= S8_MIN_EVENTS
+        values["s8"] = "met" if ok else "not met"
+        if not ok:
+            worse(GateStatus.RED)
+            notes.append(f"below S8 (at least {S8_MIN_ARM} patients per arm and {S8_MIN_EVENTS} "
+                         "events pooled): the trial leaves the agreement set (SCORING.md R3)")
     if rep.confounders and rep.events is not None and rep.events < 10 * rep.confounders:
         worse(GateStatus.AMBER)
         notes.append(f"fewer than 10 events per confounder ({rep.confounders} confounders)")

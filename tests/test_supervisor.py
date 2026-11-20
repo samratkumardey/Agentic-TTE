@@ -98,3 +98,52 @@ def test_the_llm_budget_stops_before_the_model_is_called(synthetic, nct03872011_
     assert not llm.requests and state["status"] == "stopped"
     assert "LLM budget is spent (0 of 0 requests)" in state["stop_reason"]
     assert state["routes"][-2]["after"] == "design_review"
+
+
+def test_s8_not_met_at_the_first_gate_leaves_the_set(nct03872011_study):
+    """Few patients: the first gate finds S8 not met, the run ends before balance or analysis,
+    and the Concordance agent lists the trial outside the denominator, not as a failure."""
+    from agentic_tte.agents.concordance import Emulation, Reference, agree
+    from agentic_tte.graph.replay import result
+    from agentic_tte.synth import omop as so
+    from agentic_tte.synth.dgp import Scenario, generate
+
+    con = so.write_duckdb(so.to_omop(generate(Scenario(n=80, horizon_days=90.0),
+                                              with_truth=False)))  # fmt: skip
+    state = build_replay(con, llm=ScriptedClient(_respond, max_retries=1), context=CTX,
+                         auto=_auto(), s8=True).invoke({"study": nct03872011_study})
+    assert state["status"] == "excluded_s8"
+    assert not {"balance", "analysis"} & set(state)
+    assert "below S8" in state["report"] and "leaves the set" in state["routes"][-2]["reason"]
+    ref = Reference(nct_id="NCT03872011", measure="HR", value=1.08, ci=(0.8, 1.46),
+                    contrast="intervention vs placebo")
+    row = agree(ref, Emulation.model_validate(result(state)))
+    assert row.excluded and not row.scored and "leaves the agreement set" in row.reason
+
+
+def test_an_existing_clinician_sheet_needs_no_llm(synthetic, nct03872011_study):  # noqa: F811
+    """A scored run's Clinician sheet goes to design review as it is: no model call, and
+    the version names where the sheet came from."""
+    from agentic_tte.agents.clinician import ConfounderItem, ConfounderSheet
+
+    _, con = synthetic
+    draft = build_replay(con, llm=ScriptedClient(_respond, max_retries=1), context=CTX,
+                         auto=_auto()).invoke({"study": nct03872011_study})["versions"][0]
+    items = [ConfounderItem(name=n, domain=d, rationale="r", status="standard")
+             for n, d in (("age", "Demographic"), ("sex", "Demographic"),
+                          ("lactate", "Measurement"))]  # fmt: skip
+    sheet = ConfounderSheet(nct_id="NCT03872011", model="qwen3:32b",
+                            prompt_version="clinician-v4", items=items)
+    llm = ScriptedClient([])
+    graph = build_replay(con, llm=llm, context=CTX, checkpointer=InMemorySaver(),
+                         clinician_sheet=sheet, clinician_source="v4/NCT03872011.clinician.json")
+    cfg = {"configurable": {"thread_id": "sheet"}}
+    graph.invoke({"protocol": draft}, cfg)
+    ask = pending(graph, cfg)
+    assert ask["stage"] == "design" and "clinician-v4" in ask["clinician"] and not llm.requests
+    names = [c["name"] for c in ask["protocol"]["assignment"]["confounders"]]
+    assert names == ["age", "sex", "lactate"]
+    assert "from v4/NCT03872011.clinician.json" in ask["protocol"]["provenance"]["created_by"]
+    wrong = sheet.model_copy(update={"nct_id": "NCT99999999"})
+    with pytest.raises(ValueError, match="sheet is for NCT99999999"):
+        build_replay(con, context=CTX, clinician_sheet=wrong).invoke({"protocol": draft})

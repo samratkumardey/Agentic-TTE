@@ -108,6 +108,8 @@ class Supervisor:
         if last == "gate":
             s = _statuses(state)
             if "red" in s:
+                if status == "excluded_s8":
+                    return "report", "S8 not met at the first gate: the trial leaves the set"
                 return "report", "the Data Support Gate is red"
             if "amber" in s:
                 return "gate_review", "the Data Support Gate is amber"

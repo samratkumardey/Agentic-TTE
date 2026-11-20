@@ -26,6 +26,10 @@ Measure and orientation:
   treatment arm is the trial's B, the emulation's contrast is reversed (1/ratio, −RD); if
   the match is unclear, the trial is not scored until a person confirms the orientation.
 - A risk difference in survival is compared with −RD of the emulation's event risk.
+
+A run whose first gate found S8 not met (status ``excluded_s8``) leaves the set: it is listed,
+kept out of the denominator, and the set must be recomputed (SCORING.md item 9). S8 not met at
+a later gate is a failure.
 """
 
 from __future__ import annotations
@@ -116,6 +120,7 @@ class TrialAgreement(BaseModel):
     emulation: str | None = None
     orientation: str = "unconfirmed"
     scored: bool = False  # False: a failure (no estimate) or orientation unconfirmed
+    excluded: bool = False  # left the set (S8 not met at the first gate): not a failure
     reason: str = ""  # why there is no estimate, or what was adjusted
     theta_e: float | None = None
     se_e: float | None = None
@@ -172,6 +177,11 @@ def agree(ref: Reference, emu: Emulation | None, *, confirmed: str | None = None
         return out
     if emu is None:
         out.reason = "no run"
+        return out
+    if emu.status == "excluded_s8":
+        out.excluded = True
+        out.reason = ("S8 not met at the first gate: the trial leaves the agreement set, and "
+                      "the set is recomputed by the outcome-blind rule (SCORING.md item 9)")
         return out
     if emu.status not in ("signed_off", "auto_approved"):
         out.reason = f"no signed-off report (status {emu.status}" + (
@@ -258,6 +268,7 @@ class SetSummary(BaseModel):
     n: int
     failures: int  # no estimate, counted as no agreement
     unconfirmed: int  # orientation awaiting a person: not scored yet
+    excluded: int = 0  # left the set: S8 not met at the first gate
     standardized: tuple[int, int]  # agreeing, denominator
     standardized_ci: tuple[float, float]
     estimate: int
@@ -272,10 +283,11 @@ def summarize(name: str, rows: list[TrialAgreement]) -> SetSummary:
     """The R4 primary endpoints for one set. Unconfirmed orientations are left out of the
     denominator and counted, so the endpoint is not final until they are confirmed."""
     wait = [r for r in rows if r.orientation == "unconfirmed" and r.emulation is not None]
-    base = [r for r in rows if r not in wait]
+    out = [r for r in rows if r.excluded]
+    base = [r for r in rows if r not in wait and r not in out]
     k = sum(r.standardized for r in base)
     s = SetSummary(name=name, n=len(rows), failures=sum(not r.scored for r in base),
-                   unconfirmed=len(wait), standardized=(k, len(base)),
+                   unconfirmed=len(wait), excluded=len(out), standardized=(k, len(base)),
                    standardized_ci=clopper_pearson(k, len(base)),
                    estimate=sum(r.estimate for r in base),
                    regulatory=sum(r.regulatory for r in base),
@@ -312,7 +324,8 @@ def to_markdown(sets: dict[str, list[TrialAgreement]], *, run: str) -> str:
         lines += ["", f"Secondary: estimate agreement {_pct(s.estimate, n)}, regulatory "
                       f"{_pct(s.regulatory, n)}, direction {_pct(s.direction, n)}. Failures "
                       f"{s.failures}; orientation awaiting confirmation {s.unconfirmed} (not in "
-                      "the denominator).", "",
+                      f"the denominator); left the set by S8 {s.excluded}"
+                      + (" (the set must be recomputed)" if s.excluded else "") + ".", "",
                   "| Trial | Trial result | Emulation | z | Std. diff | Estimate | Regulatory "
                   "| Direction | ROR | CI width | Notes |",
                   "|---|---|---|---|---|---|---|---|---|---|---|"]  # fmt: skip

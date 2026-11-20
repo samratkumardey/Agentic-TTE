@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -636,6 +637,12 @@ def _replay_graph(run: dict, llm=None):
     con = _open_db(Path(run["db"]), Path(run["vocab"]) if run.get("vocab") else None)
     ctx = DataContext(data_classification=run["classification"], approved_by_rcss=run["approved"])
     auto = AutoApprove.model_validate(run["auto"]) if run.get("auto") else None
+    sheet = None
+    if run.get("clinician_sheet"):
+        from agentic_tte.agents.clinician import ConfounderSheet
+
+        sheet = ConfounderSheet.model_validate_json(
+            Path(run["clinician_sheet"]).read_text(encoding="utf-8"))
     lit = None
     if run.get("literature"):
         from agentic_tte.agents.clinician import Literature
@@ -647,7 +654,11 @@ def _replay_graph(run: dict, llm=None):
                          abbreviations=_abbreviations(run.get("abbreviations")),
                          literature=lit, surrogates=bool(run.get("surrogates")),
                          budget=Budget.model_validate(run.get("budget") or {}),
-                         balance_advice=bool(run.get("balance_advice")))  # fmt: skip
+                         balance_advice=bool(run.get("balance_advice")),
+                         s8=bool(run.get("s8")), clinician_sheet=sheet,
+                         clinician_source=(f"{run['clinician_sheet']} (sha256 "
+                                           f"{run['clinician_sheet_sha256'][:12]})"
+                                           if sheet else None))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -729,6 +740,12 @@ def replay_start(
                                                     "the balance check flags (before any "
                                                     "outcome analysis), for design review "
                                                     "(needs the LLM)."),
+    clinician_sheet: Path = typer.Option(None, help="A Clinician sheet already written for "
+                                                    "this trial (e.g. a scored run's "
+                                                    "<NCT>.clinician.json): its confounders go "
+                                                    "to design review; no LLM call."),
+    s8: bool = typer.Option(True, help="Apply the pre-registered S8 feasibility threshold "
+                                       "at the gate (eval/SCORING.md R3)."),
     max_llm_calls: int = typer.Option(None, help="The Supervisor stops the run before an LLM "
                                                  "step once this many requests were made "
                                                  "(cache hits are free); default no cap."),
@@ -736,6 +753,9 @@ def replay_start(
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
         typer.echo("give exactly one of --nct or --protocol", err=True)
+        raise typer.Exit(2)
+    if literature is not None and clinician_sheet is not None:
+        typer.echo("give at most one of --literature or --clinician-sheet", err=True)
         raise typer.Exit(2)
     policy = None
     if auto is not None:
@@ -754,7 +774,10 @@ def replay_start(
            "abbreviations": str(abbreviations) if abbreviations else None,
            "bootstrap": bootstrap,
            "literature": str(literature) if literature else None, "surrogates": surrogates,
-           "budget": {"max_llm_calls": max_llm_calls}, "balance_advice": balance_advice}
+           "budget": {"max_llm_calls": max_llm_calls}, "balance_advice": balance_advice,
+           "s8": s8, "clinician_sheet": str(clinician_sheet) if clinician_sheet else None,
+           "clinician_sheet_sha256": (hashlib.sha256(clinician_sheet.read_bytes()).hexdigest()
+                                      if clinician_sheet else None)}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}
