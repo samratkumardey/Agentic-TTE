@@ -92,6 +92,7 @@ Next (user, 2026-10-27): finish the Replay on MIMIC first, at parity with Emulat
 - Pre-register the scoring and the trial-selection rule before any MIMIC estimate is seen.
 - Then CREST-2 on the user's Oracle Health EHR (OMOP), building on their Protocol2TTE paper.
 - Only 2 of EmulatRx's 10 MIMIC trials have a numeric published estimate (`eval/reference/replay_trials.json`). Never claim RCT agreement for a trial without a published result.
+- Agreement is computed only by the Concordance agent (`agents/concordance.py`, `eval/score_concordance.py`; SCORING.md item 30). Never confirm a trial's arm orientation on the user's behalf, never change a published estimate to fit the emulation, and never report the endpoint as final while orientations await confirmation.
 
 Phase 1 core is done (PLAN.md §13): the synthetic OMOP generator (`agentic_tte/synth/`) and the statistics port (`agentic_tte/stats/`), recovery-tested against potential-outcome truth.
 - Truth for any estimator is the marginal effect in the population it estimates (`Cohort.truth_in`), never the planted conditional HR.

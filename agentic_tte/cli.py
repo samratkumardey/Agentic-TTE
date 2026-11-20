@@ -657,8 +657,12 @@ def _replay_pause(graph, cfg, out: Path) -> None:
 
     ask = pending(graph, cfg)
     if ask is None:
+        from agentic_tte.graph.replay import result
+
         state = graph.get_state(cfg).values
         (out / "report.md").write_text(state.get("report", ""), encoding="utf-8")
+        (out / "result.json").write_text(json.dumps(result(state), indent=2, default=str),
+                                         encoding="utf-8")  # for the Concordance agent
         typer.echo(f"run {state.get('status')}: report in {out}/report.md", err=True)
         return
     stage = ask["stage"]

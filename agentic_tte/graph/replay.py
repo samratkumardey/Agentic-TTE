@@ -608,3 +608,24 @@ def pending(graph, config: dict) -> Any | None:
     """The open review (the interrupt's payload), or None when the run is not waiting."""
     st = graph.get_state(config)
     return st.interrupts[0].value if st.interrupts else None
+
+
+def result(state: dict) -> dict:
+    """What a finished run hands to the Concordance agent (``result.json``): status, protocol
+    version and hash, the arms' labels and component concepts, and the analysis aggregates.
+    No patient rows."""
+    p = TargetTrialProtocol.model_validate(state["protocol"]) if state.get("protocol") else None
+
+    def names(comparator: bool) -> list[str]:
+        if p is None:
+            return []
+        return [n for a in p.treatment_strategies if a.is_comparator == comparator
+                for n in (a.label, *(c.concept.name for c in a.components))
+                if n]  # fmt: skip
+
+    return {"nct_id": (p.source.nct_id if p else None) or state.get("nct_id"),
+            "status": state.get("status"), "stop_reason": state.get("stop_reason"),
+            "protocol_version": p.version if p else None,
+            "protocol_hash": p.content_hash() if p else None,
+            "treatment": names(False), "comparator": names(True),
+            "analysis": state.get("analysis")}  # fmt: skip
