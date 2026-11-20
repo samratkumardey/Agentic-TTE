@@ -23,4 +23,21 @@ Run `runs/exit-A100-core-clinician-v4`, replicate 1; replicate 2 identical in 12
 
 ## Match review (rated, not automatic)
 
-Match review: 0/72 rated: not reported.
+The 72 reference confounders the lenient matching left unmatched were rated against each trial's unmatched proposals (18 matched). Rater: SKD.
+
+**Reviewed, over the 12 core trials:** precision 35%, recall 61%, F1 45% (85 matched).
+
+| Trial | Added by the review | Reviewed recall |
+|---|---|---|
+| ACURASYS | 2 | 70% |
+| CRISTAL | 0 | 60% |
+| APROCCHSS | 2 | 58% |
+| CHEST | 2 | 58% |
+| ADRENAL | 2 | 60% |
+| HYDRAREA | 2 | 58% |
+| BICAR-ICU | 1 | 75% |
+| CAPE COD | 2 | 75% |
+| STARRT-AKI | 2 | 43% |
+| EvK | 2 | 70% |
+| ECLS-SHOCK | 1 | 54% |
+| LOVIT | 0 | 58% |

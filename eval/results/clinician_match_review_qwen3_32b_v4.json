@@ -69,10 +69,10 @@
         "rationale": "The duration of ICU stay is associated with mortality and may influence treatment decisions in ARDS patients."
       }
     ],
-    "match": null,
+    "match": "positive end-expiratory pressure (PEEP)",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
     "note": "",
-    "rater": ""
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00299650",
@@ -144,10 +144,10 @@
         "rationale": "The duration of ICU stay is associated with mortality and may influence treatment decisions in ARDS patients."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Plateau pressure is a distinct ventilator setting from PEEP or oxygenation.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00299650",
@@ -219,10 +219,10 @@
         "rationale": "The duration of ICU stay is associated with mortality and may influence treatment decisions in ARDS patients."
       }
     ],
-    "match": null,
+    "match": "source of ARDS (e.g., sepsis, trauma)",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Broader ARDS etiology variable includes sepsis and pneumonia as potential causes.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00299650",
@@ -294,10 +294,10 @@
         "rationale": "The duration of ICU stay is associated with mortality and may influence treatment decisions in ARDS patients."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Sepsis or right-ventricular dysfunction does not establish vasopressor administration.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00299650",
@@ -369,10 +369,10 @@
         "rationale": "The duration of ICU stay is associated with mortality and may influence treatment decisions in ARDS patients."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Mechanical ventilation status does not specify tidal volume.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00318942",
@@ -436,10 +436,10 @@
         "rationale": "Prior antibiotic use influences treatment decisions and is associated with mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "APACHE II and SAPS II are distinct severity scores.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00318942",
@@ -503,10 +503,10 @@
         "rationale": "Prior antibiotic use influences treatment decisions and is associated with mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Severe sepsis captures only one category, not the complete admission-diagnosis stratum.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00318942",
@@ -570,10 +570,10 @@
         "rationale": "Prior antibiotic use influences treatment decisions and is associated with mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Comorbidity index does not specify McCabe prognostic/chronic-disease classification.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00318942",
@@ -637,10 +637,10 @@
         "rationale": "Prior antibiotic use influences treatment decisions and is associated with mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No proposed variable measures fluids already administered before time zero.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -708,10 +708,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "gender",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Clinical-demographic sex/gender terminology treated as matching here; categories may differ in specific datasets.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -779,10 +779,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Vasopressor use does not specify norepinephrine dose.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -850,10 +850,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Other inflammatory biomarkers are not serum lactate.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -921,10 +921,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No candidate explicitly measures ARDS status.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -992,10 +992,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "admission type",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Admission type explicitly includes medical versus surgical.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -1063,10 +1063,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Generic comorbidity index is not specifically the McCabe classification.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00625209",
@@ -1134,10 +1134,10 @@
         "rationale": "History of recent surgery is an exclusion criterion and is associated with higher risk of bleeding and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Anatomic infection site does not identify community versus hospital acquisition.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1209,10 +1209,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "admission type",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Includes medical/surgical admission categories, corresponding to operative status.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1284,10 +1284,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No proposed candidate identifies sepsis.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1359,10 +1359,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Admission type mentions trauma but is allocated to operative/non-operative admission; no separate trauma/TBI measurement.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1434,10 +1434,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "vasopressors or inotropes",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Broader therapy category includes vasopressor administration.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1509,10 +1509,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Blood-pressure or perfusion measures are not serum lactate.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1584,10 +1584,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Only admission type mentions trauma, but it is allocated to operative/non-operative admission; no second unique proposal.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT00935168",
@@ -1659,10 +1659,10 @@
         "rationale": "Admission type (e.g., medical, surgical, trauma) influences ICU treatment decisions and is associated with different mortality risks."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Urine output and renal replacement therapy are not equivalent to AKI diagnosis.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01448109",
@@ -1726,10 +1726,10 @@
         "rationale": "Abnormal temperature is a sign of infection and is associated with outcomes."
       }
     ],
-    "match": null,
+    "match": "gender",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Sex/gender used as a demographic variable; terminology may differ by dataset.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01448109",
@@ -1793,10 +1793,10 @@
         "rationale": "Abnormal temperature is a sign of infection and is associated with outcomes."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Admission source identifies origin/location, not operative versus non-operative status.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01448109",
@@ -1860,10 +1860,10 @@
         "rationale": "Abnormal temperature is a sign of infection and is associated with outcomes."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Binary vasopressor use does not encode catecholamine dose or the 15 µg/min threshold.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01448109",
@@ -1927,10 +1927,10 @@
         "rationale": "Abnormal temperature is a sign of infection and is associated with outcomes."
       }
     ],
-    "match": null,
+    "match": "intra-abdominal infection",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "A narrower anatomic infection-source category; not a full source taxonomy.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01448109",
@@ -1994,10 +1994,10 @@
         "rationale": "Abnormal temperature is a sign of infection and is associated with outcomes."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Chronic kidney disease does not establish baseline renal replacement therapy.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01448109",
@@ -2061,10 +2061,10 @@
         "rationale": "Abnormal temperature is a sign of infection and is associated with outcomes."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Onset-to-ICU-admission differs from shock-onset-to-time-zero unless ICU admission is time zero, which is not established.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2136,10 +2136,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "SAPS II was not proposed; no alternative candidate is the same score.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2211,10 +2211,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "volume of contrast agent",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Matches contrast volume, but does not supply contrast type.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2286,10 +2286,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No sepsis status among the unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2361,10 +2361,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No vasopressor-use measurement among the unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2436,10 +2436,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No mechanical-ventilation variable among the unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2511,10 +2511,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "use of nephrotoxic antibiotics",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Antibiotic subset corresponds to examples (aminoglycosides, vancomycin); does not cover non-antibiotic nephrotoxins.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT01636089",
@@ -2586,10 +2586,10 @@
         "rationale": "Albuminuria is associated with the risk of contrast-induced acute kidney injury and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No SOFA score or clinically interchangeable named score in proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02476253",
@@ -2649,10 +2649,10 @@
         "rationale": "Mean arterial pressure is a marker of hemodynamic status and is associated with both treatment decisions and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Infection at admission is not necessarily sepsis at inclusion.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02476253",
@@ -2712,10 +2712,10 @@
         "rationale": "Mean arterial pressure is a marker of hemodynamic status and is associated with both treatment decisions and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Creatinine alone does not specify AKIN stage 2–3; stage also depends on baseline and time course/urine output.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02476253",
@@ -2775,10 +2775,10 @@
         "rationale": "Mean arterial pressure is a marker of hemodynamic status and is associated with both treatment decisions and mortality."
       }
     ],
-    "match": null,
+    "match": "pH",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Generic pH is treated as arterial pH in this ICU acid-base context; specimen type is unstated.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02476253",
@@ -2838,10 +2838,10 @@
         "rationale": "Mean arterial pressure is a marker of hemodynamic status and is associated with both treatment decisions and mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Creatinine is one component of AKI definitions, not an AKI diagnosis.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02517489",
@@ -2901,10 +2901,10 @@
         "rationale": "Septic shock is a severe complication of CAP and is associated with high mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "APACHE II and SOFA assess related severity but are different scores.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02517489",
@@ -2964,10 +2964,10 @@
         "rationale": "Septic shock is a severe complication of CAP and is associated with high mortality."
       }
     ],
-    "match": null,
+    "match": "Invasive mechanical ventilation",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Baseline ventilation and invasive ventilation share the intervention status; narrower invasive designation.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02517489",
@@ -3027,10 +3027,10 @@
         "rationale": "Septic shock is a severe complication of CAP and is associated with high mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No C-reactive protein measurement among unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02517489",
@@ -3090,10 +3090,10 @@
         "rationale": "Septic shock is a severe complication of CAP and is associated with high mortality."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Respiratory failure does not establish high-flow nasal oxygen use.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02517489",
@@ -3153,10 +3153,10 @@
         "rationale": "Septic shock is a severe complication of CAP and is associated with high mortality."
       }
     ],
-    "match": null,
+    "match": "Chronic obstructive pulmonary disease (COPD)",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
     "note": "",
-    "rater": ""
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3228,10 +3228,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "gender",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Clinical sex/gender demographic mapping; actual database definitions could differ.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3303,10 +3303,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No SOFA score is available; UHC expected mortality and ISS are different measures.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3378,10 +3378,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No APACHE II score among unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3453,10 +3453,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "AKI diagnosis or eGFR is not measured urine output.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3528,10 +3528,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No sepsis status among unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3603,10 +3603,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "receipt of vasopressors within 24 hours of ICU admission",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Same treatment-use construct, but timing must be checked to establish pretreatment/baseline measurement.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3678,10 +3678,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No potassium measurement among unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3753,10 +3753,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No bicarbonate measurement among unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3828,10 +3828,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Admission service is not necessarily an operative/surgical admission classification.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02568722",
@@ -3903,10 +3903,10 @@
         "rationale": "UHC expected mortality is a strong predictor of AKI and mortality and influences treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No SAPS II score among unmatched proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02643381",
@@ -3974,10 +3974,10 @@
         "rationale": "A comorbidity index is a strong predictor of mortality and influences treatment decisions in critically ill patients."
       }
     ],
-    "match": null,
+    "match": "Emergency Department Location",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "ED is one of the intubation-location categories, but candidate does not specify intubation time or ICU/ward categories.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02643381",
@@ -4045,10 +4045,10 @@
         "rationale": "A comorbidity index is a strong predictor of mortality and influences treatment decisions in critically ill patients."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "PaO2/FiO2, coma, or arrest status are possible indications but do not encode the intubation-indication classification.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02643381",
@@ -4116,10 +4116,10 @@
         "rationale": "A comorbidity index is a strong predictor of mortality and influences treatment decisions in critically ill patients."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No systolic blood-pressure measure, specifically pre-induction, is proposed.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02643381",
@@ -4187,10 +4187,10 @@
         "rationale": "A comorbidity index is a strong predictor of mortality and influences treatment decisions in critically ill patients."
       }
     ],
-    "match": null,
+    "match": "SOFA Score",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "A named organ-failure illness-severity score fits the broad reference label.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT02643381",
@@ -4258,10 +4258,10 @@
         "rationale": "A comorbidity index is a strong predictor of mortality and influences treatment decisions in critically ill patients."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No neuromuscular blocker identity or use variable among candidates.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4329,10 +4329,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Prior MI or coronary disease does not distinguish STEMI from NSTEMI index presentation.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4400,10 +4400,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No resuscitation-before-time-zero variable in proposals.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4471,10 +4471,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "inotrope score",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "A dose-based measure of catecholamine/inotrope support; broader than simple use, and equivalence depends on score construction.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4542,10 +4542,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Coronary artery disease does not establish multivessel coronary involvement.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4613,10 +4613,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Cardiac index or SOFA score does not establish mechanical ventilation.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4684,10 +4684,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No arterial pH measurement proposed.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03637205",
@@ -4755,10 +4755,10 @@
         "rationale": "Previous peripheral vascular disease is a common comorbidity in cardiogenic shock and is associated with higher mortality and treatment decisions."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Chronic kidney disease is not a serum creatinine measurement.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03680274",
@@ -4818,10 +4818,10 @@
         "rationale": "Time from ICU admission to time zero may influence treatment decisions and outcomes, as early interventions may improve prognosis."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Reason for admission (e.g., sepsis, trauma, pneumonia) does not necessarily encode anatomical/source-of-infection classification.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03680274",
@@ -4881,10 +4881,10 @@
         "rationale": "Time from ICU admission to time zero may influence treatment decisions and outcomes, as early interventions may improve prognosis."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No COVID-19 status is proposed; pneumonia is not equivalent to COVID-19.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03680274",
@@ -4944,10 +4944,10 @@
         "rationale": "Time from ICU admission to time zero may influence treatment decisions and outcomes, as early interventions may improve prognosis."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "Individual comorbidities do not equal the Charlson comorbidity index.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03680274",
@@ -5007,10 +5007,10 @@
         "rationale": "Time from ICU admission to time zero may influence treatment decisions and outcomes, as early interventions may improve prognosis."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No hydrocortisone treatment variable proposed.",
+    "rater": "SKD"
   },
   {
     "nct_id": "NCT03680274",
@@ -5070,9 +5070,9 @@
         "rationale": "Time from ICU admission to time zero may influence treatment decisions and outcomes, as early interventions may improve prognosis."
       }
     ],
-    "match": null,
+    "match": "none",
     "rule": "match: the name of the proposal that is the same baseline variable as the reference (a synonym, or a narrower or broader name a clinician would map to the same data), or \"none\". Each proposal can match one reference only.",
-    "note": "",
-    "rater": ""
+    "note": "No thiamine treatment variable proposed.",
+    "rater": "SKD"
   }
 ]
