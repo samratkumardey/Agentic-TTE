@@ -84,7 +84,7 @@ def literature(
     protocol: Path = typer.Option(..., help="The trial's protocol (e.g. the Trialist draft): "
                                             "its conditions and treatments make the queries."),
     out: Path = typer.Option(..., "--out", "-o", help="Write the literature JSON here."),
-    per_query: int = typer.Option(40, help="PubMed results per query."),
+    per_query: int = typer.Option(80, help="PubMed results per query."),
 ):
     """Build the Clinician's result-blind PubMed literature for a trial (public abstracts;
     cached under the cache directory, kept out of git)."""

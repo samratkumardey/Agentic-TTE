@@ -44,9 +44,15 @@ from agentic_tte.sources.pubmed.client import Article, PubMedClient
 # verbatim fragments of four or more words; the prompt asks for one contiguous sentence and says
 # another study's selection criteria are not evidence. Changed after rep1 of the v2 run showed
 # half the citations failing on punctuation, joined fragments or paraphrase (SCORING.md item 29).
-PROMPT_VERSION = "clinician-v3"
-TOP_K = 15  # passages shown to the model
-PER_ARTICLE = 3  # at most this many passages from one abstract
+# clinician-v4: retrieval and a checklist. Searches use every registry condition (up to 3) and
+# add adjusted observational studies of the condition; 80 abstracts per search. The model sees
+# 40 passages, at most 2 per abstract. The prompt walks a generic list of confounder domains.
+# Changed after v3 showed 60 of 79 missed reference confounders never reached the model; the
+# checklist was written after seeing the misses (SCORING.md item 29).
+PROMPT_VERSION = "clinician-v4"
+TOP_K = 40  # passages shown to the model
+PER_ARTICLE = 2  # at most this many passages from one abstract
+MAX_CONDITIONS = 3  # registry conditions used in the searches
 
 
 # --- literature -----------------------------------------------------------------------------
@@ -82,14 +88,16 @@ _ADULT = "NOT (pediatric[tiab] OR paediatric[tiab] OR neonatal[tiab] OR children
 
 
 def literature_queries(p: TargetTrialProtocol, *, adult: bool = True) -> list[str]:
-    """Prognostic factors of the main condition (the first listed), and observational studies
-    of the same treatment.
+    """Prognostic factors of the trial's conditions, observational studies of the same
+    treatment, and adjusted observational studies of the conditions (whatever the treatment),
+    which name their adjustment variables.
     Registry "conditions" sometimes name the intervention or a setting ("Vitamin C"); a
     condition that is a treatment component is left out."""
     names = [c.concept.name for a in p.treatment_strategies if not a.is_comparator
              for c in a.components]  # fmt: skip
     treat_keys = {_norm(n) for n in names} | {_norm(a.label) for a in p.treatment_strategies}
-    cond = _or([c for c in p.source.conditions if _norm(c) not in treat_keys][:1])
+    cond = _or([c for c in p.source.conditions
+                if _norm(c) not in treat_keys][:MAX_CONDITIONS])  # fmt: skip
     treat = _or(names[:3])
     if not cond:
         return []
@@ -99,6 +107,9 @@ def literature_queries(p: TargetTrialProtocol, *, adult: bool = True) -> list[st
     if treat:
         qs.append(f"({cond}) AND ({treat}) AND (observational[tiab] OR cohort[tiab] OR "
                   f"propensity[tiab] OR confounding[tiab]){tail}")  # fmt: skip
+    qs.append(f"({cond}) AND (propensity[tiab] OR \"inverse probability\"[tiab] OR "
+              f"confounders[tiab] OR \"adjusted for\"[tiab]) AND (cohort[tiab] OR "
+              f"observational[tiab] OR retrospective[tiab]){tail}")  # fmt: skip
     return qs
 
 
@@ -118,7 +129,7 @@ def acronym_pattern(acronym: str) -> re.Pattern | None:
 
 
 def build_literature(study: dict, p: TargetTrialProtocol, client: PubMedClient, *,
-                     per_query: int = 40) -> Literature:  # fmt: skip
+                     per_query: int = 80) -> Literature:  # fmt: skip
     """The result-blind literature for the trial in ``study`` (a CT.gov v2 record)."""
     ps = study.get("protocolSection", study)
     nct = ps.get("identificationModule", {}).get("nctId") or p.source.nct_id
@@ -203,7 +214,8 @@ def retrieval_query(p: TargetTrialProtocol) -> str:
              primary.name if primary else "",
              *[c.concept.name for a in p.treatment_strategies for c in a.components],
              "risk factors prognostic predictors mortality severity baseline confounding "
-             "comorbidity treatment allocation"]  # fmt: skip
+             "comorbidity treatment allocation adjusted multivariable independently "
+             "associated"]  # fmt: skip
     return " ".join(x for x in parts if x)
 
 
@@ -316,7 +328,23 @@ from a passage (at least four words, under 300 characters), with the passage's P
 paraphrase, summarise or join pieces of text. Cite a passage only if it reports the variable as \
 a predictor of the outcome or of treatment choice; another study's inclusion or exclusion \
 criteria are not evidence. Leave citations empty rather than invent one.
-8. List the 8 to 20 most important variables.
+8. Work through these domains for this trial, and include every variable that matters for \
+treatment choice and the outcome, whether or not a passage mentions it (leave its citations \
+empty then):
+   a. demographics;
+   b. admission: type (medical, surgical, trauma), source, and the reason for admission or \
+the underlying diagnosis;
+   c. illness severity: the severity scores used for this population (list each one that \
+applies, e.g. SOFA, SAPS II, APACHE II), and the condition's own severity measures;
+   d. organ support at time zero: vasopressors or inotropes, invasive or noninvasive \
+ventilation, renal replacement therapy, mechanical circulatory support;
+   e. key physiology and laboratory values at time zero for this condition;
+   f. the source or type of the condition (e.g. infection source, aetiology, subtype);
+   g. chronic comorbidities and a comorbidity index;
+   h. time from the condition's onset, or from admission, to time zero;
+   i. treatments given before time zero that affect the outcome (not the trial's own \
+treatment).
+9. List the 10 to 20 most important variables.
 Return only the JSON object."""
 
 

@@ -212,12 +212,30 @@ def test_reviewer_given_confounders_are_not_replaced(synthetic, drafted):  # noq
     assert any("Clinician skipped" in m for m in graph.get_state(cfg).values["log"])
 
 
-def test_queries_use_the_main_condition_and_filter_the_population(drafted):
+def test_queries_use_the_conditions_and_filter_the_population(drafted):
+    from agentic_tte.agents.clinician import MAX_CONDITIONS, literature_queries
+    conds = ["Hydrocortisone", "Septic Shock", "COVID-19", "Sepsis", "ARDS", "Shock"]
     p = drafted.model_copy(update={"source": drafted.source.model_copy(update={
-        "conditions": ["Hydrocortisone", "Septic Shock", "COVID-19"]})})
-    q = __import__("agentic_tte.agents.clinician", fromlist=["x"]).literature_queries(p)
-    assert q and all('"Septic Shock"' in x and "COVID" not in x for x in q)
+        "conditions": conds})})
+    q = literature_queries(p)
+    # a condition naming the treatment is left out; the next MAX_CONDITIONS are used
+    used = conds[1:1 + MAX_CONDITIONS]
+    assert q and all(all(f'"{c}"' in x for c in used) for x in q)
+    assert not any('"Hydrocortisone"' in x.split(") AND (")[0] for x in q)
+    assert not any(f'"{c}"' in x for c in conds[1 + MAX_CONDITIONS:] for x in q)
     assert all("NOT (animals[mh] NOT humans[mh])" in x and "pediatric" in x for x in q)
+    # prognostic factors, the treatment's observational studies, adjusted observational studies
+    assert len(q) == 3 and '"inverse probability"[tiab]' in q[2]
+
+
+def test_retrieval_caps_passages_per_abstract(drafted):
+    from agentic_tte.agents.clinician import PER_ARTICLE
+    long = " ".join(f"Septic shock mortality predictor number {i} was lactate." for i in range(30))
+    lit = Literature(articles=[Article(pmid=str(i), title="Septic shock", abstract=long,
+                                       year=2015) for i in range(3)])  # fmt: skip
+    shown = retrieve(drafted, lit)
+    per = {x: sum(s.pmid == x for s in shown) for x in {s.pmid for s in shown}}
+    assert shown and max(per.values()) <= PER_ARTICLE and len(per) == 3
 
 
 def test_acronym_variants():
