@@ -45,8 +45,12 @@ automatically (``audit="override"``, labelled in the report) or stops the run
 The LLM is used only by the Trialist, on registry text, and by the Clinician, on registry
 text, result-blind abstracts and the names of unmapped concepts. The database connection is
 closed over when the graph is built, never put in the state. The state holds the protocol,
-concept sets, SQL and aggregates (suppressed counts, estimates): no patient rows. The
-supervisor is the fixed routing below for now; an LLM supervisor can replace it later.
+concept sets, SQL and aggregates (suppressed counts, estimates): no patient rows.
+
+The Supervisor (``agentic_tte.agents.supervisor``) is a node: every other node returns to it,
+and it picks the next one by a fixed policy, enforces the loop caps and budgets (``Budget``:
+audit rounds, design reviews, concept rounds, LLM requests, steps) and records each route
+with its reason (``routes``, shown in the report). A cap that is reached stops the run.
 """
 
 from __future__ import annotations
@@ -56,10 +60,11 @@ from datetime import UTC, datetime
 from typing import Annotated, Any, Literal, TypedDict
 
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import interrupt
+from langgraph.types import Command, interrupt
 from pydantic import BaseModel, Field
 
 from agentic_tte.agents.auditor import audit, data_summary
+from agentic_tte.agents.supervisor import Budget, Supervisor
 from agentic_tte.omop.attrition import attrition
 from agentic_tte.omop.compiler import CompiledCohort, CompileSpec, compile_protocol, spec_template
 from agentic_tte.omop.concept_sets import (
@@ -70,7 +75,7 @@ from agentic_tte.omop.concept_sets import (
     propose,
     review_sheet,
 )
-from agentic_tte.omop.gate import DataContext, GateStatus, run_gate
+from agentic_tte.omop.gate import DataContext, run_gate
 from agentic_tte.protocol import ConceptRef, Origin, TargetTrialProtocol, new_version
 
 
@@ -100,11 +105,18 @@ class ReplayState(TypedDict, total=False):
     status: str  # running, blocked, stopped, done, signed_off, returned, auto_approved
     log: Annotated[list[str], operator.add]
     reviews: Annotated[list[dict], operator.add]  # audit trail of every review
+    last: str  # the node that just ran (for the Supervisor)
+    routes: Annotated[list[dict], operator.add]  # the Supervisor's decisions, with reasons
+    steps: int
+    visits: dict  # node -> times routed to
+    llm_calls: Annotated[int, operator.add]  # LLM requests made (cache hits excluded)
+    llm_tokens: Annotated[int, operator.add]
+    stop_reason: str  # why the Supervisor stopped the run
 
 
 Stage = Literal["design", "concepts", "gate", "signoff"]
 AUTO_REVIEWER = "auto-approve (benchmark; no human review)"
-MAX_AUDIT_ROUNDS = 3
+MAX_AUDIT_ROUNDS = Budget().max_audit_rounds
 
 
 class AutoApprove(BaseModel):
@@ -182,7 +194,8 @@ def _record(stage: str, answer: dict, auto: bool, decision: str) -> dict:
 def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = None,
                  design_hr: float | None = None, checkpointer=None,
                  auto: AutoApprove | None = None, abbreviations=None,
-                 n_bootstrap: int = 0, literature=None, surrogates: bool = False):  # fmt: skip
+                 n_bootstrap: int = 0, literature=None, surrogates: bool = False,
+                 budget: Budget | None = None):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
@@ -190,8 +203,12 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     ``n_bootstrap``: resamples for the risk-measure CIs (eval/SCORING.md R4: 500 for scored
     runs; 0 skips them). ``literature``: a result-blind ``Literature`` for the trial; with it,
     the Clinician proposes the confounders before design review. ``surrogates``: the
-    Clinician proposes stand-ins for concepts the vocabulary cannot map (needs ``llm``)."""
+    Clinician proposes stand-ins for concepts the vocabulary cannot map (needs ``llm``).
+    ``budget``: the Supervisor's loop caps and LLM budget (defaults: ``Budget()``)."""
     context = context or DataContext()
+    sup = Supervisor(budget, clinician=literature is not None,
+                     llm_nodes={"draft", "clinician"} | ({"propose_concepts"} if surrogates
+                                                         else set()))  # fmt: skip
 
     def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
         if auto is not None and stage in auto.stages:
@@ -273,17 +290,6 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         v = new_version(p, created_by=answer.get("reviewer") or "user",
                         notes="design review: " + ", ".join(sorted(changes)), **changes)
         return {**_version(v, f"design review {what}"), **rec}
-
-    def after_design_review(state: ReplayState) -> str:
-        """Back to compile when the reviewed concept sets still cover the design; otherwise
-        its concepts are proposed and reviewed again."""
-        if not (state.get("spec") and state.get("book")):
-            return "propose_concepts"
-        from agentic_tte.omop.concept_sets import _entries
-
-        have = {s["key"] for s in state["book"]["sets"]}
-        keys = {k for k, *_ in _entries(_p(state))}
-        return "compile" if keys <= have else "propose_concepts"
 
     def propose_concepts(state: ReplayState) -> dict:
         p = _p(state)
@@ -374,19 +380,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                                               "reviewer": auto.reviewer, "auto": True},
                     "reviews": [_record("audit", rec, True,
                                         "audit overridden: " + ", ".join(rep.failed))]}
-        rounds = (state.get("audit_rounds") or 0) + 1
-        out["audit_rounds"] = rounds
-        if rounds >= MAX_AUDIT_ROUNDS:
-            out["status"] = "stopped"
-            out["log"] = out["log"] + [f"stopped: the design failed the audit {rounds} times"]
+        out["audit_rounds"] = (state.get("audit_rounds") or 0) + 1  # the Supervisor caps it
         return out
-
-    def after_audit(state: ReplayState) -> str:
-        if state.get("status") == "stopped":
-            return "report"
-        failed = set((state.get("audit") or {}).get("failed") or [])
-        overridden = set((state.get("audit_override") or {}).get("checks") or [])
-        return "gate" if failed <= overridden else "design_review"
 
     def gate(state: ReplayState) -> dict:
         cc = CompiledCohort.model_validate(state["compiled"])
@@ -401,13 +396,6 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             out["status"] = "blocked"
         return out
 
-    def after_gate(state: ReplayState) -> str:
-        overall = state["gate"]["checks"]
-        statuses = {c["status"] for c in overall}
-        if GateStatus.RED in statuses:
-            return "report"
-        return "gate_review" if GateStatus.AMBER in statuses else "analyze"
-
     def gate_review(state: ReplayState) -> dict:
         answer, is_auto = review("gate", {"stage": "gate", "gate": state["gate_md"],
                             "attrition": state["attrition_md"],
@@ -420,9 +408,6 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                     "reviews": [_record("gate", answer, is_auto, "stop")]}
         return {"log": [f"gate limitations accepted by {who}: {answer.get('note') or ''}"],
                 "reviews": [_record("gate", answer, is_auto, "proceed")]}
-
-    def after_gate_review(state: ReplayState) -> str:
-        return "report" if state.get("status") == "stopped" else "analyze"
 
     def analyze_node(state: ReplayState) -> dict:
         from agentic_tte.agents.statistician import analyze
@@ -459,6 +444,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         parts += [f"| {r['stage']} | {r['reviewer']} | {'yes' if r['auto'] else 'no'} | "
                   f"{r['decision']} | {r['note'] or '–'} | {r['at']} |" for r in reviews]
         parts += ["", "## Run log", ""] + [f"- {m}" for m in state.get("log", [])]
+        parts += ["", sup.to_markdown(state).rstrip()]
         if state.get("clinician_md"):
             parts += ["", state["clinician_md"].rstrip()]
         if state.get("surrogates_md"):
@@ -490,9 +476,6 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             status = "done"
         return {"report": render(state, status, state.get("reviews", [])), "status": status}
 
-    def after_report(state: ReplayState) -> str:
-        return "signoff" if state.get("status") == "done" else END
-
     def signoff(state: ReplayState) -> dict:
         answer, is_auto = review("signoff", {
             "stage": "signoff", "report": state["report"],
@@ -505,31 +488,38 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         return {"report": render(state, status, reviews), "status": status, "reviews": [rec],
                 "log": [f"report {status} by {rec['reviewer']}"]}
 
-    g = StateGraph(ReplayState)
-    for name, fn in (("draft", draft), ("design_review", design_review),
-                     ("propose_concepts", propose_concepts), ("concept_review", concept_review),
-                     ("compile", compile_node), ("audit", audit_node), ("gate", gate),
-                     *([("clinician", clinician)] if literature is not None else []),
-                     ("gate_review", gate_review),
-                     ("analyze", analyze_node), ("report", report),
-                     ("signoff", signoff)):  # fmt: skip
-        g.add_node(name, fn)
-    g.add_edge(START, "draft")
+    def node(name: str, fn):
+        """Every node reports itself and its LLM use, then returns to the Supervisor."""
+
+        def run(state: ReplayState) -> dict:
+            calls = llm.usage.calls if llm is not None else 0
+            tokens = (llm.usage.prompt_tokens + llm.usage.completion_tokens) if llm else 0
+            out = fn(state) or {}
+            if llm is not None:
+                out["llm_calls"] = llm.usage.calls - calls
+                out["llm_tokens"] = (llm.usage.prompt_tokens + llm.usage.completion_tokens
+                                     - tokens)  # fmt: skip
+            return {**out, "last": name}
+
+        return run
+
+    def supervisor(state: ReplayState) -> Command:
+        route, update = sup.route(state)
+        return Command(goto=END if route.to == "end" else route.to, update=update)
+
+    nodes = {"draft": draft, "design_review": design_review,
+             "propose_concepts": propose_concepts, "concept_review": concept_review,
+             "compile": compile_node, "audit": audit_node, "gate": gate,
+             "gate_review": gate_review, "analyze": analyze_node, "report": report,
+             "signoff": signoff}  # fmt: skip
     if literature is not None:
-        g.add_edge("draft", "clinician")
-        g.add_edge("clinician", "design_review")
-    else:
-        g.add_edge("draft", "design_review")
-    g.add_conditional_edges("design_review", after_design_review, ["propose_concepts", "compile"])
-    g.add_edge("propose_concepts", "concept_review")
-    g.add_edge("concept_review", "compile")
-    g.add_edge("compile", "audit")
-    g.add_conditional_edges("audit", after_audit, ["gate", "design_review", "report"])
-    g.add_conditional_edges("gate", after_gate, ["report", "gate_review", "analyze"])
-    g.add_conditional_edges("gate_review", after_gate_review, ["report", "analyze"])
-    g.add_edge("analyze", "report")
-    g.add_conditional_edges("report", after_report, ["signoff", END])
-    g.add_edge("signoff", END)
+        nodes["clinician"] = clinician
+    g = StateGraph(ReplayState)
+    g.add_node("supervisor", supervisor, destinations=(*nodes, END))
+    for name, fn in nodes.items():
+        g.add_node(name, node(name, fn))
+        g.add_edge(name, "supervisor")
+    g.add_edge(START, "supervisor")
     return g.compile(checkpointer=checkpointer)
 
 

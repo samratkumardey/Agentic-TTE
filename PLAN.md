@@ -393,7 +393,7 @@ The concept-set book also holds the confounders (`C:<name>`) and outcome concept
   - **design:** approve, or change elements and name the confounders. Any change makes a new protocol version (created by the user).
   - **concepts:** a decisions file, plus the compile spec (time zero and anchors).
   - **gate:** proceed or stop, asked only when the gate is amber.
-- **Isolation and routing:** the database connection is closed over, not stored in the state, which holds the protocol versions, concept sets, SQL and suppressed aggregates only. The Supervisor is fixed routing for now.
+- **Isolation and routing:** the database connection is closed over, not stored in the state, which holds the protocol versions, concept sets, SQL and suppressed aggregates only. The Supervisor is a node with a fixed routing policy (2026-11-20, `agents/supervisor.py`).
 - **Statistician** (deterministic menu, no LLM):
   - primary method: clone-censor-weight when the arm has a grace period; otherwise IPTW, or PSM if the plan says so;
   - always: the crude HR, IPTW, SMD before and after weighting, the PH test, IPTW-weighted KM risks at the horizon, and the E-value;
@@ -700,7 +700,7 @@ The MIMIC OMOP CDM exists (§16). What is missing for an end-to-end Replay of th
 
 | Agent | In EmulatRx | Ours | Status |
 |---|---|---|---|
-| Supervisor | yes | yes | to build |
+| Supervisor | yes (LLM) | a node with a fixed, recorded routing policy: loop caps (audit rounds, design reviews, concept rounds), an LLM request budget and a step cap; every route logged with its reason | built (2026-11-20) |
 | Trialist | LLM parse | schema-constrained protocol with 7 TTE elements, versioned | built |
 | Informatician | LLM writes SQL | LLM proposes concepts, vocabulary grounds them, a deterministic compiler writes the SQL | built |
 | Clinician | RAG | RAG with citations: result-blind PubMed literature, quotes verified verbatim, treatment, outcome and post-baseline variables dropped by checks | confounders built (2026-11-01; v4 on qwen3:32b, reviewed recall 61%, development result); surrogate answers built (2026-11-20, scripted model only); the Statistician loop to build |
@@ -804,7 +804,8 @@ The count is not the contribution. Each new agent gets an ablation (run without 
        - **Every gap traced** (changelog items 19–22): age = anchor year; lactate = ED blood gases without a hospital admission; norepinephrine = prescriptions; ventilation = timing and procedureevents vs ventilator settings. None comes from the compiler.
        - For the ventilation, lactate and vasopressor concepts of the core trials, the concept review must say which sources count;
    - **done 2026-11-01:** the Clinician's confounder proposals (`agents/clinician.py`, `agentic-tte literature`, `replay start --literature`; SCORING.md Phase 3 changelog item 29). Run with qwen3:32b on the 12 core drafts (v2 to v4, SCORING item 29): v4 automatic recall 48%, reviewed recall 61% (investigator rating); the core trials are now its development set.
-   - **done 2026-11-20:** the Clinician's surrogate answers to the Informatician (`agents/surrogates.py`, `replay start --surrogates`). For each eligibility concept or confounder with no vocabulary match, one LLM call proposes a stand-in variable with a rationale and a limitation, or none; checks drop the treatment, the primary outcome, the concept itself and post-baseline variables; concept IDs come only from the vocabulary search for the stand-in's name. Proposals are pre-filled as `surrogate` decisions at concept review; `AutoApprove` keeps them only with `accept_surrogates` and labels them. Treatment and outcome concepts are not asked about (a stand-in there changes the estimand). Tested with a scripted model on synthetic OMOP only. Still to do: the Statistician ↔ Clinician loop; then the Supervisor.
+   - **done 2026-11-20:** the Clinician's surrogate answers to the Informatician (`agents/surrogates.py`, `replay start --surrogates`). For each eligibility concept or confounder with no vocabulary match, one LLM call proposes a stand-in variable with a rationale and a limitation, or none; checks drop the treatment, the primary outcome, the concept itself and post-baseline variables; concept IDs come only from the vocabulary search for the stand-in's name. Proposals are pre-filled as `surrogate` decisions at concept review; `AutoApprove` keeps them only with `accept_surrogates` and labels them. Treatment and outcome concepts are not asked about (a stand-in there changes the estimand). Tested with a scripted model on synthetic OMOP only.
+   - **done 2026-11-20:** the Supervisor (`agents/supervisor.py`). Every node of the Replay graph returns to it; it picks the next node by a fixed policy (no LLM: the same state gives the same route, and no review, audit or gate can be skipped), enforces `Budget` (audit rounds 3, design reviews 8, concept rounds 4, LLM requests (`replay start --max-llm-calls`, no cap by default), steps 60) and records each route with its reason (`routes`, a table in the report). A cap that is reached stops the run with the reason. The audit-round stop moved here from the audit node. Still to do: the Statistician ↔ Clinician loop, as a route of the Supervisor.
 
    Tests on synthetic OMOP first.
 5. **User:** write the 12 reference protocols from a template (E3), blind to model outputs; a clinician adjudicates the uncertain items and audits 20%.

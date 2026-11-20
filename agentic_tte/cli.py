@@ -627,6 +627,7 @@ def _replay_graph(run: dict, llm=None):
 
     from langgraph.checkpoint.sqlite import SqliteSaver
 
+    from agentic_tte.agents.supervisor import Budget
     from agentic_tte.graph import AutoApprove, build_replay
     from agentic_tte.omop import DataContext
 
@@ -644,7 +645,8 @@ def _replay_graph(run: dict, llm=None):
                          design_hr=run.get("design_hr"), checkpointer=saver, auto=auto,
                          n_bootstrap=run.get("bootstrap", 0),
                          abbreviations=_abbreviations(run.get("abbreviations")),
-                         literature=lit, surrogates=bool(run.get("surrogates")))  # fmt: skip
+                         literature=lit, surrogates=bool(run.get("surrogates")),
+                         budget=Budget.model_validate(run.get("budget") or {}))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -718,6 +720,9 @@ def replay_start(
     surrogates: bool = typer.Option(False, help="The Clinician proposes stand-ins for "
                                                 "concepts the vocabulary cannot map, for the "
                                                 "concept review (needs the LLM)."),
+    max_llm_calls: int = typer.Option(None, help="The Supervisor stops the run before an LLM "
+                                                 "step once this many requests were made "
+                                                 "(cache hits are free); default no cap."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -739,7 +744,8 @@ def replay_start(
            "auto": policy.model_dump(mode="json") if policy else None,
            "abbreviations": str(abbreviations) if abbreviations else None,
            "bootstrap": bootstrap,
-           "literature": str(literature) if literature else None, "surrogates": surrogates}
+           "literature": str(literature) if literature else None, "surrogates": surrogates,
+           "budget": {"max_llm_calls": max_llm_calls}}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}
