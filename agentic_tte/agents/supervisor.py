@@ -13,11 +13,15 @@ The loops and their caps (``Budget``):
 - concept proposals (re-proposed when a design change adds concepts): ``max_concept_rounds``;
 - LLM requests made by the agents (cache hits are free): ``max_llm_calls``, checked before
   each step that may call the model; ``None`` means no cap;
+- the Statistician <-> Clinician loop (balance flags -> Clinician advice -> design review):
+  ``max_balance_rounds`` rounds of advice; after that the analysis runs with the imbalance
+  reported (not a stop: residual imbalance is a caveat, not a failure);
 - ``max_steps`` routing decisions in all, as a last guard against a loop.
 
 A cap that is reached stops the run with the reason in the log and the report, which is
-written as for any stopped run. The Statistician <-> Clinician loop (imbalance, implausible
-result) will be one more route here.
+written as for any stopped run. The Statistician <-> Clinician loop is result-blind: it acts on
+the balance check, which runs before the outcome analysis and reads no outcome. An effect
+estimate never routes the run back to the design.
 
 The Supervisor reads only routing fields of the state (the last node, statuses, the gate's
 check statuses, audit findings, counts); it never sees patient rows.
@@ -28,13 +32,14 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 # Nodes that may call the LLM, given how the graph was built.
-LLM_NODES = ("draft", "clinician", "propose_concepts")
+LLM_NODES = ("draft", "clinician", "propose_concepts", "balance_advice")
 
 
 class Budget(BaseModel):
     max_audit_rounds: int = Field(default=3, ge=1)
     max_design_reviews: int = Field(default=8, ge=1)
     max_concept_rounds: int = Field(default=4, ge=1)
+    max_balance_rounds: int = Field(default=2, ge=0)
     max_llm_calls: int | None = Field(default=None, ge=0)
     max_steps: int = Field(default=60, ge=1)
 
@@ -55,9 +60,10 @@ class Supervisor:
     draft only when there is no protocol, the Clinician, concept search with surrogates)."""
 
     def __init__(self, budget: Budget | None = None, *, clinician: bool = False,
-                 llm_nodes: set[str] | None = None):  # fmt: skip
+                 balance_advice: bool = False, llm_nodes: set[str] | None = None):  # fmt: skip
         self.budget = budget or Budget()
         self.clinician = clinician
+        self.balance_advice = balance_advice
         self.llm_nodes = set(llm_nodes or ())
 
     # -- the fixed order of the Replay ------------------------------------------------------
@@ -72,6 +78,8 @@ class Supervisor:
         if last == "clinician":
             return "design_review", "the draft and the Clinician's confounders go to review"
         if last == "design_review":
+            if state.get("balance_kept"):
+                return "analyze", "the reviewer kept the confounders: imbalance reported"
             if not (state.get("spec") and state.get("book")):
                 return "propose_concepts", "the design's concepts are searched in the vocabulary"
             from agentic_tte.omop.concept_sets import _entries
@@ -103,11 +111,26 @@ class Supervisor:
                 return "report", "the Data Support Gate is red"
             if "amber" in s:
                 return "gate_review", "the Data Support Gate is amber"
-            return "analyze", "the Data Support Gate is green"
+            return "balance", "the Data Support Gate is green"
         if last == "gate_review":
             if status == "stopped":
                 return "report", "stopped at the gate review"
-            return "analyze", "the gate's limitations were accepted"
+            return "balance", "the gate's limitations were accepted"
+        if last == "balance":
+            flagged = list((state.get("balance") or {}).get("flagged") or {})
+            if not flagged:
+                return "analyze", "no confounder flagged by the balance check"
+            if not self.balance_advice:
+                return "analyze", f"flagged {', '.join(flagged)}: reported (Clinician loop off)"
+            done = (state.get("visits") or {}).get("balance_advice", 0)
+            if done >= self.budget.max_balance_rounds:
+                return "analyze", (f"flagged {', '.join(flagged)} after {done} round(s) of "
+                                   "advice: reported")  # fmt: skip
+            return "balance_advice", f"flagged {', '.join(flagged)}: the Clinician advises"
+        if last == "balance_advice":
+            if state.get("balance_pending"):
+                return "design_review", "the Clinician advises changes: design review decides"
+            return "analyze", "the Clinician advises keeping the confounders"
         if last == "analyze":
             return "report", "the estimates go into the report"
         if last == "report":
@@ -151,6 +174,8 @@ class Supervisor:
             update |= {"status": "stopped", "stop_reason": stop,
                        "log": [f"stopped by the Supervisor: {stop}"]}  # fmt: skip
         visits[to] = visits.get(to, 0) + 1
+        if last == "design_review" and state.get("balance_kept"):
+            update["balance_kept"] = False
         r = Route(step=step, after=last, to=to, reason=reason)
         update |= {"routes": [r.model_dump()], "steps": step, "visits": visits}
         return r, update
@@ -160,7 +185,8 @@ class Supervisor:
         llm = state.get("llm_calls") or 0
         lines = ["## Supervisor", "",
                  f"Fixed routing policy. Budget: audit rounds {b.max_audit_rounds}, design "
-                 f"reviews {b.max_design_reviews}, concept rounds {b.max_concept_rounds}, LLM "
+                 f"reviews {b.max_design_reviews}, concept rounds {b.max_concept_rounds}, "
+                 f"balance rounds {b.max_balance_rounds}, LLM "
                  f"requests {b.max_llm_calls if b.max_llm_calls is not None else 'no cap'}, "
                  f"steps {b.max_steps}. Used: {state.get('steps') or 0} steps, {llm} LLM "
                  f"requests ({state.get('llm_tokens') or 0} tokens)."]  # fmt: skip

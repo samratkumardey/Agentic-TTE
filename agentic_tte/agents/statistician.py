@@ -215,3 +215,77 @@ def analyze(frame: pd.DataFrame, protocol: TargetTrialProtocol, *, confounders: 
     if res.smd_after and max(res.smd_after.values()) >= SMD_THRESHOLD:
         res.notes.append("residual imbalance after weighting: interpret with caution")
     return res
+
+
+MISSING_FLAG = 0.3  # a confounder missing for this share of the frame is flagged
+PS_EXTREME = (0.05, 0.95)  # propensity scores outside this range count as near-violations
+
+
+class BalanceReport(BaseModel):
+    """Covariate balance from treatment and confounders only: no outcome, time or estimate
+    goes in, so acting on it cannot be steered by the result (the design stage)."""
+
+    n_frame: int
+    n_complete: int
+    confounders: list[str]
+    missing: dict[str, float] = Field(default_factory=dict)  # share of the frame
+    smd_before: dict[str, float] = Field(default_factory=dict)
+    smd_after: dict[str, float] = Field(default_factory=dict)  # stabilized IPTW
+    ps_extreme: float | None = None  # share of the complete cases outside PS_EXTREME
+    max_weight: float | None = None
+    flagged: dict[str, list[str]] = Field(default_factory=dict)  # column -> reasons
+    notes: list[str] = Field(default_factory=list)
+
+    def to_markdown(self) -> str:
+        lines = ["## Covariate balance (before any outcome analysis)", "",
+                 f"From treatment and confounders only (no outcomes). Complete cases "
+                 f"{suppress(self.n_complete)} of {suppress(self.n_frame)}; flags: SMD after "
+                 f"weighting ≥ {SMD_THRESHOLD}, or missing for ≥ {100 * MISSING_FLAG:.0f}%."]
+        if self.confounders and self.smd_after:
+            lines += ["", "| Confounder column | Missing | SMD before | SMD after | Flag |",
+                      "|---|---|---|---|---|"]
+            lines += [f"| {c} | {100 * self.missing.get(c, 0):.0f}% | "
+                      f"{self.smd_before.get(c, float('nan')):.3f} | "
+                      f"{self.smd_after.get(c, float('nan')):.3f} | "
+                      f"{'; '.join(self.flagged.get(c, [])) or '–'} |" for c in self.confounders]
+        if self.ps_extreme is not None:
+            lines += ["", f"Propensity scores outside {PS_EXTREME[0]}–{PS_EXTREME[1]}: "
+                          f"{100 * self.ps_extreme:.1f}%; largest stabilized weight "
+                          f"{self.max_weight:.1f}."]
+        lines += [f"- {n}" for n in self.notes]
+        return "\n".join(lines) + "\n"
+
+
+def balance(frame: pd.DataFrame, confounders: list[str]) -> BalanceReport:
+    """Balance diagnostics for the Statistician <-> Clinician loop. Reads only ``treated``
+    and the confounder columns."""
+    d = frame[["treated", *confounders]]
+    rep = BalanceReport(n_frame=len(d), n_complete=len(d.dropna()), confounders=confounders)
+    if not confounders:
+        rep.notes.append("no confounders: nothing to balance")
+        return rep
+    rep.missing = {c: round(float(d[c].isna().mean()), 4) for c in confounders}
+    for c, share in rep.missing.items():
+        if share >= MISSING_FLAG:
+            rep.flagged.setdefault(c, []).append(f"missing {100 * share:.0f}%")
+    cc = d.dropna().reset_index(drop=True)
+    n1 = int(cc.treated.sum())
+    if min(n1, len(cc) - n1) < SMALL_CELL:
+        rep.notes.append(f"fewer than {SMALL_CELL} complete cases in an arm: balance not "
+                         "computed")
+        return rep
+    live = [c for c in confounders if cc[c].nunique() > 1]
+    for c in sorted(set(confounders) - set(live)):
+        rep.flagged.setdefault(c, []).append("constant in the complete cases")
+    if not live:
+        return rep
+    ps = propensity_scores(cc, live, "treated")
+    w = iptw_weights(ps, cc["treated"])
+    rep.smd_before = smd(cc, live, "treated").round(4).to_dict()
+    rep.smd_after = smd(cc, live, "treated", weights=w).round(4).to_dict()
+    rep.ps_extreme = round(float(((ps < PS_EXTREME[0]) | (ps > PS_EXTREME[1])).mean()), 4)
+    rep.max_weight = round(float(w.max()), 2)
+    for c, v in rep.smd_after.items():
+        if v >= SMD_THRESHOLD:
+            rep.flagged.setdefault(c, []).append(f"SMD {v:.2f} after weighting")
+    return rep

@@ -2,7 +2,8 @@
 
     draft -> [clinician] -> design_review* -> propose_concepts -> concept_review* -> compile
           -> audit -> [fail: back to design_review*] -> gate
-          -> [red: report, stop] [amber: gate_review*] -> analyze -> report -> signoff*
+          -> [red: report, stop] [amber: gate_review*] -> balance
+          -> [flagged: balance_advice -> design_review*] -> analyze -> report -> signoff*
 
 ``[clinician]`` runs only when the graph is built with ``literature``: the Clinician agent
 (``agentic_tte.agents.clinician``) proposes baseline confounders with cited passages, as a new
@@ -14,6 +15,14 @@ for each eligibility concept or confounder with no vocabulary match it proposes 
 variable (``agentic_tte.agents.surrogates``), whose concept IDs come from the vocabulary. The
 proposals are pre-filled in the concept-review decisions as ``surrogate`` with their rationale
 and limitation; the reviewer keeps, changes or rejects them.
+
+``balance`` is the Statistician's covariate balance check, from treatment and confounders only
+(no outcome). With ``balance_advice=True``, confounders it flags (SMD after weighting >= 0.1,
+or often missing) go to the Clinician (``agentic_tte.agents.balance_advice``), which sees the
+balance aggregates only and advises keep, drop or replace. Advice that changes the set goes to
+design review as a proposed confounder list: applying it re-runs concepts, compile, audit,
+gate and balance; declining it goes on to the analysis with the imbalance reported. The
+Supervisor caps the rounds (``Budget.max_balance_rounds``).
 
 ``*`` marks a human review. Each one is a LangGraph ``interrupt()``: the run stops, its state is
 saved by the checkpointer, and it resumes with the reviewer's answer
@@ -112,6 +121,12 @@ class ReplayState(TypedDict, total=False):
     llm_calls: Annotated[int, operator.add]  # LLM requests made (cache hits excluded)
     llm_tokens: Annotated[int, operator.add]
     stop_reason: str  # why the Supervisor stopped the run
+    balance: dict  # the Statistician's balance check (no outcomes)
+    balance_md: str
+    balance_advice: dict  # the Clinician's advice on the flagged confounders
+    balance_advice_md: str
+    balance_pending: bool  # advice with changes waits for design review
+    balance_kept: bool  # the reviewer declined the advice: go on to the analysis
 
 
 Stage = Literal["design", "concepts", "gate", "signoff"]
@@ -131,7 +146,9 @@ class AutoApprove(BaseModel):
     - a failed Protocol Auditor: ``audit="override"`` accepts the findings (labelled in the
       report), ``"stop"`` ends the run;
     - the Clinician's surrogate proposals: kept only if ``accept_surrogates`` (labelled in the
-      note), otherwise unmappable."""
+      note), otherwise unmappable;
+    - the Clinician's balance advice at design review: applied only if ``accept_balance``
+      (labelled), otherwise declined."""
 
     stages: set[Stage] = Field(default_factory=lambda: {"design", "concepts", "gate",
                                                         "signoff"})  # fmt: skip
@@ -143,8 +160,14 @@ class AutoApprove(BaseModel):
     sign_off: bool = True
     audit: Literal["override", "stop"] = "override"
     accept_surrogates: bool = False
+    accept_balance: bool = False
 
     def answer(self, stage: Stage, payload: dict) -> dict:
+        if stage == "design" and payload.get("balance"):
+            if self.accept_balance:
+                return {"confounders": payload["proposed_confounders"], "reviewer": self.reviewer,
+                        "note": "auto: Clinician balance advice applied unreviewed"}
+            return {"reviewer": self.reviewer, "note": "auto: Clinician balance advice declined"}
         if stage == "design":
             return {**self.design, "reviewer": self.reviewer}
         if stage == "concepts":
@@ -175,6 +198,11 @@ class AutoApprove(BaseModel):
                 "note": "auto-approved for benchmarking; not reviewed by a person"}
 
 
+def _confounders(cc: CompiledCohort) -> list[str]:
+    return [c for c in cc.frame_columns[1:]
+            if c not in ("treated", "treat_start", "time", "event", "end_reason")]
+
+
 def _p(state: ReplayState) -> TargetTrialProtocol:
     return TargetTrialProtocol.model_validate(state["protocol"])
 
@@ -195,7 +223,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                  design_hr: float | None = None, checkpointer=None,
                  auto: AutoApprove | None = None, abbreviations=None,
                  n_bootstrap: int = 0, literature=None, surrogates: bool = False,
-                 budget: Budget | None = None):  # fmt: skip
+                 budget: Budget | None = None, balance_advice: bool = False):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
@@ -204,11 +232,14 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     runs; 0 skips them). ``literature``: a result-blind ``Literature`` for the trial; with it,
     the Clinician proposes the confounders before design review. ``surrogates``: the
     Clinician proposes stand-ins for concepts the vocabulary cannot map (needs ``llm``).
-    ``budget``: the Supervisor's loop caps and LLM budget (defaults: ``Budget()``)."""
+    ``budget``: the Supervisor's loop caps and LLM budget (defaults: ``Budget()``).
+    ``balance_advice``: the Clinician advises on confounders the balance check flags (needs
+    ``llm``)."""
     context = context or DataContext()
-    sup = Supervisor(budget, clinician=literature is not None,
-                     llm_nodes={"draft", "clinician"} | ({"propose_concepts"} if surrogates
-                                                         else set()))  # fmt: skip
+    sup = Supervisor(budget, clinician=literature is not None, balance_advice=balance_advice,
+                     llm_nodes={"draft", "clinician"}
+                     | ({"propose_concepts"} if surrogates else set())
+                     | ({"balance_advice"} if balance_advice else set()))  # fmt: skip
 
     def review(stage: Stage, payload: dict) -> tuple[dict, bool]:
         if auto is not None and stage in auto.stages:
@@ -248,7 +279,9 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
 
     def design_review(state: ReplayState) -> dict:
         p = _p(state)
-        failed = (state.get("audit") or {}).get("failed") or []
+        overridden = (state.get("audit_override") or {}).get("checks") or []
+        failed = [c for c in (state.get("audit") or {}).get("failed") or []
+                  if c not in overridden]  # checks already overridden need no new answer
         payload = {
             "stage": "design",
             "protocol": state["protocol"],
@@ -261,6 +294,17 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             payload["clinician"] = state["clinician_md"]
             payload["ask"] += (". The confounders are the Clinician's proposal: approving keeps "
                                "them, \"confounders\" replaces them.")
+        pending_advice = bool(state.get("balance_pending")) and not failed
+        if pending_advice:
+            from agentic_tte.agents.balance_advice import BalanceSheet
+
+            sheet = BalanceSheet.model_validate(state["balance_advice"])
+            payload["balance"] = state["balance_md"] + "\n" + state["balance_advice_md"]
+            payload["proposed_confounders"] = sheet.confounders(p)
+            payload["ask"] = ("The Statistician flagged confounders and the Clinician advises "
+                              "changes. Apply them with {\"confounders\": <proposed_confounders, "
+                              "edited as you see fit>, \"reviewer\": \"...\"}, or approve "
+                              "without changes to keep the set and report the imbalance.")
         if failed:
             payload["audit"] = state["audit_md"]
             payload["ask"] = ("The Protocol Auditor failed checks " + ", ".join(failed) + ". "
@@ -272,8 +316,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             if not reason.strip():
                 raise ValueError("overriding the Protocol Auditor needs a reason")
             who = answer.get("reviewer") or "reviewer"
-            return {"audit_override": {"checks": failed, "reason": reason, "reviewer": who,
-                                       "auto": is_auto},
+            return {"audit_override": {"checks": sorted({*overridden, *failed}), "reason": reason,
+                                       "reviewer": who, "auto": is_auto},
                     "reviews": [_record("design", {**answer, "note": reason}, is_auto,
                                         "audit overridden: " + ", ".join(failed))],
                     "log": [f"audit checks {', '.join(failed)} overridden by {who}"]}
@@ -285,6 +329,10 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                                      "origin": Origin.USER.value}  # fmt: skip
         what = ("changed " + ", ".join(sorted(changes))) if changes else "approved as drafted"
         rec = {"reviews": [_record("design", answer, is_auto, what)]}
+        if pending_advice:
+            what = "balance advice applied" if changes else "balance advice declined"
+            rec = {"reviews": [_record("design", answer, is_auto, what)],
+                   "balance_pending": False, "balance_kept": not changes}
         if not changes:
             return {**rec, "log": [f"design approved by {answer.get('reviewer') or 'reviewer'}"]}
         v = new_version(p, created_by=answer.get("reviewer") or "user",
@@ -409,6 +457,33 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         return {"log": [f"gate limitations accepted by {who}: {answer.get('note') or ''}"],
                 "reviews": [_record("gate", answer, is_auto, "proceed")]}
 
+    def balance_node(state: ReplayState) -> dict:
+        from agentic_tte.agents.statistician import balance
+
+        cc = CompiledCohort.model_validate(state["compiled"])
+        if cc.frame_sql is None:
+            return {"balance": {}, "balance_md": "", "log": ["balance skipped: no analysis frame"]}
+        frame = con.execute(cc.frame_sql).df()  # only treated and the confounders are read
+        rep = balance(frame, _confounders(cc))
+        del frame
+        flags = ", ".join(rep.flagged) or "none"
+        return {"balance": rep.model_dump(mode="json"), "balance_md": rep.to_markdown(),
+                "log": [f"balance: flagged {flags}"]}
+
+    def balance_advice_node(state: ReplayState) -> dict:
+        from agentic_tte.agents.balance_advice import BalanceAdvisor
+        from agentic_tte.agents.statistician import BalanceReport
+
+        if llm is None:
+            raise ValueError("the Clinician's balance advice needs an LLM client")
+        sheet = BalanceAdvisor(llm).advise(_p(state), BalanceReport.model_validate(
+            state["balance"]))  # fmt: skip
+        n = sum(i.action != "keep" for i in sheet.items)
+        return {"balance_advice": sheet.model_dump(mode="json"),
+                "balance_advice_md": sheet.to_markdown(), "balance_pending": sheet.changes,
+                "log": [f"Clinician balance advice: {n} change(s) for {len(sheet.items)} "
+                        "flagged confounders"]}  # fmt: skip
+
     def analyze_node(state: ReplayState) -> dict:
         from agentic_tte.agents.statistician import analyze
 
@@ -417,8 +492,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             return {"log": ["analysis skipped: no analysis frame (" + "; ".join(cc.frame_notes)
                             + ")"]}  # fmt: skip
         frame = con.execute(cc.frame_sql).df()  # stays here; only aggregates go to the state
-        confounders = [c for c in cc.frame_columns[1:]
-                       if c not in ("treated", "treat_start", "time", "event", "end_reason")]
+        confounders = _confounders(cc)
         res = analyze(frame, _p(state), confounders=confounders, horizon_days=cc.horizon_days,
                       n_bootstrap=n_bootstrap)  # fmt: skip
         p = res.primary
@@ -455,6 +529,10 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             if ov:
                 parts += [f"**Audit overridden** ({', '.join(ov['checks'])}) by {ov['reviewer']}"
                           + (" (automatic)" if ov.get("auto") else "") + f": {ov['reason']}"]
+        if state.get("balance_md"):
+            parts += ["", state["balance_md"].rstrip()]
+        if state.get("balance_advice_md"):
+            parts += ["", state["balance_advice_md"].rstrip()]
         if state.get("gate_md"):
             parts += ["", state["gate_md"].replace("# Data Support Gate", "## Data Support Gate")]
         if state.get("attrition_md"):
@@ -510,10 +588,13 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     nodes = {"draft": draft, "design_review": design_review,
              "propose_concepts": propose_concepts, "concept_review": concept_review,
              "compile": compile_node, "audit": audit_node, "gate": gate,
-             "gate_review": gate_review, "analyze": analyze_node, "report": report,
+             "gate_review": gate_review, "balance": balance_node, "analyze": analyze_node,
+             "report": report,
              "signoff": signoff}  # fmt: skip
     if literature is not None:
         nodes["clinician"] = clinician
+    if balance_advice:
+        nodes["balance_advice"] = balance_advice_node
     g = StateGraph(ReplayState)
     g.add_node("supervisor", supervisor, destinations=(*nodes, END))
     for name, fn in nodes.items():

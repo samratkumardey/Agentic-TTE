@@ -126,9 +126,9 @@ def request(p: TargetTrialProtocol, sets: list[ConceptSet]) -> list[Message]:
                                          f"{asks}")]  # fmt: skip
 
 
-def check(answer: SurrogateAnswer, p: TargetTrialProtocol, sets: list[ConceptSet], con,
-          model: str, abbreviations=None) -> SurrogateSheet:  # fmt: skip
-    """The deterministic checks (module docstring) and the vocabulary search."""
+def excluded(p: TargetTrialProtocol, name: str, own: str) -> str | None:
+    """Why a stand-in variable ``name`` for ``own`` is refused, or None: the trial's treatment,
+    its primary outcome, the concept itself, or a variable measured after time zero."""
     treat = {_norm(c.concept.name) for a in p.treatment_strategies if not a.is_comparator
              for c in a.components} | {_norm(a.label) for a in p.treatment_strategies
                                        if not a.is_comparator}  # fmt: skip
@@ -138,6 +138,17 @@ def check(answer: SurrogateAnswer, p: TargetTrialProtocol, sets: list[ConceptSet
         outcome.add(_norm(primary.name))
         if primary.concept:
             outcome.add(_norm(primary.concept.name))
+    n = _norm(name)
+    return ("the trial's treatment" if n in treat or any(
+                t and f" {t} " in f" {n} " for t in treat) else
+            "the primary outcome" if n in outcome else
+            "the unmapped concept itself" if n == _norm(own) else
+            "measured after time zero" if _POST.search(name) else None)  # fmt: skip
+
+
+def check(answer: SurrogateAnswer, p: TargetTrialProtocol, sets: list[ConceptSet], con,
+          model: str, abbreviations=None) -> SurrogateSheet:  # fmt: skip
+    """The deterministic checks (module docstring) and the vocabulary search."""
     sheet = SurrogateSheet(nct_id=p.source.nct_id, model=model)
     asked = {s.key: s for s in sets}
     got: dict[str, SurrogateProposal] = {}
@@ -160,12 +171,7 @@ def check(answer: SurrogateAnswer, p: TargetTrialProtocol, sets: list[ConceptSet
         else:
             item.substitute, item.domain = x.substitute, x.domain.value
             item.rationale, item.limitation = x.rationale, x.limitation
-            name = _norm(x.substitute)
-            why = ("the trial's treatment" if name in treat or any(
-                       t and f" {t} " in f" {name} " for t in treat) else
-                   "the primary outcome" if name in outcome else
-                   "the unmapped concept itself" if name == _norm(s.concept_name) else
-                   "measured after time zero" if _POST.search(x.substitute) else None)  # fmt: skip
+            why = excluded(p, x.substitute, s.concept_name)
             if why:
                 item.status, item.note = "dropped", why
             else:

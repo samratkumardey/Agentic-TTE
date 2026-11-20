@@ -74,6 +74,7 @@ The Clinician agent (`agents/clinician.py`, 2026-11-01) proposes confounders fro
 Rules for the graph:
 - Keep the state and interrupt payloads plain JSON (`model_dump(mode="json")`).
 - Routing lives in the Supervisor (`agents/supervisor.py`, 2026-11-20): every node returns to it, and it records each route with its reason. Add new routes and loops there, never as graph edges, and never let a route skip a review, the Protocol Auditor or the gate.
+- The Statistician ↔ Clinician loop (`agents/balance_advice.py`) is result-blind: it acts only on the balance check, which reads treatment and confounders before any outcome model. Never give the Clinician an outcome, event count or estimate, and never route a run back to the design because of an estimate. A scored run must say whether the loop was on; `AutoApprove` applies its advice only with `accept_balance`, labelled.
 - Never put the database connection or patient rows in the state.
 
 The Phase 2 exit criterion is met on synthetic data (2026-10-26; `eval/results/phase2_replay.md`). Three trials were replayed end to end from the real qwen3:32b Phase 0 drafts, and every primary CI covers the planted marginal truth. The reviews were scripted, not clinical: never describe them as clinician review.

@@ -646,7 +646,8 @@ def _replay_graph(run: dict, llm=None):
                          n_bootstrap=run.get("bootstrap", 0),
                          abbreviations=_abbreviations(run.get("abbreviations")),
                          literature=lit, surrogates=bool(run.get("surrogates")),
-                         budget=Budget.model_validate(run.get("budget") or {}))  # fmt: skip
+                         budget=Budget.model_validate(run.get("budget") or {}),
+                         balance_advice=bool(run.get("balance_advice")))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -720,6 +721,10 @@ def replay_start(
     surrogates: bool = typer.Option(False, help="The Clinician proposes stand-ins for "
                                                 "concepts the vocabulary cannot map, for the "
                                                 "concept review (needs the LLM)."),
+    balance_advice: bool = typer.Option(False, help="The Clinician advises on confounders "
+                                                    "the balance check flags (before any "
+                                                    "outcome analysis), for design review "
+                                                    "(needs the LLM)."),
     max_llm_calls: int = typer.Option(None, help="The Supervisor stops the run before an LLM "
                                                  "step once this many requests were made "
                                                  "(cache hits are free); default no cap."),
@@ -745,7 +750,7 @@ def replay_start(
            "abbreviations": str(abbreviations) if abbreviations else None,
            "bootstrap": bootstrap,
            "literature": str(literature) if literature else None, "surrogates": surrogates,
-           "budget": {"max_llm_calls": max_llm_calls}}
+           "budget": {"max_llm_calls": max_llm_calls}, "balance_advice": balance_advice}
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}
@@ -753,7 +758,7 @@ def replay_start(
         state["protocol"] = json.loads(protocol.read_text(encoding="utf-8"))
     else:
         state["nct_id"] = nct
-    if nct is not None or literature is not None or surrogates:
+    if nct is not None or literature is not None or surrogates or balance_advice:
         from agentic_tte.llm import make_client
 
         llm = make_client(get_settings())
@@ -784,7 +789,7 @@ def replay_resume(
         typer.echo(f"the {stage} answer needs a reviewer", err=True)
         raise typer.Exit(2)
     llm = None
-    if run.get("surrogates"):  # concept search, and so the Clinician, can run again
+    if run.get("surrogates") or run.get("balance_advice"):  # the Clinician can run again
         from agentic_tte.llm import make_client
 
         llm = make_client(get_settings())
