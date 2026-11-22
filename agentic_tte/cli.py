@@ -565,6 +565,43 @@ def concepts_apply(
         typer.echo(f"wrote {target}", err=True)
 
 
+@concepts_app.command("counts")
+def concepts_counts(
+    decisions: Path = typer.Argument(..., help="A decisions file (e.g. a Replay run's "
+                                               "decisions.json); book.json next to it, if "
+                                               "present, gives each set's domain."),
+    db: Path = typer.Option(..., help="OMOP CDM database (DuckDB file); opened read-only."),
+    search: list[str] = typer.Option(None, help="Also list the concepts in use whose name "
+                                                "contains a word, as word:Domain (e.g. "
+                                                "platelet:Measurement). Repeatable."),
+    out: Path = typer.Option(None, help="Also write the table to this Markdown file."),
+):
+    """Check a concept review against the data: each kept set's vocabulary names and its
+    records and persons in the CDM (whole-database counts, small cells suppressed)."""
+    from agentic_tte.omop.concept_sets import ConceptSetBook
+    from agentic_tte.omop.counts import concept_counts, to_markdown
+    from agentic_tte.omop.counts import search as find
+
+    book_file = decisions.with_name("book.json")
+    book = (ConceptSetBook.model_validate_json(book_file.read_text(encoding="utf-8"))
+            if book_file.exists() else None)  # fmt: skip
+    if book is None:
+        typer.echo(f"no {book_file}: each concept's vocabulary domain is used", err=True)
+    con = _open_db(db, None)
+    counts = concept_counts(con, json.loads(decisions.read_text(encoding="utf-8")), book)
+    found = {}
+    for term in search or []:
+        word, _, domain = term.rpartition(":")
+        if not word:
+            typer.echo(f"--search {term!r}: give word:Domain", err=True)
+            raise typer.Exit(2)
+        found[f"'{word}' ({domain})"] = find(con, word, domain)
+    md = to_markdown(counts, found)
+    typer.echo(md)
+    if out is not None:
+        out.write_text(md, encoding="utf-8")
+
+
 @app.command("compile")
 def compile_cmd(
     protocol: Path,
@@ -694,6 +731,8 @@ def _replay_pause(graph, cfg, out: Path) -> None:
                                             encoding="utf-8")  # fmt: skip
         (out / "spec.json").write_text(json.dumps(ask["spec_template"], indent=2), "utf-8")
         tmpl, files = None, ["review.md", "decisions.json", "spec.json"]
+        if ask.get("book"):  # each set's domain, for `agentic-tte concepts counts`
+            (out / "book.json").write_text(json.dumps(ask["book"], indent=2), encoding="utf-8")
         if ask.get("surrogates"):  # the Clinician's stand-ins, pre-filled in decisions.json
             (out / "surrogates.md").write_text(ask["surrogates"], encoding="utf-8")
             files.insert(0, "surrogates.md")
@@ -824,6 +863,50 @@ def replay_resume(
     graph.invoke(Command(resume=value), cfg)
     (out / "pending.txt").unlink()
     _replay_pause(graph, cfg, out)
+
+
+@replay_app.command("design-answer")
+def replay_design_answer(
+    out: Path = typer.Option(..., "--out", "-o", help="Run directory waiting for design review."),
+    reviewer: str = typer.Option(..., help="Your name, recorded with the review."),
+    treatment: str = typer.Option(None, help="Label of the treatment arm; every other kept arm "
+                                             "becomes a comparator."),
+    drop_arm: list[str] = typer.Option(None, help="Arm label to remove. Repeatable."),
+    drop_component: list[str] = typer.Option(None, help="Remove the components whose name "
+                                                        "contains this text, in every kept "
+                                                        "arm. Repeatable."),
+    drop_criterion: list[str] = typer.Option(None, help="Eligibility criterion ID(s) to remove, "
+                                                        "e.g. E25 or E25,E26. Repeatable."),
+    grace: str = typer.Option(None, help="Grace period of the treatment arm, e.g. '24 hour'."),
+    dry_run: bool = typer.Option(False, help="Show the result without writing design.json."),
+):
+    """Write design.json for the open design review from your decisions, checked against the
+    protocol schema; then run `replay resume`. Confounders stay the Clinician's proposal
+    unless you edit "confounders" in the file."""
+    from agentic_tte.graph.answers import design_answer, parse_duration
+
+    stage = (out / "pending.txt").read_text(encoding="utf-8").strip()
+    if stage != "design":
+        typer.echo(f"{out} is waiting for the {stage} review, not design", err=True)
+        raise typer.Exit(2)
+    protocol = json.loads((out / "protocol.json").read_text(encoding="utf-8"))
+    template = json.loads((out / "design.json").read_text(encoding="utf-8"))
+    criteria = tuple(i.strip() for x in drop_criterion or [] for i in x.split(",") if i.strip())
+    try:
+        answer, summary = design_answer(
+            protocol, template, reviewer, treatment=treatment, drop_arms=tuple(drop_arm or ()),
+            drop_components=tuple(drop_component or ()), drop_criteria=criteria,
+            grace=parse_duration(grace) if grace else None)  # fmt: skip
+    except ValueError as e:
+        typer.echo(f"not written: {e}", err=True)
+        raise typer.Exit(2) from e
+    typer.echo("\n".join(summary))
+    if dry_run:
+        typer.echo("dry run: design.json not changed", err=True)
+        return
+    (out / "design.json").write_text(json.dumps(answer, indent=2), encoding="utf-8")
+    typer.echo(f"wrote {out}/design.json; then run: bash hpc/replay_core.sh resume "
+               f"{out.name}", err=True)
 
 
 @app.command()

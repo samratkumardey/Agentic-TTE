@@ -382,6 +382,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             "review_sheet": review_sheet(book),
             "decisions_template": template,
             "spec_template": spec_template(p),
+            "book": book.model_dump(mode="json"),  # each set's domain, for `concepts counts`
             "ask": "Answer {\"decisions\": <filled decisions file>, \"spec\": <compile spec>}",
         }  # fmt: skip
         if state.get("surrogates_md"):
