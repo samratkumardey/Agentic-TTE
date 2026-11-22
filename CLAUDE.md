@@ -64,6 +64,7 @@ Rules for that code:
 The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its clinician reviews (design, concepts, amber gate, sign-off) are `interrupt()`s with a SQLite checkpointer.
 - The Protocol Auditor (`agents/auditor.py`) runs between compile and the gate. A failure goes back to design review, where the reviewer fixes the design or overrides it with a reason.
 - Never let a run reach the gate with an unexplained audit failure.
+- The gate turns amber when an inclusion criterion did not compile (SCORING.md item 32). Review answers are written with `replay design-answer` and `concepts decide`, from the user's own decisions; never choose an arm, criterion, concept or time zero for them. A trial may be restarted only before its first gate, and the old run is kept with its reason.
 
 The Clinician agent (`agents/clinician.py`, 2026-11-01) proposes confounders from a result-blind PubMed literature (`agentic-tte literature`; SCORING.md changelog item 29). It is tested only with a scripted model so far.
 - Never give it the trial's own papers or anything published after the trial's primary completion date.

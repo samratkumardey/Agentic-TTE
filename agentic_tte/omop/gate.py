@@ -484,17 +484,39 @@ def _governance(ctx: DataContext) -> GateCheck:
                      values=ctx.model_dump())  # fmt: skip
 
 
+def _compiled(cc) -> GateCheck:
+    """Criteria the compiler could not compile are reported, never dropped silently; an
+    inclusion criterion among them means the cohort is not defined as the protocol says, so
+    the gate turns amber and a reviewer sees it (SCORING.md Phase 3 item 32)."""
+    rows = [{"criterion": c.id, "kind": c.kind, "reasons": c.reasons}
+            for c in cc.criteria if c.status == "not_compiled"]  # fmt: skip
+    inclusion = [r["criterion"] for r in rows if r["kind"] == "inclusion"]
+    exclusion = [r["criterion"] for r in rows if r["kind"] == "exclusion"]
+    n = sum(c.status == "compiled" for c in cc.criteria)
+    detail = f"{n} criteria compiled"
+    if inclusion:
+        detail += (f"; inclusion criteria not compiled: {', '.join(inclusion)} (the cohort is "
+                   "not restricted by them)")
+    if exclusion:
+        detail += f"; exclusion criteria not compiled: {', '.join(exclusion)} (no one removed)"
+    return GateCheck(id="compiled", title="Compiled criteria",
+                     status=GateStatus.AMBER if inclusion else GateStatus.GREEN, detail=detail,
+                     values={"not_compiled": rows})  # fmt: skip
+
+
 def run_gate(con, protocol: TargetTrialProtocol | None = None, *,
              concept_sets: dict[str, list[int]] | None = None,
              context: DataContext | None = None, attrition=None,
-             design_hr: float | None = None, s8: bool = False) -> GateReport:  # fmt: skip
+             design_hr: float | None = None, s8: bool = False,
+             compiled=None) -> GateReport:  # fmt: skip
     """Run every check on an open DuckDB connection to an OMOP CDM database.
 
     ``concept_sets`` maps ``concept_key(criterion, concept_name)`` to OMOP concept IDs, as the
     Phase 2 vocabulary step produces them; concepts already carrying ``omop_concept_id`` in the
     protocol are used as they are. ``attrition`` (an ``AttritionReport`` from the compiled
     cohort) runs the feasibility check, with power for ``design_hr`` when given; ``s8`` applies
-    the pre-registered S8 threshold (eval/SCORING.md R3)."""
+    the pre-registered S8 threshold (eval/SCORING.md R3). ``compiled`` (the ``CompiledCohort``)
+    adds the check that every inclusion criterion was compiled."""
     context = context or DataContext()
     tables = _tables(con)
     report = GateReport(protocol_id=protocol.protocol_id if protocol else None, context=context)
@@ -522,6 +544,8 @@ def run_gate(con, protocol: TargetTrialProtocol | None = None, *,
             _quality(con, tables),
             _concepts(con, tables, protocol, concept_sets),
         ]
+    if compiled is not None:
+        report.checks.append(_compiled(compiled))
     if attrition is not None:
         from agentic_tte.omop.attrition import feasibility
 

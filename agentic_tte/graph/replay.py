@@ -453,7 +453,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         p = _p(state)
         rep = attrition(con, cc)
         report = run_gate(con, p, concept_sets=cc.spec.concept_sets, context=context,
-                          attrition=rep, design_hr=design_hr, s8=s8)  # fmt: skip
+                          attrition=rep, design_hr=design_hr, s8=s8, compiled=cc)  # fmt: skip
         out = {"attrition": rep.public(), "attrition_md": rep.to_markdown(),
                "gate": report.model_dump(mode="json"), "gate_md": report.to_markdown(),
                "log": [f"gate: {report.overall}"]}  # fmt: skip

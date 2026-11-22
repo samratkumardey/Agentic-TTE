@@ -602,6 +602,67 @@ def concepts_counts(
         out.write_text(md, encoding="utf-8")
 
 
+@concepts_app.command("decide")
+def concepts_decide(
+    out: Path = typer.Option(..., "--out", "-o", help="Run directory waiting for the concept "
+                                                      "review (decisions.json, spec.json)."),
+    reviewer: str = typer.Option(..., help="Your name, recorded with every decision."),
+    approve: list[str] = typer.Option(None, help="KEY (keep the proposed IDs) or KEY=ID,ID. "
+                                                 "A unique prefix of the key is enough, e.g. "
+                                                 "'E11:platelet'. Repeatable."),
+    replace: list[str] = typer.Option(None, help="KEY=ID,ID. Repeatable."),
+    surrogate: list[str] = typer.Option(None, help="KEY=ID,ID; needs a --note. Repeatable."),
+    unmappable: list[str] = typer.Option(None, help="KEY: no real-world equivalent. "
+                                                    "Repeatable."),
+    reject: list[str] = typer.Option(None, help="KEY: the proposal is wrong and nothing "
+                                                "replaces it. Repeatable."),
+    note: list[str] = typer.Option(None, help="KEY=text. Repeatable."),
+    time_zero: str = typer.Option(None, help="Time zero as Domain=ID,ID, e.g. "
+                                             "'Drug=1321341,1343916,1337860'."),
+    t0_occurrence: str = typer.Option(None, help="first or last record (default: first)."),
+    t0_note: str = typer.Option(None, help="What time zero means, in your words."),
+    anchor: list[str] = typer.Option(None, help="name=Domain=ID,ID for an anchor in spec.json. "
+                                                "Anchors left empty are removed: criteria "
+                                                "using them are reported, not compiled."),
+    lookback: str = typer.Option(None, help="Measurement lookback before time zero, e.g. "
+                                            "'24 hour'."),
+    dry_run: bool = typer.Option(False, help="Show the result without writing the files."),
+):
+    """Fill in decisions.json and spec.json for the open concept review from your decisions;
+    keys you do not name keep their pre-filled decision. Then run `replay resume`."""
+    from agentic_tte.graph.answers import concepts_answer, parse_duration
+    from agentic_tte.omop.concept_sets import ConceptSetBook
+
+    stage = (out / "pending.txt").read_text(encoding="utf-8").strip()
+    if stage != "concepts":
+        typer.echo(f"{out} is waiting for the {stage} review, not concepts", err=True)
+        raise typer.Exit(2)
+    decisions = json.loads((out / "decisions.json").read_text(encoding="utf-8"))
+    spec = json.loads((out / "spec.json").read_text(encoding="utf-8"))
+    book = (ConceptSetBook.model_validate_json((out / "book.json").read_text(encoding="utf-8"))
+            if (out / "book.json").exists() else None)  # fmt: skip
+    actions = [(a, s) for a, given in (("approve", approve), ("replace", replace),
+                                       ("surrogate", surrogate), ("unmappable", unmappable),
+                                       ("reject", reject)) for s in given or []]  # fmt: skip
+    try:
+        dec, sp, summary = concepts_answer(
+            decisions, spec, reviewer, actions=actions, notes=note or [], time_zero=time_zero,
+            t0_occurrence=t0_occurrence, t0_note=t0_note, anchors=anchor or [],
+            lookback=parse_duration(lookback) if lookback else None, book=book)  # fmt: skip
+    except ValueError as e:
+        typer.echo(f"not written: {e}", err=True)
+        raise typer.Exit(2) from e
+    typer.echo("\n".join(summary))
+    if dry_run:
+        typer.echo("dry run: decisions.json and spec.json not changed", err=True)
+        return
+    (out / "decisions.json").write_text(json.dumps(dec, indent=2), encoding="utf-8")
+    (out / "spec.json").write_text(json.dumps(sp, indent=2), encoding="utf-8")
+    typer.echo(f"wrote {out}/decisions.json and spec.json; check them with `agentic-tte "
+               f"concepts counts {out}/decisions.json --db ...`, then run: bash "
+               f"hpc/replay_core.sh resume {out.name}", err=True)
+
+
 @app.command("compile")
 def compile_cmd(
     protocol: Path,
@@ -878,6 +939,16 @@ def replay_design_answer(
     drop_criterion: list[str] = typer.Option(None, help="Eligibility criterion ID(s) to remove, "
                                                         "e.g. E25 or E25,E26. Repeatable."),
     grace: str = typer.Option(None, help="Grace period of the treatment arm, e.g. '24 hour'."),
+    no_value: list[str] = typer.Option(None, help="Remove the value constraint of ID or ID.n "
+                                                  "(n-th atom). Repeatable."),
+    value: list[str] = typer.Option(None, help="Set a threshold in the data's unit, e.g. "
+                                               "'E11.1=< 30 K/uL'. Repeatable."),
+    window: list[str] = typer.Option(None, help="Set the time window: 'I2.1=before', "
+                                                "'I5.1=within 6 hour before' or 'E7=none'. "
+                                                "Repeatable."),
+    drop_atom: list[str] = typer.Option(None, help="Remove one atom, e.g. I5.3. Repeatable."),
+    atom_logic: list[str] = typer.Option(None, help="All or any atom must hold, e.g. "
+                                                    "'I5=any'. Repeatable."),
     dry_run: bool = typer.Option(False, help="Show the result without writing design.json."),
 ):
     """Write design.json for the open design review from your decisions, checked against the
@@ -892,11 +963,15 @@ def replay_design_answer(
     protocol = json.loads((out / "protocol.json").read_text(encoding="utf-8"))
     template = json.loads((out / "design.json").read_text(encoding="utf-8"))
     criteria = tuple(i.strip() for x in drop_criterion or [] for i in x.split(",") if i.strip())
+    edits = tuple((op, s) for op, given in (("no-value", no_value), ("value", value),
+                                            ("window", window), ("drop-atom", drop_atom),
+                                            ("atom-logic", atom_logic))
+                  for s in given or [])  # fmt: skip
     try:
         answer, summary = design_answer(
             protocol, template, reviewer, treatment=treatment, drop_arms=tuple(drop_arm or ()),
             drop_components=tuple(drop_component or ()), drop_criteria=criteria,
-            grace=parse_duration(grace) if grace else None)  # fmt: skip
+            grace=parse_duration(grace) if grace else None, criterion_edits=edits)  # fmt: skip
     except ValueError as e:
         typer.echo(f"not written: {e}", err=True)
         raise typer.Exit(2) from e
@@ -933,7 +1008,7 @@ def gate(
     if book is not None:
         sets = ConceptSetBook.model_validate_json(book.read_text(encoding="utf-8")).gate_sets()
     con = _open_db(db, vocab)
-    rep = None
+    rep = cc = None
     if compiled is not None:
         cc = CompiledCohort.model_validate_json(compiled.read_text(encoding="utf-8"))
         if cc.protocol_hash != p.content_hash():
@@ -941,7 +1016,7 @@ def gate(
             raise typer.Exit(2)
         rep = attrition(con, cc)
     report = run_gate(con, p, concept_sets=sets, attrition=rep, design_hr=design_hr,
-                      context=DataContext(data_classification=classification,
+                      compiled=cc, context=DataContext(data_classification=classification,
                                           approved_by_rcss=approved))  # fmt: skip
     typer.echo(report.to_markdown())
     if report.blocks_run:

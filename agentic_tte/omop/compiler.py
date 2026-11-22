@@ -303,35 +303,46 @@ def _demographic(atom: CriterionAtom, ref: ConceptRef, warnings: list[str]) -> t
     return f"b.gender_concept_id = {sex}", f"person.gender_concept_id = {sex}"
 
 
-def _atom(ctx: _Ctx, crit: Criterion, atom: CriterionAtom,
-          warnings: list[str]) -> tuple[str, str]:  # fmt: skip
-    """SQL predicate and a readable description for one atom."""
+def design_problem(crit: Criterion, atom: CriterionAtom, anchor_is_t0: bool = True) -> str | None:
+    """Why the compiler cannot compile this atom whatever its concepts are (a design problem,
+    fixed at design review), or None. Shared by the compiler and the design-review helpers."""
     if not atom.concepts:
-        raise _Skip("atom has no concept")
+        return "atom has no concept"
     domains = {c.domain for c in atom.concepts}
     v = atom.value
     if v is not None and len(domains) > 1:
-        raise _Skip("value constraint on concepts of several domains "
-                    f"({', '.join(sorted(domains))}): split the atom")
+        return ("value constraint on concepts of several domains "
+                f"({', '.join(sorted(domains))}): split the atom")  # fmt: skip
     dom = Domain(next(iter(domains)))
     if v is not None and dom == Domain.MEASUREMENT and (
             (v.unit or "").strip().lower() in ("%", "percent") or _CHANGE.search(crit.text)):
-        raise _Skip("the criterion describes a change from a baseline value, not a level; "
-                    "relative changes are not supported yet")  # fmt: skip
+        return ("the criterion describes a change from a baseline value, not a level; "
+                "relative changes are not supported yet")  # fmt: skip
     if v is not None and v.comparator == Comparator.PRESENT and dom != Domain.DEMOGRAPHIC:
-        raise _Skip(f"qualitative value '{v.text or 'present'}' is not compilable")
+        return f"qualitative value '{v.text or 'present'}' is not compilable"
     if v is not None and dom not in (Domain.MEASUREMENT, Domain.DEMOGRAPHIC):
-        raise _Skip(f"value constraint '{v.text or v.comparator}' on a {dom} concept "
-                    "(a count or a duration) is not supported yet")
+        return (f"value constraint '{v.text or v.comparator}' on a {dom} concept "
+                "(a count or a duration) is not supported yet")
     t = atom.temporal
     rel = TemporalRelation(t.relation) if t else None
     if rel == TemporalRelation.CUMULATIVE_DURATION:
-        raise _Skip("cumulative duration is not supported yet")
+        return "cumulative duration is not supported yet"
+    if anchor_is_t0 and rel in (TemporalRelation.X_AFTER_Y, TemporalRelation.X_WITHIN_T_AFTER_Y):
+        return "needs records after time zero (look-ahead); redefine time zero"
+    return None
+
+
+def _atom(ctx: _Ctx, crit: Criterion, atom: CriterionAtom,
+          warnings: list[str]) -> tuple[str, str]:  # fmt: skip
+    """SQL predicate and a readable description for one atom."""
+    t = atom.temporal
+    rel = TemporalRelation(t.relation) if t else None
     # Design problems first: they hold whatever the concept mapping.
-    if t is not None:
-        _, y_is_t0 = ctx.anchor(t.anchor)
-        if y_is_t0 and rel in (TemporalRelation.X_AFTER_Y, TemporalRelation.X_WITHIN_T_AFTER_Y):
-            raise _Skip("needs records after time zero (look-ahead); redefine time zero")
+    problem = design_problem(crit, atom, anchor_is_t0=False)
+    if problem is None and t is not None and ctx.anchor(t.anchor)[1]:
+        problem = design_problem(crit, atom, anchor_is_t0=True)  # look-ahead past time zero
+    if problem:
+        raise _Skip(problem)
 
     parts, desc = [], []
     for ref in atom.concepts:

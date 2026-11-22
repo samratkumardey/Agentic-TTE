@@ -27,7 +27,24 @@ class SetCount(BaseModel):
     concepts: list[str]  # "id name [vocabulary domain, standard]"
     records: int | str
     persons: int | str
+    units: list[str] = []  # measurements: "unit: records, median value", most records first
     warnings: list[str]
+
+
+def _no_records(key: str) -> str:
+    """What a set with no records does, by the kind of set its key names."""
+    kind = key.split(":", 1)[0]
+    if kind.startswith(("I", "S")):
+        return "NO RECORDS: this inclusion criterion would exclude everyone"
+    if kind.startswith("E"):
+        return "no records: this exclusion criterion removes no one"
+    if kind == "C":
+        return "no records: this confounder is missing for everyone (constant)"
+    if kind == "T":
+        return "NO RECORDS: no one would start this treatment"
+    if kind == "O":
+        return "NO RECORDS: the outcome would have no events"
+    return "no records"
 
 
 def _table(domain: str) -> tuple[str, str] | None:
@@ -96,9 +113,23 @@ def concept_counts(con, decisions: dict, book: ConceptSetBook | None = None) -> 
                     f"JOIN _review_expanded e ON t.{col} = e.desc_id AND e.domain = ? "
                     "GROUP BY e.key", [domain]).fetchall():  # fmt: skip
                 out[k].records, out[k].persons = suppress(r), suppress(p)
+        if "Measurement" in {r[1] for r in rows}:  # units are not converted: show the data's
+            for k, unit, r, med in con.execute(
+                    "SELECT e.key, coalesce(u.concept_name, 'no unit'), count(*), "
+                    "median(m.value_as_number) FROM measurement m "
+                    "JOIN _review_expanded e ON m.measurement_concept_id = e.desc_id "
+                    "AND e.domain = 'Measurement' "
+                    "LEFT JOIN concept u ON u.concept_id = m.unit_concept_id "
+                    "GROUP BY ALL ORDER BY e.key, count(*) DESC").fetchall():  # fmt: skip
+                if len(out[k].units) < 3:
+                    m = ("no value" if med is None else "median suppressed" if r < 11
+                         else f"median {med:g}")  # a median of a few values is near a row
+                    out[k].units.append(f"{unit}: {suppress(r)} records, {m}")
     for c in out.values():
         if c.records == 0 and c.domain and not any("no event table" in w for w in c.warnings):
-            c.warnings.append("NO RECORDS: an inclusion criterion on this set excludes everyone")
+            c.warnings.append(_no_records(c.key))
+        if c.units:
+            c.warnings.append("units are not converted: a threshold must be in the data's unit")
     return list(out.values())
 
 
@@ -118,10 +149,12 @@ def search(con, word: str, domain: str, limit: int = 12) -> list[tuple[int, str,
 
 
 def to_markdown(counts: list[SetCount], searches: dict[str, list] | None = None) -> str:
-    lines = ["| Key | Action | Concepts | Records | Persons | Check |", "|---|---|---|---|---|---|"]
+    lines = ["| Key | Action | Concepts | Records | Persons | Units in the data | Check |",
+             "|---|---|---|---|---|---|---|"]
     for c in counts:
         lines.append(f"| `{c.key}` | {c.action} | {'; '.join(c.concepts) or '–'} | {c.records} "
-                     f"| {c.persons} | {'; '.join(c.warnings) or 'ok'} |")
+                     f"| {c.persons} | {'; '.join(c.units) or '–'} "
+                     f"| {'; '.join(c.warnings) or 'ok'} |")
     for term, found in (searches or {}).items():
         lines += ["", f"**In use, name contains {term}:**", "",
                   "| ID | Name | Standard | Records |", "|---|---|---|---|"]
