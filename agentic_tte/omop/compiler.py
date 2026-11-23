@@ -233,6 +233,33 @@ def _column(name: str) -> str:
     return c if c and not c[0].isdigit() else f"v_{c}"
 
 
+# Unit conversion for measurement thresholds (SCORING.md Phase 3 item 33): a criterion's unit
+# (as drafted) -> the factor that turns a value recorded in a data unit (the unit concept's
+# name, lower case) into the criterion's unit. Only conversions that are exact by definition;
+# any other unit is read as it is, with a warning.
+_PER_MM3 = re.compile(r"^(?:cells? ?)?(?:per|/) ?(?:mm3|mm\^3|mm³|cubic millimet(?:er|re)s?|"
+                      r"(?:µ|u|micro)l(?:iter|itre)?)$")
+UNIT_CONVERSIONS: list[tuple[re.Pattern, dict[str, float]]] = [
+    (_PER_MM3, {"thousand per microliter": 1000.0, "thousand per cubic millimeter": 1000.0,
+                "billion per liter": 1000.0, "10*3/ul": 1000.0, "10^3/ul": 1000.0,
+                "k/ul": 1000.0, "per microliter": 1.0, "per cubic millimeter": 1.0}),
+]  # fmt: skip
+
+
+def unit_factors(unit: str | None) -> dict[str, float] | None:
+    """Data unit name -> factor into the criterion's ``unit``, or None (no conversion known)."""
+    u = " ".join((unit or "").lower().split())
+    for pattern, factors in UNIT_CONVERSIONS:
+        if pattern.match(u):
+            return factors
+    return None
+
+
+def _converted(expr: str, factors: dict[str, float]) -> str:
+    cases = " ".join(f"WHEN '{name}' THEN {expr} * {f:g}" for name, f in factors.items())
+    return f"(CASE lower(u.concept_name) {cases} ELSE {expr} END)"
+
+
 def _value_sql(expr: str, v) -> str:
     if v.comparator == Comparator.BETWEEN:
         return f"{expr} BETWEEN {float(v.value)} AND {float(v.upper)}"
@@ -415,17 +442,24 @@ def _record(ctx: _Ctx, dom: Domain, ids: list[int], atom: CriterionAtom,
         where.append(f"{x} <= b.t0")  # no look-ahead, whatever the anchor
     concept_txt = f"{dom} {{{_ids(ids)}}}" + ("+descendants" if ctx.spec.descendants else "")
     v = atom.value
-    if v is not None and v.unit:
+    factors = unit_factors(v.unit) if v is not None and dom == Domain.MEASUREMENT else None
+    src, val = f"{table} r", "r.value_as_number"
+    if factors:
+        src = f"{table} r LEFT JOIN concept u ON u.concept_id = r.unit_concept_id"
+        val = _converted("r.value_as_number", factors)
+        warnings.append(f"values recorded in {', '.join(k for k, f in factors.items() if f != 1)}"
+                        f" are converted to {v.unit}; other units are read as they are")
+    elif v is not None and v.unit:
         warnings.append(f"units are not converted: values are read as {v.unit}")
     cond = " AND ".join(where)
     if latest and v is not None:
-        sql = (f"(SELECT r.value_as_number FROM {table} r WHERE {cond} "
+        sql = (f"(SELECT {val} FROM {src} WHERE {cond} "
                f"AND r.value_as_number IS NOT NULL ORDER BY {x} DESC LIMIT 1)")
         return f"({_value_sql(sql, v)})", f"{concept_txt}, {d} {v.comparator} {v.value:g}"
     if v is not None:
-        cond += f" AND {_value_sql('r.value_as_number', v)}"
+        cond += f" AND {_value_sql(val, v)}"
         d += f", value {v.comparator} {v.value:g}"
-    return f"EXISTS (SELECT 1 FROM {table} r WHERE {cond})", f"{concept_txt}, {d}"
+    return f"EXISTS (SELECT 1 FROM {src} WHERE {cond})", f"{concept_txt}, {d}"
 
 
 def _criterion(ctx: _Ctx, crit: Criterion) -> CompiledCriterion:

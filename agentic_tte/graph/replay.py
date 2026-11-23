@@ -1,9 +1,16 @@
 """Replay as a LangGraph workflow (PLAN.md §3, §13; Phase 2 exit criterion).
 
-    draft -> [clinician] -> design_review* -> propose_concepts -> concept_review* -> compile
-          -> audit -> [fail: back to design_review*] -> gate
+    draft -> [repair] -> [clinician] -> design_review* -> propose_concepts -> concept_review*
+          -> compile -> audit -> [fail: back to design_review*] -> gate
           -> [red: report, stop] [amber: gate_review*] -> balance
           -> [flagged: balance_advice -> design_review*] -> analyze -> report -> signoff*
+
+``[repair]`` runs only when the graph is built with ``repair=True``: the Repair agent
+(``agentic_tte.agents.repair``) applies fixed, recorded rules to the draft (arms, amendment
+text, values the compiler cannot compile), using the trial's published ``contrast`` for the
+arms only, and flags what the rules cannot decide (SCORING.md Phase 3 item 33). Its changes are
+a new protocol version (created by the Repair agent) and its report is shown at design review
+and in the report.
 
 ``[clinician]`` runs only when the graph is built with ``literature`` (or ``clinician_sheet``,
 a sheet the Clinician already wrote for this trial, e.g. a scored run's): the Clinician agent
@@ -107,6 +114,8 @@ class ReplayState(TypedDict, total=False):
     audit_md: str
     audit_rounds: int  # failed audits so far
     audit_override: dict  # {"checks": [...], "reason": ..., "reviewer": ..., "auto": bool}
+    repair: dict  # the Repair agent's report (rules applied, flags)
+    repair_md: str
     clinician: dict  # the Clinician's confounder sheet
     clinician_md: str
     surrogates: dict  # the Clinician's surrogate answers to unmapped concepts
@@ -226,7 +235,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                  n_bootstrap: int = 0, literature=None, surrogates: bool = False,
                  budget: Budget | None = None, balance_advice: bool = False,
                  s8: bool = False, clinician_sheet=None,
-                 clinician_source: str | None = None):  # fmt: skip
+                 clinician_source: str | None = None, repair: bool = False,
+                 contrast: str | None = None):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
@@ -241,10 +251,13 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     gate the trial leaves the agreement set (status ``excluded_s8``), and below it at a later
     gate (after a design change) the run is blocked, which counts as a failure (R4).
     ``clinician_sheet``: a ``ConfounderSheet`` the Clinician already wrote for this trial, used
-    instead of a new call (no LLM needed); ``clinician_source`` names it in the log."""
+    instead of a new call (no LLM needed); ``clinician_source`` names it in the log.
+    ``repair``: the Repair agent's rules run on the draft before design review; ``contrast``
+    is the trial's published comparison ("A vs B"), used only to pick the arms."""
     context = context or DataContext()
     with_clinician = literature is not None or clinician_sheet is not None
     sup = Supervisor(budget, clinician=with_clinician, balance_advice=balance_advice,
+                     repair=repair,
                      llm_nodes={"draft", "clinician"}
                      | ({"propose_concepts"} if surrogates else set())
                      | ({"balance_advice"} if balance_advice else set()))  # fmt: skip
@@ -265,6 +278,19 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         t = Trialist(llm, ctgov)
         p = t.draft_from_study(state["study"]) if state.get("study") else t.draft(state["nct_id"])
         return {**_version(p, f"drafted by the Trialist ({llm.model})"), "status": "running"}
+
+    def repair_node(state: ReplayState) -> dict:
+        from agentic_tte.agents.repair import RULES_VERSION, repair_design
+
+        p = _p(state)
+        changes, rep = repair_design(p, contrast)
+        out = {"repair": rep.model_dump(mode="json"), "repair_md": rep.to_markdown()}
+        msg = f"{len(rep.repairs)} repair(s), {len(rep.flagged)} flag(s)"
+        if not changes:
+            return {**out, "log": [f"Repair agent ({RULES_VERSION}): no change; {msg}"]}
+        v = new_version(p, created_by=f"Repair agent ({RULES_VERSION})",
+                        notes=f"repaired {', '.join(sorted(changes))}: {msg}", **changes)
+        return {**out, **_version(v, f"repaired by the Repair agent ({RULES_VERSION}): {msg}")}
 
     def clinician(state: ReplayState) -> dict:
         from agentic_tte.agents.clinician import Clinician
@@ -306,6 +332,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
             "ask": "Approve with {\"reviewer\": \"...\"}, or also change elements: "
                    "{\"changes\": {field: value}, \"confounders\": [{\"name\", \"domain\"}]}",
         }  # fmt: skip
+        if state.get("repair_md"):
+            payload["repair"] = state["repair_md"]
         if state.get("clinician_md"):
             payload["clinician"] = state["clinician_md"]
             payload["ask"] += (". The confounders are the Clinician's proposal: approving keeps "
@@ -543,6 +571,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                   f"{r['decision']} | {r['note'] or '–'} | {r['at']} |" for r in reviews]
         parts += ["", "## Run log", ""] + [f"- {m}" for m in state.get("log", [])]
         parts += ["", sup.to_markdown(state).rstrip()]
+        if state.get("repair_md"):
+            parts += ["", state["repair_md"].rstrip()]
         if state.get("clinician_md"):
             parts += ["", state["clinician_md"].rstrip()]
         if state.get("surrogates_md"):
@@ -615,6 +645,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
              "gate_review": gate_review, "balance": balance_node, "analyze": analyze_node,
              "report": report,
              "signoff": signoff}  # fmt: skip
+    if repair:
+        nodes["repair"] = repair_node
     if with_clinician:
         nodes["clinician"] = clinician
     if balance_advice:

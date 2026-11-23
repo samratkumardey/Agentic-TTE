@@ -1,0 +1,1070 @@
+{
+  "schema_version": 2,
+  "protocol_id": "NCT03637205-replay",
+  "version": 1,
+  "parent_version": null,
+  "mode": "replay",
+  "status": "draft",
+  "source": {
+    "registry": "ClinicalTrials.gov",
+    "nct_id": "NCT03637205",
+    "title": "Prospective Randomized Multicenter Study Comparing Extracorporeal Life Support Plus Optimal Medical Care Versus Optimal Medical Care Alone in Patients With Acute Myocardial Infarction Complicated by Cardiogenic Shock Undergoing Revascularization",
+    "phase": [
+      "NA"
+    ],
+    "study_type": "INTERVENTIONAL",
+    "overall_status": "COMPLETED",
+    "allocation": "RANDOMIZED",
+    "intervention_model": "PARALLEL",
+    "masking": "NONE",
+    "enrollment": 420,
+    "enrollment_type": "ACTUAL",
+    "conditions": [
+      "Acute Myocardial Infarction",
+      "Cardiogenic Shock"
+    ],
+    "has_results": false,
+    "retrieved_at": "2026-10-28T17:41:02.877898Z",
+    "record_sha256": "13bc6923ebec8c0b57a871f882051df80f5b1838b57d5c4afd64e0ae15aa9b48"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Cardiogenic shock complicating AMI (STEMI or NSTEMI) plus obligatory:",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "cardiogenic shock",
+              "domain": "Condition",
+              "source_text": "Cardiogenic shock",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "acute myocardial infarction",
+              "domain": "Condition",
+              "source_text": "AMI (STEMI or NSTEMI)",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "Planned revascularization (PCI or alternatively CABG)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "planned revascularization",
+              "domain": "Procedure",
+              "source_text": "Planned revascularization",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "Systolic blood pressure <90 mmHg >30 min or catecholamines required to maintain pressure >90 mmHg during Systole",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "systolic blood pressure",
+              "domain": "Measurement",
+              "source_text": "Systolic blood pressure",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 90.0,
+            "upper": null,
+            "unit": "mmHg",
+            "text": "<90 mmHg"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 30.0,
+              "unit": "minute"
+            },
+            "anchor": "time_zero",
+            "text": ">30 min"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "catecholamines",
+              "domain": "Drug",
+              "source_text": "catecholamines",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "systolic blood pressure",
+              "domain": "Measurement",
+              "source_text": "pressure >90 mmHg during Systole",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">",
+            "value": 90.0,
+            "upper": null,
+            "unit": "mmHg",
+            "text": ">90 mmHg"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "during Systole"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "Signs of impaired organ perfusion with at least one of the following criteria a) Altered mental Status, b) Cold, clammy skin and extremities, c) Oliguria with urine output <30 ml/h",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "signs of impaired organ perfusion",
+              "domain": "Observation",
+              "source_text": "Signs of impaired organ perfusion",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "altered mental status",
+              "domain": "Observation",
+              "source_text": "Altered mental Status",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "cold, clammy skin and extremities",
+              "domain": "Observation",
+              "source_text": "Cold, clammy skin and extremities",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "urine output",
+              "domain": "Measurement",
+              "source_text": "urine output",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 30.0,
+            "upper": null,
+            "unit": "ml/h",
+            "text": "<30 ml/h"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "Arterial lactate >3 mmol/l",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "arterial lactate",
+              "domain": "Measurement",
+              "source_text": "Arterial lactate",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 3.0,
+            "upper": null,
+            "unit": "mmol/l",
+            "text": ">3 mmol/l"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I6",
+      "kind": "inclusion",
+      "text": "Informed consent",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "informed consent",
+              "domain": "Observation",
+              "source_text": "Informed consent",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Resuscitation >45 minutes",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "resuscitation",
+              "domain": "Procedure",
+              "source_text": "Resuscitation",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 45.0,
+            "upper": null,
+            "unit": "minute",
+            "text": ">45 minutes"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Mechanical cause of cardiogenic shock",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "cardiogenic shock",
+              "domain": "Condition",
+              "source_text": "cardiogenic shock",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "mechanical cause",
+              "domain": "Condition",
+              "source_text": "mechanical cause",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "of"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Onset of shock >12 h",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "onset of shock",
+              "domain": "Condition",
+              "source_text": "Onset of shock",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 12.0,
+            "upper": null,
+            "unit": "hour",
+            "text": ">12 h"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Severe peripheral artery disease with impossibility to insert ECLS cannulae",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "severe peripheral artery disease",
+              "domain": "Condition",
+              "source_text": "Severe peripheral artery disease",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "impossibility to insert ECLS cannulae",
+              "domain": "Observation",
+              "source_text": "impossibility to insert ECLS cannulae",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Age <18 years or age >75 years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "Age",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 18.0,
+            "upper": null,
+            "unit": "year",
+            "text": "<18 years"
+          },
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "age",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">",
+            "value": 75.0,
+            "upper": null,
+            "unit": "year",
+            "text": ">75 years"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Shock of other cause (bradycardia, sepsis, hypovolemia, etc.)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "shock",
+              "domain": "Condition",
+              "source_text": "Shock",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "bradycardia",
+              "domain": "Condition",
+              "source_text": "bradycardia",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "sepsis",
+              "domain": "Condition",
+              "source_text": "sepsis",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "hypovolemia",
+              "domain": "Condition",
+              "source_text": "hypovolemia",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "Other severe concomitant disease with limited life expectancy <6 months",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "other severe concomitant disease",
+              "domain": "Condition",
+              "source_text": "Other severe concomitant disease",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "with limited life expectancy <6 months"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "Pregnancy",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Condition",
+              "source_text": "Pregnancy",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "Participation in another trial",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "participation in another trial",
+              "domain": "Observation",
+              "source_text": "Participation in another trial",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "ECLS",
+      "arm_type": "EXPERIMENTAL",
+      "description": "PCI (or CABG) plus medical treatment + ECLS",
+      "components": [
+        {
+          "concept": {
+            "name": "ECLS insertion",
+            "domain": "Procedure",
+            "source_text": "ECLS insertion",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "PCI",
+            "domain": "Procedure",
+            "source_text": "PCI",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "CABG",
+            "domain": "Procedure",
+            "source_text": "CABG",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "Optimal medical treatment",
+            "domain": "Procedure",
+            "source_text": "Optimal medical treatment",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "No ECLS",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "PCI (or CABG) plus medical treatment",
+      "components": [
+        {
+          "concept": {
+            "name": "Revascularisation and optimal medical treatment",
+            "domain": "Procedure",
+            "source_text": "Revascularisation and optimal medical treatment",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "default"
+  },
+  "time_zero": {
+    "anchor_event": "First time systolic blood pressure <90 mmHg for >30 min or catecholamines required to maintain systolic pressure >90 mmHg, combined with signs of impaired organ perfusion and arterial lactate >3 mmol/l",
+    "offset": null,
+    "rationale": "Time zero is defined as the moment when all inclusion criteria for cardiogenic shock are met, including hemodynamic instability, signs of organ hypoperfusion, and elevated lactate. This aligns with the trial's eligibility criteria and ensures treatment assignment occurs at the point of shock onset to avoid immortal time bias.",
+    "origin": "agent",
+    "evidence": "Inclusion criteria: Cardiogenic shock complicating AMI (STEMI or NSTEMI) plus obligatory: Planned revascularization (PCI or alternatively CABG); Systolic blood pressure <90 mmHg >30 min or catecholamines required to maintain pressure >90 mmHg during Systole; Signs of impaired organ perfusion with at least one of the following criteria a) Altered mental Status, b) Cold, clammy skin and extremities, c) Oliguria with urine output <30 ml/h; Arterial lactate >3 mmol/l"
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 30.0,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss_to_follow_up",
+      "end_of_data"
+    ],
+    "competing_events": [],
+    "origin": "derived"
+  },
+  "outcomes": [
+    {
+      "name": "30-day mortality",
+      "description": "30-day all-cause death after randomization according to the intention-to-treat principle",
+      "time_frame": "30 days",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Time to death within 6 and 12 months follow-up",
+      "description": null,
+      "time_frame": "6 and 12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 12.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Length of mechanical ventilation",
+      "description": null,
+      "time_frame": "0 to 10 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 10.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Time to hemodynamic stabilization",
+      "description": null,
+      "time_frame": "0 to 10 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 10.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Duration of catecholamine therapy",
+      "description": null,
+      "time_frame": "0 to 10 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 10.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Serial creatinine-level and creatinine-clearance",
+      "description": "Creatinine-clearance (Cockcroft-Gault-Formula)",
+      "time_frame": "0 to 10 days from time of randomization until stabilization",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 10.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Length of ICU stay",
+      "description": null,
+      "time_frame": "0 to 11 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 11.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Length of hospital stay",
+      "description": null,
+      "time_frame": "0 to 14 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 14.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Serial SAPS-II score",
+      "description": null,
+      "time_frame": "0 to 11 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 11.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Mean and area under the curve of arterial lactate",
+      "description": null,
+      "time_frame": "0 to 14 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 14.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Acute renal failure requiring renal replacement therapy",
+      "description": null,
+      "time_frame": "0 to 14 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 14.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Cerebral performance category (CPC)",
+      "description": null,
+      "time_frame": "30 days, 6 and 12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Cardiovascular mortality",
+      "description": null,
+      "time_frame": "6 and 12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 12.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Hospitalization for heart failure",
+      "description": null,
+      "time_frame": "6 and 12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 12.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Recurrent infarction",
+      "description": null,
+      "time_frame": "30 days, 6 and 12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Repeat revascularization (PCI or CABG)",
+      "description": null,
+      "time_frame": "30 days, 6 and 12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 30.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Status of Quality of life measured by EQ-5D-5L descriptive system",
+      "description": "The EQ-5D-5L descriptive system comprises five dimensions: mobility, self-care, usual activities, pain/discomfort and anxiety/depression. Each dimension has 5 levels: no problems, slight problems, moderate problems, severe problems and extreme problems expressed by 1-digit-numbers ranging from 1 (extreme problems) to 5 (no problems). The toal score ranges from 0-15 where 15 is the worst score.",
+      "time_frame": "12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 12.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Status of Quality of life measured by EQ VAS",
+      "description": "The EuroQol Group visual analogue scale (EQ VAS) records the patient's self-rated health on a vertical visual analogue scale from 0 to 100, where the maximum 100 is labelled 'The best health you can imagine' and the minimum 0 is labelled 'The worst health you can imagine'. The VAS can be used as a quantitative measure of health outcome that reflect the patient's own judgement.",
+      "time_frame": "12 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 12.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "default",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "prespecified_subgroups": [],
+    "sensitivity_analyses": [],
+    "origin": "default"
+  },
+  "provenance": {
+    "created_at": "2026-10-28T19:05:28.006915Z",
+    "created_by": "trialist",
+    "llm_model": "qwen3:32b",
+    "llm_model_digest": "030ee887880fc378860c2dd35101da424377520441ae4bfe7be6deff8ade7840",
+    "prompt_version": "trialist-v2",
+    "notes": null
+  }
+}

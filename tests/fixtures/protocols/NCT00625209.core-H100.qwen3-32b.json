@@ -1,0 +1,2166 @@
+{
+  "schema_version": 2,
+  "protocol_id": "NCT00625209-replay",
+  "version": 1,
+  "parent_version": null,
+  "mode": "replay",
+  "status": "draft",
+  "source": {
+    "registry": "ClinicalTrials.gov",
+    "nct_id": "NCT00625209",
+    "title": "Phase III of Recombinant Human Activated Protein C and Low Dose of Hydrocortisone and Fludrocortisone in Adult Septic Shock",
+    "phase": [
+      "PHASE3"
+    ],
+    "study_type": "INTERVENTIONAL",
+    "overall_status": "COMPLETED",
+    "allocation": "RANDOMIZED",
+    "intervention_model": "FACTORIAL",
+    "masking": "QUADRUPLE",
+    "enrollment": 1241,
+    "enrollment_type": "ACTUAL",
+    "conditions": [
+      "Septic Shock"
+    ],
+    "has_results": false,
+    "retrieved_at": "2026-10-28T17:40:58.986829Z",
+    "record_sha256": "ba91a058465cfd47602a69051d35e0bfa8ae2c029bcb4500bdb90b2614363263"
+  },
+  "eligibility": [
+    {
+      "id": "S1",
+      "kind": "inclusion",
+      "text": "minimumAge: 18 Years",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": null,
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 18.0,
+            "upper": null,
+            "unit": "years",
+            "text": "18 Years"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_structured",
+      "notes": null
+    },
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "hospitalized in intensive care unit for less than 7 days",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hospitalization in intensive care unit",
+              "domain": "Visit",
+              "source_text": "hospitalized in intensive care unit",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 7.0,
+            "upper": null,
+            "unit": "day",
+            "text": "for less than 7 days"
+          },
+          "temporal": {
+            "relation": "cumulative_duration",
+            "window": {
+              "amount": 7.0,
+              "unit": "day"
+            },
+            "anchor": "time_zero",
+            "text": "for less than 7 days"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": "duration value read as cumulative_duration"
+    },
+    {
+      "id": "I2",
+      "kind": "inclusion",
+      "text": "septic shock for less than 24 hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "septic shock",
+              "domain": "Condition",
+              "source_text": "septic shock",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "between",
+            "value": null,
+            "upper": 24.0,
+            "unit": "hour",
+            "text": "for less than 24 hours"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I3",
+      "kind": "inclusion",
+      "text": "at least one proven site of infection",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "infection",
+              "domain": "Condition",
+              "source_text": "site of infection",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "proven"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I4",
+      "kind": "inclusion",
+      "text": "at least 2 organ dysfunction as defined by a SOFA score =or> to 3 for at least 6 consecutive hours",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "organ dysfunction",
+              "domain": "Condition",
+              "source_text": "organ dysfunction",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "SOFA score",
+              "domain": "Measurement",
+              "source_text": "SOFA score",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 3.0,
+            "upper": null,
+            "unit": "score",
+            "text": "=or> to 3"
+          },
+          "temporal": {
+            "relation": "cumulative_duration",
+            "window": {
+              "amount": 6.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "for at least 6 consecutive hours"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I5",
+      "kind": "inclusion",
+      "text": "need for vasopressor (dopamine =or>15µg/kg/min or epinephrine/norepinephrine at =or>0,25 µg/kg/min for at least 6 consecutive hours, to maintain systolic arterial pressure at 90 mmHg or more OR mean arterial pressure at 6( mmHg or more",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "dopamine",
+              "domain": "Drug",
+              "source_text": "dopamine",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 15.0,
+            "upper": null,
+            "unit": "µg/kg/min",
+            "text": "=or>15µg/kg/min"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 6.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "for at least 6 consecutive hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "epinephrine",
+              "domain": "Drug",
+              "source_text": "epinephrine",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "norepinephrine",
+              "domain": "Drug",
+              "source_text": "norepinephrine",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": ">=",
+            "value": 0.25,
+            "upper": null,
+            "unit": "µg/kg/min",
+            "text": "=or>0,25 µg/kg/min"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 6.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "for at least 6 consecutive hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "systolic arterial pressure",
+              "domain": "Measurement",
+              "source_text": "systolic arterial pressure",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 90.0,
+            "upper": null,
+            "unit": "mmHg",
+            "text": "at 90 mmHg or more"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 6.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "for at least 6 consecutive hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "mean arterial pressure",
+              "domain": "Measurement",
+              "source_text": "mean arterial pressure",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 60.0,
+            "upper": null,
+            "unit": "mmHg",
+            "text": "at 6( mmHg or more"
+          },
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 6.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "for at least 6 consecutive hours"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "I6",
+      "kind": "inclusion",
+      "text": "informed consent",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "informed consent",
+              "domain": "Observation",
+              "source_text": "informed consent",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "pregnancy or breath feeding",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Observation",
+              "source_text": "pregnancy",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "breast feeding",
+              "domain": "Observation",
+              "source_text": "breath feeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "decision not to resuscitate",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "decision not to resuscitate",
+              "domain": "Observation",
+              "source_text": "decision not to resuscitate",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "underlying disease with an estimated life expectancy of less than 1 month",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "underlying disease",
+              "domain": "Condition",
+              "source_text": "underlying disease",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "life expectancy",
+              "domain": "Observation",
+              "source_text": "estimated life expectancy",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 1.0,
+            "upper": null,
+            "unit": "month",
+            "text": "less than 1 month"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "formal indication for corticosteroids",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "formal indication for corticosteroids",
+              "domain": "Observation",
+              "source_text": "formal indication for corticosteroids",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "recent surgery (ie within the past 72 hours) or a surgery at high risk of bleeding",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "surgery",
+              "domain": "Procedure",
+              "source_text": "recent surgery",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 72.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "within the past 72 hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "surgery at high risk of bleeding",
+              "domain": "Procedure",
+              "source_text": "a surgery at high risk of bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "gastro-intestinal bleeding within the past 6 weeks",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "gastro-intestinal bleeding",
+              "domain": "Condition",
+              "source_text": "gastro-intestinal bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 6.0,
+              "unit": "week"
+            },
+            "anchor": "time_zero",
+            "text": "within the past 6 weeks"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E7",
+      "kind": "exclusion",
+      "text": "chronic liver disease (Child C)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "chronic liver disease (Child C)",
+              "domain": "Condition",
+              "source_text": "chronic liver disease (Child C)",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E8",
+      "kind": "exclusion",
+      "text": "recent trauma (ie within the past 72 hours)",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "trauma",
+              "domain": "Condition",
+              "source_text": "recent trauma",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 72.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "within the past 72 hours"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E9",
+      "kind": "exclusion",
+      "text": "intracranial process",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intracranial process",
+              "domain": "Condition",
+              "source_text": "intracranial process",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E10",
+      "kind": "exclusion",
+      "text": "history of stroke, CNS bleeding or traumatic brain injury within the past 3 months",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "history of stroke",
+              "domain": "Condition",
+              "source_text": "history of stroke",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 3.0,
+              "unit": "month"
+            },
+            "anchor": "time_zero",
+            "text": "within the past 3 months"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "CNS bleeding",
+              "domain": "Condition",
+              "source_text": "CNS bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 3.0,
+              "unit": "month"
+            },
+            "anchor": "time_zero",
+            "text": "within the past 3 months"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "traumatic brain injury",
+              "domain": "Condition",
+              "source_text": "traumatic brain injury",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 3.0,
+              "unit": "month"
+            },
+            "anchor": "time_zero",
+            "text": "within the past 3 months"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E11",
+      "kind": "exclusion",
+      "text": "platelet counts of less than 30000 per cubic millimeter",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "platelet count",
+              "domain": "Measurement",
+              "source_text": "platelet counts",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 30000.0,
+            "upper": null,
+            "unit": "per cubic millimeter",
+            "text": "less than 30000 per cubic millimeter"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E12",
+      "kind": "exclusion",
+      "text": "formal indication for curative anticoagulant; prophylactic use of heparin is allowed",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "formal indication for curative anticoagulant",
+              "domain": "Drug",
+              "source_text": "formal indication for curative anticoagulant",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "prophylactic use of heparin",
+              "domain": "Drug",
+              "source_text": "prophylactic use of heparin",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": true
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E13",
+      "kind": "exclusion",
+      "text": "any condition of high risk of bleeding as per patient's primary physicians",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "condition of high risk of bleeding",
+              "domain": "Condition",
+              "source_text": "any condition of high risk of bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "any"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E14",
+      "kind": "exclusion",
+      "text": "hypersensitivity of activated drotrecogin alpha or any other component of the drug",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "hypersensitivity to activated drotrecogin alpha",
+              "domain": "Observation",
+              "source_text": "hypersensitivity of activated drotrecogin alpha",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "hypersensitivity to any other component of the drug",
+              "domain": "Observation",
+              "source_text": "any other component of the drug",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E15",
+      "kind": "exclusion",
+      "text": "no affiliation to a social security",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "affiliation to a social security",
+              "domain": "Observation",
+              "source_text": "affiliation to a social security",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": true
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E16",
+      "kind": "exclusion",
+      "text": "Amendments to eligibility criteria were:",
+      "atoms": [],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": "no concepts extracted"
+    },
+    {
+      "id": "E17",
+      "kind": "exclusion",
+      "text": "On 27/03/2008: Changes in following exclusion criteria :",
+      "atoms": [],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": "no concepts extracted"
+    },
+    {
+      "id": "E18",
+      "kind": "exclusion",
+      "text": "\"surgical procedure in the past 7 days\" was changed for \"surgical procedure within 72 hours, or any surgery associated with high risk of bleeding, or a planned surgery within 24 h\".",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "surgical procedure",
+              "domain": "Procedure",
+              "source_text": "surgical procedure",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "within 72 hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "surgery associated with high risk of bleeding",
+              "domain": "Procedure",
+              "source_text": "any surgery associated with high risk of bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "any surgery associated with high risk of bleeding"
+          },
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "planned surgery",
+              "domain": "Procedure",
+              "source_text": "planned surgery",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 24.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "within 24 h"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": "dropped window 3 day not in criterion text; x_within_t_before_y without a window read as x_before_y"
+    },
+    {
+      "id": "E19",
+      "kind": "exclusion",
+      "text": "\"chronic liver disease\" was clarified as \"chronic liver disease with Child score C\".",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "chronic liver disease",
+              "domain": "Condition",
+              "source_text": "chronic liver disease",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "Child score C",
+              "domain": "Measurement",
+              "source_text": "Child score C",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E20",
+      "kind": "exclusion",
+      "text": "\"severe thrombopenia\" was clarified \"as severe thrombopenia (<30,000/mm3, before transfusion).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "severe thrombopenia",
+              "domain": "Condition",
+              "source_text": "severe thrombopenia",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 30000.0,
+            "upper": null,
+            "unit": "per mm3",
+            "text": "<30,000/mm3"
+          },
+          "temporal": {
+            "relation": "x_before_y",
+            "window": null,
+            "anchor": "transfusion",
+            "text": "before transfusion"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": "unit 'per mm3' not in criterion text"
+    },
+    {
+      "id": "E21",
+      "kind": "exclusion",
+      "text": "On 25/08/2009: The exclusion criteria: surgical procedure within 72 hours, or any surgery associated with high risk of bleeding, or a planned surgery within 24 h\" was changed for \"surgical procedure within 12 hours, or any surgery associated with high risk of bleeding",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "surgical procedure",
+              "domain": "Procedure",
+              "source_text": "surgical procedure",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 12.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "within 12 hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "surgery associated with high risk of bleeding",
+              "domain": "Condition",
+              "source_text": "any surgery associated with high risk of bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E22",
+      "kind": "exclusion",
+      "text": "On 11/06/2010: the inclusion criteria: admitted to the ICU for < 7 days was removed",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "admission to ICU",
+              "domain": "Visit",
+              "source_text": "admitted to the ICU",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 7.0,
+            "upper": null,
+            "unit": "day",
+            "text": "for < 7 days"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "On 11/06/2010"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E23",
+      "kind": "exclusion",
+      "text": "and a new exclusion criteria was added: \"patients who had a previous episode of sepsis during the same hospital stay",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "sepsis",
+              "domain": "Condition",
+              "source_text": "episode of sepsis",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "had a previous episode"
+          },
+          "temporal": {
+            "relation": "x_at_time_of_y",
+            "window": null,
+            "anchor": "x_at_time_of_y",
+            "text": "during the same hospital stay"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": "x_within_t_before_y without a window read as x_at_time_of_y"
+    },
+    {
+      "id": "E24",
+      "kind": "exclusion",
+      "text": "On 18/04/2012: following the withdrawal of DAA from the market: the following exclusion criteria (only related to DAA) were removed :",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "DAA",
+              "domain": "Drug",
+              "source_text": "DAA",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E25",
+      "kind": "exclusion",
+      "text": "any surgery in the past 12 hours, or any surgery associated with high risk of bleeding;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "surgery",
+              "domain": "Procedure",
+              "source_text": "any surgery",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": null,
+          "temporal": {
+            "relation": "x_within_t_before_y",
+            "window": {
+              "amount": 12.0,
+              "unit": "hour"
+            },
+            "anchor": "time_zero",
+            "text": "in the past 12 hours"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "surgery associated with high risk of bleeding",
+              "domain": "Procedure",
+              "source_text": "any surgery associated with high risk of bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "any",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "associated with high risk of bleeding"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E26",
+      "kind": "exclusion",
+      "text": "chronic liver disease with a Child score C;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "chronic liver disease",
+              "domain": "Condition",
+              "source_text": "chronic liver disease",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            },
+            {
+              "name": "Child score C",
+              "domain": "Measurement",
+              "source_text": "Child score C",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E27",
+      "kind": "exclusion",
+      "text": "recent trauma;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "trauma",
+              "domain": "Condition",
+              "source_text": "recent trauma",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": null,
+            "anchor": "time_zero",
+            "text": "recent"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E28",
+      "kind": "exclusion",
+      "text": "any intracranial mass, or stroke or head injury in the past 3 months;",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "intracranial mass",
+              "domain": "Condition",
+              "source_text": "intracranial mass",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": {
+              "amount": 3.0,
+              "unit": "month"
+            },
+            "anchor": "time_zero",
+            "text": "in the past 3 months"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "stroke",
+              "domain": "Condition",
+              "source_text": "stroke",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": {
+              "amount": 3.0,
+              "unit": "month"
+            },
+            "anchor": "time_zero",
+            "text": "in the past 3 months"
+          },
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "head injury",
+              "domain": "Condition",
+              "source_text": "head injury",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": {
+              "amount": 3.0,
+              "unit": "month"
+            },
+            "anchor": "time_zero",
+            "text": "in the past 3 months"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E29",
+      "kind": "exclusion",
+      "text": "severe thrombocytopenia (< 30.000 /mm3, before platelet transfusion);",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "thrombocytopenia",
+              "domain": "Condition",
+              "source_text": "severe thrombocytopenia",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 30000.0,
+            "upper": null,
+            "unit": "/mm3",
+            "text": "< 30.000 /mm3"
+          },
+          "temporal": {
+            "relation": "x_before_y",
+            "window": null,
+            "anchor": "platelet transfusion",
+            "text": "before platelet transfusion"
+          },
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E30",
+      "kind": "exclusion",
+      "text": "formal indication for anticoagulation, or any other condition associated with increased risk of bleeding, as appreciated by the patient's physician.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "formal indication for anticoagulation",
+              "domain": "Condition",
+              "source_text": "formal indication for anticoagulation",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "any other condition associated with increased risk of bleeding",
+              "domain": "Condition",
+              "source_text": "any other condition associated with increased risk of bleeding",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "1",
+      "arm_type": "PLACEBO_COMPARATOR",
+      "description": "placebo of hydrocortisone, placebo of fludrocortisone and placebo of activated protein C",
+      "components": [
+        {
+          "concept": {
+            "name": "placebo of hydrocortisone",
+            "domain": "Drug",
+            "source_text": "placebo of hydrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": "iv bolus",
+          "frequency": "every 6 hours",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "placebo of fludrocortisone",
+            "domain": "Drug",
+            "source_text": "placebo of fludrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": "nasogastric tube",
+          "frequency": "once a day",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "placebo of activated protein C",
+            "domain": "Drug",
+            "source_text": "placebo of activated protein C",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": "continuous infusion",
+          "frequency": null,
+          "duration": {
+            "amount": 96.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "2",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "Hydrocortisone plus fludrocortisone and a placebo of activated protein C",
+      "components": [
+        {
+          "concept": {
+            "name": "hydrocortisone",
+            "domain": "Drug",
+            "source_text": "hydrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "50mg",
+          "route": "iv bolus",
+          "frequency": "every 6 hours",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "fludrocortisone",
+            "domain": "Drug",
+            "source_text": "fludrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "50µg",
+          "route": "nasogastric tube",
+          "frequency": "once a day",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "activated protein C",
+            "domain": "Drug",
+            "source_text": "activated protein C",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": {
+            "amount": 96.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "3",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "placebo of hydrocortisone, placebo of fludrocortisone and activated protein C",
+      "components": [
+        {
+          "concept": {
+            "name": "activated protein C",
+            "domain": "Drug",
+            "source_text": "activated protein C",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "24 µg/kg/h",
+          "route": "infusion",
+          "frequency": "continuous",
+          "duration": {
+            "amount": 96.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "hydrocortisone",
+            "domain": "Drug",
+            "source_text": "hydrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": "iv bolus",
+          "frequency": "every 6 hours",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "fludrocortisone",
+            "domain": "Drug",
+            "source_text": "fludrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": "gastric tube",
+          "frequency": "once a day",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "4",
+      "arm_type": "ACTIVE_COMPARATOR",
+      "description": "hydrocortisone plus fludrocortisone plus activated protein C",
+      "components": [
+        {
+          "concept": {
+            "name": "activated protein C",
+            "domain": "Drug",
+            "source_text": "activated protein C",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "24µg/kg/h",
+          "route": "infusion",
+          "frequency": "continuous",
+          "duration": {
+            "amount": 96.0,
+            "unit": "hour"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "hydrocortisone",
+            "domain": "Drug",
+            "source_text": "hydrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "50mg",
+          "route": "intravenous",
+          "frequency": "every 6 hours",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "fludrocortisone",
+            "domain": "Drug",
+            "source_text": "fludrocortisone",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": "50µg",
+          "route": "nasogastric tube",
+          "frequency": "once a day",
+          "duration": {
+            "amount": 7.0,
+            "unit": "day"
+          },
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": true,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "default"
+  },
+  "time_zero": {
+    "anchor_event": "first time septic shock is diagnosed and all inclusion criteria are met, including need for vasopressors and at least 2 organ dysfunctions as defined by a SOFA score >= 3 for at least 6 consecutive hours",
+    "offset": null,
+    "rationale": "Time zero is defined as the moment when septic shock is diagnosed and all inclusion criteria are met, including vasopressor use and organ dysfunction, to align with the trial's treatment initiation point and avoid immortal time bias.",
+    "origin": "agent",
+    "evidence": "Inclusion criteria: - hospitalized in intensive care unit for less than 7 days (removed on 11/06/2010) - septic shock for less than 24 hours - at least one proven site of infection - at least 2 organ dysfunction as defined by a SOFA score =or> to 3 for at least 6 consecutive hours - need for vasopressor (dopamine =or>15µg/kg/min or epinephrine/norepinephrine at =or>0,25 µg/kg/min for at least 6 consecutive hours, to maintain systolic arterial pressure at 90 mmHg or more OR mean arterial pressure at 6( mmHg or more - informed consent"
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 90.0,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss_to_follow_up",
+      "end_of_data"
+    ],
+    "competing_events": [],
+    "origin": "derived"
+  },
+  "outcomes": [
+    {
+      "name": "90-day mortality",
+      "description": null,
+      "time_frame": "90 day",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "mortality at 28 day",
+      "description": null,
+      "time_frame": "28-day",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "mortality at ICU discharge",
+      "description": null,
+      "time_frame": "ICU discharge",
+      "primary": false,
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "mortality at hospital discharge",
+      "description": null,
+      "time_frame": "hospital discharge",
+      "primary": false,
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "mortality at 6 months",
+      "description": null,
+      "time_frame": "6 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 6.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "decision to withhold or withdraw active treatments",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Time to wean vasopressor therapy",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "number of days alive and free of vasopressor therapy",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "time to achieve an SOFA score of less than 6",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "number of days alive with a SOFA score < 6 points",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "time to wean mechanical ventilation",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "number of days alive and free of mechanical ventilation",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Length of intensive care unit and hospital stay",
+      "description": null,
+      "time_frame": "up to hospital discharge",
+      "primary": false,
+      "concept": null,
+      "horizon": null,
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "acquisition of new infection",
+      "description": null,
+      "time_frame": "up to 180 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 180.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "new episode of sepsis",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "new episode of septic shock",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "bleeding events",
+      "description": null,
+      "time_frame": "up to 90 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 90.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "neurological sequels at intensive care unit and at hospital discharge and at 90 and 180 days",
+      "description": null,
+      "time_frame": "up to 6 months",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 6.0,
+        "unit": "month"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "default",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "prespecified_subgroups": [],
+    "sensitivity_analyses": [],
+    "origin": "default"
+  },
+  "provenance": {
+    "created_at": "2026-10-28T18:35:13.368663Z",
+    "created_by": "trialist",
+    "llm_model": "qwen3:32b",
+    "llm_model_digest": "030ee887880fc378860c2dd35101da424377520441ae4bfe7be6deff8ade7840",
+    "prompt_version": "trialist-v2",
+    "notes": null
+  }
+}

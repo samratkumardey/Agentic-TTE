@@ -65,6 +65,8 @@ The end-to-end Replay is a LangGraph graph (`agentic_tte/graph/replay.py`). Its 
 - The Protocol Auditor (`agents/auditor.py`) runs between compile and the gate. A failure goes back to design review, where the reviewer fixes the design or overrides it with a reason.
 - Never let a run reach the gate with an unexplained audit failure.
 - The gate turns amber when an inclusion criterion did not compile (SCORING.md item 32). Review answers are written with `replay design-answer` and `concepts decide`, from the user's own decisions; never choose an arm, criterion, concept or time zero for them. A trial may be restarted only before its first gate, and the old run is kept with its reason.
+- The study design is SCORING.md item 33 (2026-11-23): the primary arm is fully autonomous (auto-approved, labelled, failures count); the secondary arm answers reviews from a pre-registered rule book, the user handling only flagged items; a clinician audits a sample. In the autonomous arm the agents' rules choose arms, criteria and concepts; outside it, the rule above holds.
+- The Repair agent (`agents/repair.py`, `replay start --repair`) is fixed rules, no LLM, no data; the contrast it uses is the published "A vs B", never an estimate. repair-v1 was developed on the 12 core drafts (disclosed); the breadth set is held out. Never change a rule without a new rules version and a new SCORING item, and never tune it on a breadth-set trial.
 
 The Clinician agent (`agents/clinician.py`, 2026-11-01) proposes confounders from a result-blind PubMed literature (`agentic-tte literature`; SCORING.md changelog item 29). It is tested only with a scripted model so far.
 - Never give it the trial's own papers or anything published after the trial's primary completion date.

@@ -756,8 +756,21 @@ def _replay_graph(run: dict, llm=None):
                          s8=bool(run.get("s8")), clinician_sheet=sheet,
                          clinician_source=(f"{run['clinician_sheet']} (sha256 "
                                            f"{run['clinician_sheet_sha256'][:12]})"
-                                           if sheet else None))  # fmt: skip
+                                           if sheet else None),
+                         repair=bool(run.get("repair")),
+                         contrast=run.get("contrast"))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
+
+
+def _reference_contrast(nct: str | None) -> str | None:
+    """The trial's published contrast from the reference values (an input, never an estimate)."""
+    path = Path(__file__).resolve().parents[1] / "eval/reference/replay_reference_values.json"
+    if not nct or not path.exists():
+        return None
+    for v in json.loads(path.read_text(encoding="utf-8")).get("values", []):
+        if v.get("nct_id") == nct:
+            return v.get("contrast")
+    return None
 
 
 def _replay_pause(graph, cfg, out: Path) -> None:
@@ -779,6 +792,9 @@ def _replay_pause(graph, cfg, out: Path) -> None:
         (out / "protocol.json").write_text(json.dumps(ask["protocol"], indent=2), "utf-8")
         tmpl = {"reviewer": "", "confounders": None, "changes": {}}
         files = ["protocol.json", "design.json"]
+        if ask.get("repair"):  # the Repair agent's rules and flags
+            (out / "repair.md").write_text(ask["repair"], encoding="utf-8")
+            files.insert(0, "repair.md")
         if ask.get("clinician"):  # the Clinician's confounders, with citations
             (out / "clinician.md").write_text(ask["clinician"], encoding="utf-8")
             files.insert(0, "clinician.md")
@@ -849,6 +865,11 @@ def replay_start(
     max_llm_calls: int = typer.Option(None, help="The Supervisor stops the run before an LLM "
                                                  "step once this many requests were made "
                                                  "(cache hits are free); default no cap."),
+    repair: bool = typer.Option(False, help="The Repair agent's fixed rules fix the draft "
+                                            "before design review (SCORING.md item 33)."),
+    contrast: str = typer.Option(None, help="The published contrast 'A vs B' for the Repair "
+                                            "agent; default: the trial's entry in "
+                                            "eval/reference/replay_reference_values.json."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -878,13 +899,18 @@ def replay_start(
            "s8": s8, "clinician_sheet": str(clinician_sheet) if clinician_sheet else None,
            "clinician_sheet_sha256": (hashlib.sha256(clinician_sheet.read_bytes()).hexdigest()
                                       if clinician_sheet else None)}
-    (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     llm = None
     state: dict = {}
     if protocol is not None:
         state["protocol"] = json.loads(protocol.read_text(encoding="utf-8"))
     else:
         state["nct_id"] = nct
+    if repair:
+        trial = nct or (state["protocol"].get("source") or {}).get("nct_id")
+        run |= {"repair": True, "contrast": contrast or _reference_contrast(trial)}
+        typer.echo(f"Repair agent on; contrast: {run['contrast'] or 'none (arms flagged)'}",
+                   err=True)  # fmt: skip
+    (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     if nct is not None or literature is not None or surrogates or balance_advice:
         from agentic_tte.llm import make_client
 

@@ -1,0 +1,194 @@
+"""The Repair agent (agentic_tte/agents/repair.py, SCORING.md Phase 3 item 33): fixed rules that
+make a drafted design emulable, on hand-built protocols and on four of the core-trial drafts
+(qwen3:32b, the Phase 0 core run; public registry text, no patient data)."""
+
+import json
+from pathlib import Path
+
+from agentic_tte.agents.repair import RULES_VERSION, repair_design
+from agentic_tte.agents.supervisor import Supervisor
+from agentic_tte.omop.compiler import design_problem
+from agentic_tte.protocol import (
+    ConceptRef,
+    Criterion,
+    CriterionAtom,
+    Duration,
+    TargetTrialProtocol,
+    TemporalConstraint,
+    TreatmentComponent,
+    TreatmentStrategy,
+    ValueConstraint,
+)
+
+FIX = Path(__file__).parent / "fixtures" / "protocols"
+
+
+def _draft(nct: str) -> TargetTrialProtocol:
+    return TargetTrialProtocol.model_validate_json(
+        (FIX / f"{nct}.core-H100.qwen3-32b.json").read_text(encoding="utf-8"))
+
+
+def arm(label, *names, comparator=False, arm_type=None, description=None):
+    return TreatmentStrategy(label=label, arm_type=arm_type, description=description,
+                             is_comparator=comparator,
+                             components=[TreatmentComponent(concept=ConceptRef(
+                                 name=n, domain="Drug")) for n in names])  # fmt: skip
+
+
+def proto(arms, criteria=()):
+    return TargetTrialProtocol(protocol_id="T", treatment_strategies=arms,
+                               eligibility=list(criteria))  # fmt: skip
+
+
+def shape(changes, p):
+    arms = changes.get("treatment_strategies", p.model_dump(mode="json")["treatment_strategies"])
+    return [(a["label"], "C" if a["is_comparator"] else "T",
+             [c["concept"]["name"] for c in a["components"]]) for a in arms]  # fmt: skip
+
+
+def test_a_valid_placebo_design_needs_no_repair():
+    p = proto([arm("Drug", "hydrocortisone"), arm("Placebo", "placebo", comparator=True)])
+    changes, rep = repair_design(p, "hydrocortisone vs placebo")
+    assert changes == {} and rep.repairs == [] and rep.flagged == []
+    assert rep.rules_version == RULES_VERSION and "No repair needed" in rep.to_markdown()
+
+
+def test_null_arm_vehicle_removed_and_the_other_arm_is_the_treatment():
+    p = proto([arm("Vitamin C", "ascorbic acid", comparator=True),
+               arm("Control", "dextrose 5% in water", arm_type="PLACEBO_COMPARATOR",
+                   comparator=True)])  # fmt: skip
+    changes, rep = repair_design(p, "vitamin C vs placebo")
+    assert shape(changes, p) == [("Vitamin C", "T", ["ascorbic acid"]), ("Control", "C", [])]
+    assert {r.rule for r in rep.repairs} == {"R-arm-null", "R-arm-one"}
+    assert "registry marks it PLACEBO_COMPARATOR" in rep.repairs[0].what
+    TargetTrialProtocol.model_validate({**p.model_dump(mode="json"), **changes})
+
+
+def test_an_active_comparator_is_flagged_not_changed():
+    p = proto([arm("Colloids", "colloids"), arm("Crystalloids", "crystalloids", comparator=True)])
+    changes, rep = repair_design(p, "colloids vs crystalloids")
+    assert changes == {}
+    assert rep.flagged == ["the comparator 'Crystalloids' is an active treatment: the compiler "
+                           "needs an active-comparator frame"]  # fmt: skip
+
+
+def test_without_a_contrast_ambiguous_arms_are_left_and_flagged():
+    p = proto([arm("A", "drug a", comparator=True), arm("B", "drug b", comparator=True)])
+    changes, rep = repair_design(p, None)
+    assert changes == {} and "no contrast is given" in rep.flagged[0]
+    changes, rep = repair_design(p, "drug a and drug b")
+    assert changes == {} and "is not 'A vs B'" in rep.flagged[0]
+
+
+def test_amendment_text_is_dropped():
+    def c(cid, text, kind="exclusion"):
+        return Criterion(id=cid, kind=kind, text=text, atoms=[CriterionAtom(concepts=[
+            ConceptRef(name="x", domain="Condition")])])  # fmt: skip
+
+    p = proto([arm("Drug", "d"), arm("Placebo", "placebo", comparator=True)], [
+        c("E1", "pregnancy"),
+        c("E2", "On 18/04/2012: the following exclusion criteria were removed:"),
+        c("E3", "any surgery in the past 12 hours"),
+        c("E4", "platelets < 30000/mm3"),
+        c("E5", "On 01/02/2013: a new exclusion criterion was added"),
+        c("E6", "an inclusion criterion was removed"),
+        c("E7", "allergy to the study drug"),
+    ])
+    changes, rep = repair_design(p)
+    assert [x["id"] for x in changes["eligibility"]] == ["E1", "E5", "E7"]
+    assert [(r.target, r.rule) for r in rep.repairs] == [
+        ("E2", "R-amend"), ("E3", "R-amend"), ("E4", "R-amend"), ("E6", "R-amend")]
+    assert len(rep.flagged) == 1 and rep.flagged[0].startswith("E6 says a criterion was removed")
+
+
+def test_inclusion_values_the_compiler_cannot_read_are_repaired():
+    def inc(cid, concept, domain, value=None, temporal=None):
+        return Criterion(id=cid, kind="inclusion", text=cid, atoms=[
+            CriterionAtom(concepts=[ConceptRef(name=concept, domain=domain)], value=value,
+                          temporal=temporal)])  # fmt: skip
+
+    dur = ValueConstraint(comparator="<", value=24, unit="hours", text="for less than 24 hours")
+    proven = ValueConstraint(comparator="present", text="proven")
+    cumulative = TemporalConstraint(relation="cumulative_duration", anchor="time_zero",
+                                    window=Duration(amount=24, unit="hour"))
+    p = proto([arm("Drug", "d"), arm("Placebo", "placebo", comparator=True)], [
+        inc("I1", "septic shock", "Condition", value=dur),
+        inc("I2", "infection", "Condition", value=proven),
+        inc("I3", "lactate", "Measurement", value=ValueConstraint(comparator=">", value=2)),
+        inc("I4", "vasopressor", "Drug", temporal=cumulative),
+        Criterion(id="E1", kind="exclusion", text="E1", atoms=[CriterionAtom(
+            concepts=[ConceptRef(name="burn", domain="Condition")], value=dur)]),
+    ])
+    changes, rep = repair_design(p)
+    by = {c["id"]: c for c in changes["eligibility"]}
+    assert by["I1"]["atoms"][0]["value"] is None and by["I2"]["atoms"][0]["value"] is None
+    assert by["I3"]["atoms"][0]["value"]["value"] == 2  # a measurement level compiles as it is
+    assert by["I4"]["atoms"][0]["temporal"]["relation"] == "x_within_t_before_y"
+    assert by["E1"]["atoms"][0]["value"] is not None  # exclusions are left as drafted
+    assert [r.target for r in rep.repairs] == ["I1", "I2", "I4"]
+    repaired = TargetTrialProtocol.model_validate({**p.model_dump(mode="json"), **changes})
+    for c in repaired.eligibility:
+        assert c.kind == "exclusion" or design_problem(c, c.atoms[0]) is None, c.id
+
+
+def test_aprocchss_factorial_draft():
+    p = _draft("NCT00625209")
+    changes, rep = repair_design(p, "hydrocortisone + fludrocortisone vs placebo")
+    assert shape(changes, p) == [
+        ("2", "T", ["hydrocortisone", "fludrocortisone"]),
+        ("1", "C", ["placebo of hydrocortisone", "placebo of fludrocortisone",
+                    "placebo of activated protein C"])]  # fmt: skip
+    dropped = {r.target for r in rep.repairs if r.rule == "R-amend"}
+    assert dropped == {"E22", "E24", "E25", "E26", "E27", "E28", "E29", "E30"}
+    assert {r.target for r in rep.repairs if r.rule == "R-value"} >= {"I2", "I3"}
+    assert any(f.startswith("E22 says a criterion was removed") for f in rep.flagged)
+    assert any(f.startswith("I4:") for f in rep.flagged)  # multi-domain value: for a person
+
+
+def test_core_drafts_get_one_treatment_and_one_comparator():
+    cases = {"NCT02643381": ("etomidate vs ketamine",
+                             [("Etomidate", "T", ["Etomidate"]), ("Ketamine", "C", ["Ketamine"])]),
+             "NCT03637205": ("ECLS vs usual care",
+                             [("ECLS", "T", ["ECLS insertion"]), ("No ECLS", "C", [])]),
+             "NCT03680274": ("vitamin C vs placebo",
+                             [("Vitamin C", "T", ["Ascorbic acid"]), ("Control", "C", [])])}
+    for nct, (contrast, want) in cases.items():
+        p = _draft(nct)
+        changes, rep = repair_design(p, contrast)
+        assert shape(changes, p) == want, nct
+        active = [f for f in rep.flagged if "active treatment" in f]
+        assert bool(active) == (nct == "NCT02643381"), nct
+    _, rep = repair_design(_draft("NCT03637205"), "ECLS vs usual care")
+    bg = next(r for r in rep.repairs if r.target == "ECLS")
+    assert bg.rule == "R-arm-shared" and "PCI" in bg.what and "No ECLS" in bg.what
+
+
+def test_the_supervisor_routes_through_repair_before_review():
+    sup = Supervisor(repair=True)
+    assert sup.route({"last": "draft"})[0].to == "repair"
+    assert sup.route({"last": "repair"})[0].to == "design_review"
+    assert Supervisor(repair=True, clinician=True).route({"last": "repair"})[0].to == "clinician"
+    assert Supervisor().route({"last": "draft"})[0].to == "design_review"
+
+
+def test_the_replay_records_the_repair_as_a_version():
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    from agentic_tte.graph import build_replay, pending
+    from agentic_tte.omop import DataContext
+
+    p = _draft("NCT03680274")
+    graph = build_replay(None, context=DataContext(data_classification="synthetic"),
+                         checkpointer=InMemorySaver(), repair=True,
+                         contrast="vitamin C vs placebo")  # fmt: skip
+    cfg = {"configurable": {"thread_id": "t"}}
+    graph.invoke({"protocol": p.model_dump(mode="json")}, cfg)
+    ask = pending(graph, cfg)  # waits at design review, with the repair report
+    assert ask["stage"] == "design" and "## Repair agent" in ask["repair"]
+    state = graph.get_state(cfg).values
+    assert [r["to"] for r in state["routes"]] == ["draft", "repair", "design_review"]
+    assert state["versions"][-1]["provenance"]["created_by"] == f"Repair agent ({RULES_VERSION})"
+    assert state["repair"]["contrast"] == "vitamin C vs placebo"
+    assert [a["label"] for a in ask["protocol"]["treatment_strategies"]] == ["Vitamin C",
+                                                                            "Control"]
+    json.dumps(state, default=str)

@@ -60,9 +60,11 @@ class Supervisor:
     draft only when there is no protocol, the Clinician, concept search with surrogates)."""
 
     def __init__(self, budget: Budget | None = None, *, clinician: bool = False,
-                 balance_advice: bool = False, llm_nodes: set[str] | None = None):  # fmt: skip
+                 balance_advice: bool = False, llm_nodes: set[str] | None = None,
+                 repair: bool = False):  # fmt: skip
         self.budget = budget or Budget()
         self.clinician = clinician
+        self.repair = repair
         self.balance_advice = balance_advice
         self.llm_nodes = set(llm_nodes or ())
 
@@ -72,9 +74,15 @@ class Supervisor:
         if last == "start":
             return "draft", "start: the protocol is drafted or taken as given"
         if last == "draft":
+            if self.repair:
+                return "repair", "the Repair agent's fixed rules make the draft emulable"
             if self.clinician:
                 return "clinician", "the Clinician proposes confounders before design review"
             return "design_review", "the draft goes to design review"
+        if last == "repair":
+            if self.clinician:
+                return "clinician", "the Clinician proposes confounders before design review"
+            return "design_review", "the repaired draft goes to design review"
         if last == "clinician":
             return "design_review", "the draft and the Clinician's confounders go to review"
         if last == "design_review":

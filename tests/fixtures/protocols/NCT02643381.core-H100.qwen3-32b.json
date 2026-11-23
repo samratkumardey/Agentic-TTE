@@ -1,0 +1,571 @@
+{
+  "schema_version": 2,
+  "protocol_id": "NCT02643381-replay",
+  "version": 1,
+  "parent_version": null,
+  "mode": "replay",
+  "status": "draft",
+  "source": {
+    "registry": "ClinicalTrials.gov",
+    "nct_id": "NCT02643381",
+    "title": "Etomidate Versus Ketamine for Emergency Endotracheal Intubation: a Prospective Randomized Clinical Trial",
+    "phase": [
+      "PHASE4"
+    ],
+    "study_type": "INTERVENTIONAL",
+    "overall_status": "COMPLETED",
+    "allocation": "RANDOMIZED",
+    "intervention_model": "PARALLEL",
+    "masking": "NONE",
+    "enrollment": 801,
+    "enrollment_type": "ACTUAL",
+    "conditions": [
+      "Cardiopulmonary Arrest",
+      "Respiratory Arrest"
+    ],
+    "has_results": true,
+    "retrieved_at": "2026-10-28T17:41:02.428179Z",
+    "record_sha256": "1ecc4e1ad154ed559f02b1b6365756d8a1f6f54f474a4590787001b737d3aad4"
+  },
+  "eligibility": [
+    {
+      "id": "I1",
+      "kind": "inclusion",
+      "text": "Adult patient (male or female) requiring emergency endotracheal intubation.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "Adult patient",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": ">=",
+            "value": 18.0,
+            "upper": null,
+            "unit": "year",
+            "text": "Adult"
+          },
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "endotracheal intubation",
+              "domain": "Procedure",
+              "source_text": "emergency endotracheal intubation",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E1",
+      "kind": "exclusion",
+      "text": "Children (<18 years old).",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "age",
+              "domain": "Demographic",
+              "source_text": "Children",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "<",
+            "value": 18.0,
+            "upper": null,
+            "unit": "year",
+            "text": "<18 years old"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E2",
+      "kind": "exclusion",
+      "text": "Women who are known to be pregnant.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "pregnancy",
+              "domain": "Observation",
+              "source_text": "pregnant",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": {
+            "comparator": "present",
+            "value": null,
+            "upper": null,
+            "unit": null,
+            "text": "known to be pregnant"
+          },
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E3",
+      "kind": "exclusion",
+      "text": "Any patient who has been previously randomized in the EvK Trial.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "randomization in EvK Trial",
+              "domain": "Observation",
+              "source_text": "previously randomized in the EvK Trial",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E4",
+      "kind": "exclusion",
+      "text": "Patients who require endotracheal intubation without sedative medication. For example, patients in full cardiac arrest.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "endotracheal intubation",
+              "domain": "Procedure",
+              "source_text": "endotracheal intubation",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "sedative medication",
+              "domain": "Drug",
+              "source_text": "sedative medication",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": {
+            "relation": "x_before_y",
+            "window": null,
+            "anchor": "endotracheal intubation",
+            "text": "without sedative medication"
+          },
+          "negated": true
+        }
+      ],
+      "atom_logic": "all",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E5",
+      "kind": "exclusion",
+      "text": "Patients with a known allergy to ketamine or etomidate.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "allergy to ketamine",
+              "domain": "Observation",
+              "source_text": "allergy to ketamine",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        },
+        {
+          "concepts": [
+            {
+              "name": "allergy to etomidate",
+              "domain": "Observation",
+              "source_text": "allergy to etomidate",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "clinical",
+      "complexity": "complex",
+      "source": "registry_text",
+      "notes": null
+    },
+    {
+      "id": "E6",
+      "kind": "exclusion",
+      "text": "Any individual wearing a MedAlert bracelet indicating that he/she has formally opted out of the EvK Trial.",
+      "atoms": [
+        {
+          "concepts": [
+            {
+              "name": "wearing a MedAlert bracelet indicating formal opt-out of the EvK Trial",
+              "domain": "Observation",
+              "source_text": "Any individual wearing a MedAlert bracelet indicating that he/she has formally opted out of the EvK Trial",
+              "omop_concept_id": null,
+              "standard_name": null,
+              "status": "unmapped"
+            }
+          ],
+          "concept_logic": "all",
+          "value": null,
+          "temporal": null,
+          "negated": false
+        }
+      ],
+      "atom_logic": "any",
+      "category": "administrative",
+      "complexity": "simple",
+      "source": "registry_text",
+      "notes": null
+    }
+  ],
+  "treatment_strategies": [
+    {
+      "label": "Etomidate",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients randomized to this group will receive etomidate immediately prior to emergency endotracheal intubation.",
+      "components": [
+        {
+          "concept": {
+            "name": "Etomidate",
+            "domain": "Drug",
+            "source_text": "Etomidate",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "Emergency Endotracheal Intubation",
+            "domain": "Procedure",
+            "source_text": "Emergency Endotracheal Intubation",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "Mechanical Ventilation",
+            "domain": "Device",
+            "source_text": "Mechanical Ventilation",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    },
+    {
+      "label": "Ketamine",
+      "arm_type": "EXPERIMENTAL",
+      "description": "Patients randomized to this group will receive ketamine immediately prior to emergency endotracheal intubation.",
+      "components": [
+        {
+          "concept": {
+            "name": "Ketamine",
+            "domain": "Drug",
+            "source_text": "Ketamine",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "Emergency Endotracheal Intubation",
+            "domain": "Procedure",
+            "source_text": "Emergency Endotracheal Intubation",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        },
+        {
+          "concept": {
+            "name": "Mechanical Ventilation",
+            "domain": "Device",
+            "source_text": "Mechanical Ventilation",
+            "omop_concept_id": null,
+            "standard_name": null,
+            "status": "unmapped"
+          },
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "duration": null,
+          "end_event": null,
+          "end_rule": null
+        }
+      ],
+      "is_comparator": false,
+      "grace_period": null,
+      "grace_period_origin": null,
+      "grace_period_evidence": null
+    }
+  ],
+  "assignment": {
+    "method": "auto",
+    "confounders": [],
+    "origin": "default"
+  },
+  "time_zero": {
+    "anchor_event": "First documented need for emergency endotracheal intubation in an eligible adult patient.",
+    "offset": null,
+    "rationale": "Time zero is defined as the moment when an eligible adult patient requires emergency endotracheal intubation, as this is the point at which treatment assignment (etomidate or ketamine) becomes relevant and follow-up begins. No grace period is specified in the protocol.",
+    "origin": "agent",
+    "evidence": "Critically ill individuals who require emergency endotracheal intubation (placement of a breathing tube in the patient's mouth) usually require sedation or anesthesia to make this process tolerable."
+  },
+  "follow_up": {
+    "start": "time_zero",
+    "horizon": {
+      "amount": 7.0,
+      "unit": "day"
+    },
+    "end_event": null,
+    "end_rule": null,
+    "censoring_events": [
+      "loss_to_follow_up",
+      "end_of_data"
+    ],
+    "competing_events": [],
+    "origin": "derived"
+  },
+  "outcomes": [
+    {
+      "name": "Survival at Day 7",
+      "description": "Survival is defined as the number of participants survived at day 7 following emergency endotracheal intubation",
+      "time_frame": "Day 7",
+      "primary": true,
+      "concept": null,
+      "horizon": {
+        "amount": 7.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Survival at Day 28",
+      "description": "Survival is defined as the number of participants survived at day 28 following emergency endotracheal intubation",
+      "time_frame": "Day 28",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Sequential Organ Failure Assessment (SOFA) Scores",
+      "description": "Sequential Organ Failure Assessment (SOFA) is a scoring system that assesses the performance of several organ systems. Possible scores range from 0 to 24. Higher score indicates higher degree of organ dysfunction",
+      "time_frame": "Day 1, Day 2, Day 3, Day 4",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 1.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Duration of Mechanical Ventilation",
+      "description": "Duration (in days) from insertion to removal of mechanical ventilation",
+      "time_frame": "From time of documented insertion until the time of documented removal, assessed up to 28 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Duration of Catecholamine Therapy",
+      "description": "Time (in days) from start to end of catecholamine therapy",
+      "time_frame": "From time of documented start of therapy until the time of documented end of therapy, assessed up to 28 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Length of Stay in ICU",
+      "description": "Length (in days) of ICU stay",
+      "time_frame": "Assessed up to 28 days",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Number of Participants With New Diagnosis of Adrenal Insufficiency",
+      "description": "New diagnosis of adrenal insufficiency will be assessed by the the primary treating medical or surgical team via chart review",
+      "time_frame": "Day 28",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 28.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    },
+    {
+      "name": "Number of Attempts Necessary to Intubate",
+      "description": "This referrers to the number of documented intubation attempts necessary to intubate the patient.",
+      "time_frame": "Immediate (Day 1)",
+      "primary": false,
+      "concept": null,
+      "horizon": {
+        "amount": 1.0,
+        "unit": "day"
+      },
+      "end_event": null,
+      "end_rule": null
+    }
+  ],
+  "causal_contrast": "intention_to_treat",
+  "causal_contrast_origin": "default",
+  "causal_contrast_evidence": null,
+  "analysis_plan": {
+    "estimand": "hazard_ratio",
+    "outcome_model": "auto",
+    "immortal_time_handling": "auto",
+    "prespecified_subgroups": [],
+    "sensitivity_analyses": [],
+    "origin": "default"
+  },
+  "provenance": {
+    "created_at": "2026-10-28T19:02:09.331518Z",
+    "created_by": "trialist",
+    "llm_model": "qwen3:32b",
+    "llm_model_digest": "030ee887880fc378860c2dd35101da424377520441ae4bfe7be6deff8ade7840",
+    "prompt_version": "trialist-v2",
+    "notes": null
+  }
+}

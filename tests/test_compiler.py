@@ -369,3 +369,25 @@ def test_icu_stays_in_visit_detail_are_visit_events():
         crit("B", "inclusion", atom(ref("ICU stay", "Visit", 32037)))]), SPEC)
     df = _db().execute(cc.cohort_sql).df().set_index("person_id")
     assert met(df, "c_b") == [4]  # p1's ICU stay comes after time zero (no look-ahead)
+
+
+def test_per_mm3_thresholds_convert_data_recorded_in_thousands():
+    from agentic_tte.omop.compiler import unit_factors
+
+    # p1 25 K/uL (25000/mm3), p2 40 K/uL, p3 20000 per microliter, p4 20 with no unit concept
+    # (read as it is: a known limitation, warned about).
+    con = _db()
+    con.execute("CREATE TABLE concept AS SELECT * FROM (VALUES (8848, 'thousand per microliter'),"
+                " (8647, 'per microliter')) t(concept_id, concept_name)")
+    con.execute("DELETE FROM measurement")
+    con.execute("ALTER TABLE measurement ADD COLUMN unit_concept_id INTEGER")
+    for pid, v, u in ((1, 25, 8848), (2, 40, 8848), (3, 20000, 8647), (4, 20, None)):
+        con.execute("INSERT INTO measurement (person_id, measurement_concept_id, "
+                    "measurement_datetime, measurement_date, value_as_number, unit_concept_id) "
+                    "VALUES (?, 210, ?, ?, ?, ?)", [pid, T0 - H, (T0 - H).date(), v, u])
+    plt = atom(ref("platelets", "Measurement", 210),
+               value=ValueConstraint(comparator="<", value=30000, unit="/mm3"))
+    cc, df = flags([crit("E1", "exclusion", plt)], con=con)
+    assert met(df, "c_e1") == [1, 3, 4]
+    assert any("converted to /mm3" in w for w in cc.criteria[0].warnings)
+    assert unit_factors("cells/mm³") and unit_factors("per µL") and not unit_factors("mmol/L")
