@@ -394,6 +394,7 @@ def test_per_mm3_thresholds_convert_data_recorded_in_thousands():
     # creatinine in µmol/L against data in mg/dL (item 34); µmol/L of another analyte: no
     assert unit_factors("µmol/L", "serum creatinine")["milligram per deciliter"] == 88.4
     assert unit_factors("umol/l", "Creatinine") and not unit_factors("µmol/L", "bilirubin")
+    assert unit_factors("μmol/L", "creatinine")  # Greek mu as well as the micro sign
 
 
 def test_creatinine_in_micromoles_against_data_in_mg_per_dl():

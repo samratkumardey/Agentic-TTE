@@ -265,6 +265,7 @@ def test_the_mimic_check_on_a_small_database(tmp_path):
     assert any("injectable" in n for n in res["data_rules"]["notes"])
     assert any("time zero waits for I2" in n for n in res["time_zero"]["notes"])
     assert "R-grace" in md and "Pooled counts only" in md
+    assert "## 6. Measurement sets" in md and isinstance(res["measurement_units"], list)
     assert not {"arms", "events", "risk_at_horizon"} & set(res)  # nothing by arm or outcome
     # An inclusion event too few persons have is not recorded in the data: no time-zero event.
     import agentic_tte.agents.autonomy as au

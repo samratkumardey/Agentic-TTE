@@ -278,7 +278,7 @@ def _column(name: str) -> str:
 # 1 mg/dL = 88.4 µmol/L); any other unit is read as it is, with a warning.
 _PER_MM3 = re.compile(r"^(?:cells? ?)?(?:per|/) ?(?:mm3|mm\^3|mm³|cubic millimet(?:er|re)s?|"
                       r"(?:µ|u|micro)l(?:iter|itre)?)$")
-_UMOL_L = re.compile(r"^(?:µ|u|micro)mol(?:e|es)? ?(?:/|per) ?l(?:iter|itre)?$")
+_UMOL_L = re.compile(r"^(?:µ|μ|u|micro)mol(?:e|es)? ?(?:/|per) ?l(?:iter|itre)?$")
 UNIT_CONVERSIONS: list[tuple[re.Pattern, re.Pattern | None, dict[str, float]]] = [
     (_PER_MM3, None, {"thousand per microliter": 1000.0, "thousand per cubic millimeter": 1000.0,
                       "billion per liter": 1000.0, "10*3/ul": 1000.0, "10^3/ul": 1000.0,

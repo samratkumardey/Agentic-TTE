@@ -92,7 +92,38 @@ def check(con, protocol: TargetTrialProtocol, contrast: str | None) -> tuple[dic
            f"{c['persons_meeting'] if c['persons_meeting'] is not None else '–'} | "
            f"{'; '.join(c['reasons'])[:160] or '–'} |" for c in crit]
     md += ["", "## 5. Frame (not run)", ""] + [f"- {n}" for n in cc.frame_notes]
+    units = _units(con, reviewed, spec.descendants)
+    out["measurement_units"] = units
+    md += ["", "## 6. Measurement sets: units in the data (whole database, pooled)", "",
+           "| Set | Concepts | Unit | Records | Median value |", "|---|---|---|---|---|"]
+    md += [f"| {u['key']} | {u['concepts']} | {u['unit']} | {u['records']} | {u['median']} |"
+           for u in units] or ["| – | | | | |"]  # fmt: skip
     return out, "\n".join(md) + "\n"
+
+
+def _units(con, book, descendants: bool) -> list[dict]:
+    """Per approved measurement set: its concepts, and the records and median value per unit
+    across the whole database (no person, no arm, no outcome; small cells suppressed), so a
+    threshold's unit can be checked against what the data record."""
+    from agentic_tte.omop.compiler import _in_set
+
+    rows = []
+    for s in book.sets:
+        if s.status != "approved" or s.domain != "Measurement" or not s.concept_ids:
+            continue
+        names = con.execute(f"SELECT string_agg(concept_id || ' ' || concept_name, '; ') FROM "
+                            f"concept WHERE {_in_set('concept_id', s.concept_ids, False)}"
+                            ).fetchone()[0]  # fmt: skip
+        for unit, n, med in con.execute(f"""
+SELECT coalesce(u.concept_name, '(no unit concept)'), count(*), median(r.value_as_number)
+FROM measurement r LEFT JOIN concept u ON u.concept_id = r.unit_concept_id
+WHERE {_in_set('r.measurement_concept_id', s.concept_ids, descendants)}
+GROUP BY 1 ORDER BY 2 DESC LIMIT 4""").fetchall():
+            shown = suppress(n)
+            rows.append({"key": s.key, "concepts": (names or "")[:120], "unit": unit,
+                         "records": shown, "median": (f"{med:.3g}" if med is not None
+                                                      and shown == n else "–")})  # fmt: skip
+    return rows
 
 
 def main() -> None:
