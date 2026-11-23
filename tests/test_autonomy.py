@@ -168,3 +168,74 @@ def test_time_zero_events_in_the_compiler():
                                    "time_zero_window": Duration(amount=12, unit="hour")})
     assert _db().execute(compile_protocol(p, late).cohort_sql).df().empty  # +1 day is too late
     assert H  # (the hand-built database's hour, kept for symmetry with test_compiler)
+
+
+def test_the_mimic_check_on_a_small_database(tmp_path):
+    """eval/autonomy_check.py end to end on the fixture vocabulary and 30 hand-made patients."""
+    import importlib.util
+    from pathlib import Path
+
+    from agentic_tte.omop.vocab import load_athena
+
+    spec_ = importlib.util.spec_from_file_location(
+        "autonomy_check", Path(__file__).parents[1] / "eval" / "autonomy_check.py")
+    mod = importlib.util.module_from_spec(spec_)
+    spec_.loader.exec_module(mod)
+    t = pd.Timestamp("2020-01-01 08:00")
+    ids = list(range(1, 31))
+    tables = {
+        "person": pd.DataFrame({"person_id": ids, "gender_concept_id": 8507, "year_of_birth": 1960,
+                                "month_of_birth": 1, "day_of_birth": 1,
+                                "birth_datetime": pd.Timestamp("1960-01-01")}),
+        "observation_period": pd.DataFrame({"person_id": ids,
+                                            "observation_period_start_date": (t - D * 30).date(),
+                                            "observation_period_end_date": (t + D * 90).date()}),
+        "visit_occurrence": pd.DataFrame({"person_id": ids, "visit_concept_id": INPATIENT_VISIT,
+                                          "visit_start_datetime": t - H,
+                                          "visit_start_date": t.date()}),
+        "visit_detail": pd.DataFrame({"person_id": ids, "visit_detail_concept_id": ICU_VISIT,
+                                      "visit_detail_start_datetime": t,
+                                      "visit_detail_start_date": t.date()}),
+        "condition_occurrence": pd.DataFrame({"person_id": ids, "condition_concept_id": 196236,
+                                              "condition_start_datetime": t,
+                                              "condition_start_date": t.date()}),
+        # norepinephrine 2 h after ICU admission for 20 patients; hydrocortisone injections
+        "drug_exposure": pd.DataFrame(
+            [{"person_id": i, "drug_concept_id": 9000060, "drug_exposure_start_datetime": t + 2 * H,
+              "drug_exposure_start_date": t.date()} for i in ids[:20]]
+            + [{"person_id": i, "drug_concept_id": 9000021,
+                "drug_exposure_start_datetime": t + 5 * H, "drug_exposure_start_date": t.date()}
+               for i in ids[:12]]),
+        "measurement": pd.DataFrame({"person_id": [1], "measurement_concept_id": [9000030],
+                                     "measurement_datetime": [t], "measurement_date": [t.date()],
+                                     "value_as_number": [3.0], "unit_concept_id": [None]}),
+        "death": pd.DataFrame({"person_id": [1], "death_date": [(t + D * 5).date()],
+                               "death_datetime": [t + D * 5]}),
+    }  # fmt: skip
+    con = so.write_duckdb(tables)
+    load_athena(con, Path(__file__).parent / "fixtures" / "vocab")
+    p = TargetTrialProtocol(
+        protocol_id="T", eligibility=[
+            Criterion(id="I1", kind="inclusion", text="septic shock in the ICU", atoms=[
+                CriterionAtom(concepts=[ConceptRef(name="septic shock", domain="Condition")])]),
+            Criterion(id="I2", kind="inclusion", text="norepinephrine", atoms=[CriterionAtom(
+                concepts=[ConceptRef(name="norepinephrine", domain="Drug")])]),
+            Criterion(id="E1", kind="exclusion", text="pregnancy", atoms=[CriterionAtom(
+                concepts=[ConceptRef(name="pregnancy", domain="Condition")])])],
+        treatment_strategies=[
+            TreatmentStrategy(label="Hydrocortisone", components=[TreatmentComponent(
+                concept=ConceptRef(name="hydrocortisone", domain="Drug"), route="iv bolus")]),
+            TreatmentStrategy(label="Placebo", is_comparator=True, components=[
+                TreatmentComponent(concept=ConceptRef(name="placebo", domain="Drug"))])],
+        outcomes=[Outcome(name="28-day mortality", primary=True,
+                          horizon=Duration(amount=28, unit="day"))])  # fmt: skip
+    res, md = mod.check(con, p, "hydrocortisone vs placebo")
+    assert res["persons_with_admission"] == 30 and res["persons_with_time_zero"] == 20
+    assert res["eligible"] == 20 and res["frame_design"] == "no_initiation"
+    crit = {c["id"]: c for c in res["criteria"]}
+    assert crit["E1"]["status"] == "not_compiled"  # pregnancy has no records: unmappable
+    assert crit["I2"]["persons_meeting"] == 20
+    assert any("injectable" in n for n in res["data_rules"]["notes"])
+    assert any("time zero waits for I2" in n for n in res["time_zero"]["notes"])
+    assert "R-grace" in md and "Pooled counts only" in md
+    assert not {"arms", "events", "risk_at_horizon"} & set(res)  # nothing by arm or outcome
