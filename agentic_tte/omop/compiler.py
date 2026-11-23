@@ -23,7 +23,8 @@ Semantics (every one is listed in the compile report):
   ``measurement_lookback`` before the anchor; windowed relations accept any value in the window.
   A missing value means the criterion is not met. Thresholds per mm3 are compared with values
   recorded in thousands per microlitre, and creatinine thresholds in µmol/L with values in
-  mg/dL (``UNIT_CONVERSIONS``); other units are not converted.
+  mg/dL (``UNIT_CONVERSIONS``); the data's unit is the unit concept or, without one, the
+  recorded unit text. Other units are not converted.
 - The frame: against a placebo, usual-care or no-treatment comparator, the comparator is no
   initiation. Against an active comparator, patients who start either strategy within the
   grace period are assigned to the one they start first and followed from that start (a
@@ -300,8 +301,12 @@ def unit_factors(unit: str | None, analyte: str = "") -> dict[str, float] | None
 
 
 def _converted(expr: str, factors: dict[str, float]) -> str:
+    """The value in the criterion's unit. The data's unit is the unit concept's name or, with
+    no unit concept, the recorded unit text (``unit_source_value``: the MIMIC-IV OMOP build has
+    no unit concepts and keeps MIMIC's own units there, such as K/uL and mg/dL)."""
     cases = " ".join(f"WHEN '{name}' THEN {expr} * {f:g}" for name, f in factors.items())
-    return f"(CASE lower(u.concept_name) {cases} ELSE {expr} END)"
+    unit = "lower(trim(coalesce(u.concept_name, r.unit_source_value)))"
+    return f"(CASE {unit} {cases} ELSE {expr} END)"
 
 
 def _value_sql(expr: str, v) -> str:

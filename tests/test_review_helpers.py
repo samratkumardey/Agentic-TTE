@@ -111,7 +111,8 @@ def _cdm(path):
                 "CASE WHEN range < 35 THEN 2 ELSE 3 END AS drug_concept_id FROM range(60)")
     con.execute("CREATE TABLE measurement AS SELECT range AS person_id, "
                 "10 AS measurement_concept_id, 150.0 + range AS value_as_number, "
-                "8848 AS unit_concept_id FROM range(50) UNION ALL SELECT 1, 11, 9.0, NULL")
+                "8848 AS unit_concept_id, CAST(NULL AS VARCHAR) AS unit_source_value "
+                "FROM range(50) UNION ALL SELECT 1, 11, 9.0, NULL, 'fL'")
     con.execute("CREATE TABLE condition_occurrence (person_id BIGINT, condition_concept_id BIGINT)")
     con.execute("CREATE TABLE observation (person_id BIGINT, observation_concept_id BIGINT)")
     con.close()

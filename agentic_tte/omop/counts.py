@@ -115,7 +115,8 @@ def concept_counts(con, decisions: dict, book: ConceptSetBook | None = None) -> 
                 out[k].records, out[k].persons = suppress(r), suppress(p)
         if "Measurement" in {r[1] for r in rows}:  # units are not converted: show the data's
             for k, unit, r, med in con.execute(
-                    "SELECT e.key, coalesce(u.concept_name, 'no unit'), count(*), "
+                    "SELECT e.key, coalesce(u.concept_name, m.unit_source_value, 'no unit'), "
+                    "count(*), "
                     "median(m.value_as_number) FROM measurement m "
                     "JOIN _review_expanded e ON m.measurement_concept_id = e.desc_id "
                     "AND e.domain = 'Measurement' "

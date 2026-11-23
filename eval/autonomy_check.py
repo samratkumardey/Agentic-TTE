@@ -115,7 +115,8 @@ def _units(con, book, descendants: bool) -> list[dict]:
                             f"concept WHERE {_in_set('concept_id', s.concept_ids, False)}"
                             ).fetchone()[0]  # fmt: skip
         for unit, n, med in con.execute(f"""
-SELECT coalesce(u.concept_name, '(no unit concept)'), count(*), median(r.value_as_number)
+SELECT coalesce(u.concept_name, r.unit_source_value || ' (unit text)', '(no unit)'), count(*),
+       median(r.value_as_number)
 FROM measurement r LEFT JOIN concept u ON u.concept_id = r.unit_concept_id
 WHERE {_in_set('r.measurement_concept_id', s.concept_ids, descendants)}
 GROUP BY 1 ORDER BY 2 DESC LIMIT 4""").fetchall():

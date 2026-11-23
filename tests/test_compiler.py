@@ -381,6 +381,7 @@ def test_per_mm3_thresholds_convert_data_recorded_in_thousands():
                 " (8647, 'per microliter')) t(concept_id, concept_name)")
     con.execute("DELETE FROM measurement")
     con.execute("ALTER TABLE measurement ADD COLUMN unit_concept_id INTEGER")
+    con.execute("ALTER TABLE measurement ADD COLUMN unit_source_value VARCHAR")
     for pid, v, u in ((1, 25, 8848), (2, 40, 8848), (3, 20000, 8647), (4, 20, None)):
         con.execute("INSERT INTO measurement (person_id, measurement_concept_id, "
                     "measurement_datetime, measurement_date, value_as_number, unit_concept_id) "
@@ -398,15 +399,17 @@ def test_per_mm3_thresholds_convert_data_recorded_in_thousands():
 
 
 def test_creatinine_in_micromoles_against_data_in_mg_per_dl():
+    # As in the MIMIC-IV OMOP build: no unit concept, MIMIC's unit text in unit_source_value.
     con = _db()
     con.execute("CREATE TABLE concept AS SELECT * FROM (VALUES (8840, 'milligram per deciliter'))"
                 " t(concept_id, concept_name)")
     con.execute("DELETE FROM measurement")
     con.execute("ALTER TABLE measurement ADD COLUMN unit_concept_id INTEGER")
+    con.execute("ALTER TABLE measurement ADD COLUMN unit_source_value VARCHAR")
     for pid, v in ((1, 1.5), (2, 1.0)):  # 132.6 and 88.4 µmol/L
         con.execute("INSERT INTO measurement (person_id, measurement_concept_id, "
-                    "measurement_datetime, measurement_date, value_as_number, unit_concept_id) "
-                    "VALUES (?, 210, ?, ?, ?, 8840)", [pid, T0 - H, (T0 - H).date(), v])
+                    "measurement_datetime, measurement_date, value_as_number, unit_source_value) "
+                    "VALUES (?, 210, ?, ?, ?, 'mg/dL')", [pid, T0 - H, (T0 - H).date(), v])
     cr = atom(ref("serum creatinine", "Measurement", 210),
               value=ValueConstraint(comparator=">=", value=130, unit="µmol/L"))
     _, df = flags([crit("I1", "inclusion", cr)], con=con)
