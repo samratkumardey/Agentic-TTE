@@ -91,7 +91,8 @@ def test_placebo_comparator_and_duplicate_components():
     active = _with(p, treatment_strategies=[p.treatment_strategies[0], TreatmentStrategy(
         label="Other drug", is_comparator=True,
         components=[TreatmentComponent(concept=ref("dobutamine", "Drug"))])])  # fmt: skip
-    assert compile_protocol(active, SYNTH_SPEC).frame_sql is None  # truly active: not yet
+    cc = compile_protocol(active, SYNTH_SPEC)  # active comparator without a grace period
+    assert cc.frame_sql is None and any("needs a grace period" in n for n in cc.frame_notes)
 
 
 def test_relative_change_is_not_read_as_a_level():

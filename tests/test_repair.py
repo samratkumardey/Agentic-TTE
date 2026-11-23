@@ -28,9 +28,12 @@ def _draft(nct: str) -> TargetTrialProtocol:
         (FIX / f"{nct}.core-H100.qwen3-32b.json").read_text(encoding="utf-8"))
 
 
-def arm(label, *names, comparator=False, arm_type=None, description=None):
+DAY = Duration(amount=1, unit="day")
+
+
+def arm(label, *names, comparator=False, arm_type=None, description=None, grace=None):
     return TreatmentStrategy(label=label, arm_type=arm_type, description=description,
-                             is_comparator=comparator,
+                             is_comparator=comparator, grace_period=grace,
                              components=[TreatmentComponent(concept=ConceptRef(
                                  name=n, domain="Drug")) for n in names])  # fmt: skip
 
@@ -47,7 +50,8 @@ def shape(changes, p):
 
 
 def test_a_valid_placebo_design_needs_no_repair():
-    p = proto([arm("Drug", "hydrocortisone"), arm("Placebo", "placebo", comparator=True)])
+    p = proto([arm("Drug", "hydrocortisone", grace=DAY),
+               arm("Placebo", "placebo", comparator=True)])  # fmt: skip
     changes, rep = repair_design(p, "hydrocortisone vs placebo")
     assert changes == {} and rep.repairs == [] and rep.flagged == []
     assert rep.rules_version == RULES_VERSION and "No repair needed" in rep.to_markdown()
@@ -59,17 +63,47 @@ def test_null_arm_vehicle_removed_and_the_other_arm_is_the_treatment():
                    comparator=True)])  # fmt: skip
     changes, rep = repair_design(p, "vitamin C vs placebo")
     assert shape(changes, p) == [("Vitamin C", "T", ["ascorbic acid"]), ("Control", "C", [])]
-    assert {r.rule for r in rep.repairs} == {"R-arm-null", "R-arm-one"}
+    assert {r.rule for r in rep.repairs} == {"R-arm-null", "R-arm-one", "R-grace"}
     assert "registry marks it PLACEBO_COMPARATOR" in rep.repairs[0].what
     TargetTrialProtocol.model_validate({**p.model_dump(mode="json"), **changes})
 
 
 def test_an_active_comparator_is_flagged_not_changed():
+    p = proto([arm("Etomidate", "etomidate", grace=DAY),
+               arm("Ketamine", "ketamine", comparator=True)])  # fmt: skip
+    changes, rep = repair_design(p, "etomidate vs ketamine")
+    assert changes == {}
+    assert rep.flagged[0].startswith("the comparator 'Ketamine' is an active treatment: the "
+                                     "active-comparator frame is used")  # fmt: skip
+
+
+def test_standard_fluid_and_timing_comparators_are_no_initiation():
     p = proto([arm("Colloids", "colloids"), arm("Crystalloids", "crystalloids", comparator=True)])
     changes, rep = repair_design(p, "colloids vs crystalloids")
-    assert changes == {}
-    assert rep.flagged == ["the comparator 'Crystalloids' is an active treatment: the compiler "
-                           "needs an active-comparator frame"]  # fmt: skip
+    assert shape(changes, p) == [("Colloids", "T", ["colloids"]), ("Crystalloids", "C", [])]
+    assert [r.rule for r in rep.repairs] == ["R-arm-standard", "R-grace"] and not rep.flagged
+    t = changes["treatment_strategies"][0]
+    assert t["grace_period"] == {"amount": 24, "unit": "hour"}
+    assert t["grace_period_origin"] == "default"
+    p = proto([arm("Accelerated", "Accelerated RRT initiation"),
+               arm("Standard", "Standard RRT initiation", comparator=True)])  # fmt: skip
+    changes, rep = repair_design(p, "accelerated vs standard RRT initiation")
+    assert shape(changes, p)[1] == ("Standard", "C", [])
+    assert rep.repairs[0].rule == "R-arm-timing" and not rep.flagged
+    # Saline with a drug is not a standard-fluid comparator.
+    p = proto([arm("A", "drug a"), arm("B", "drug b", "sodium chloride", comparator=True)])
+    _, rep = repair_design(p, "drug a vs drug b")
+    assert "R-arm-standard" not in {r.rule for r in rep.repairs}
+
+
+def test_an_anchor_named_after_a_relation_is_time_zero():
+    c = Criterion(id="E1", kind="exclusion", text="E1", atoms=[CriterionAtom(
+        concepts=[ConceptRef(name="burn", domain="Condition")],
+        temporal=TemporalConstraint(relation="x_at_time_of_y", anchor="x_at_time_of_y"))])
+    p = proto([arm("Drug", "d", grace=DAY), arm("Placebo", "placebo", comparator=True)], [c])
+    changes, rep = repair_design(p)
+    assert changes["eligibility"][0]["atoms"][0]["temporal"]["anchor"] == "time zero"
+    assert [r.rule for r in rep.repairs] == ["R-anchor"]
 
 
 def test_without_a_contrast_ambiguous_arms_are_left_and_flagged():
@@ -96,7 +130,7 @@ def test_amendment_text_is_dropped():
     ])
     changes, rep = repair_design(p)
     assert [x["id"] for x in changes["eligibility"]] == ["E1", "E5", "E7"]
-    assert [(r.target, r.rule) for r in rep.repairs] == [
+    assert [(r.target, r.rule) for r in rep.repairs if r.rule != "R-grace"] == [
         ("E2", "R-amend"), ("E3", "R-amend"), ("E4", "R-amend"), ("E6", "R-amend")]
     assert len(rep.flagged) == 1 and rep.flagged[0].startswith("E6 says a criterion was removed")
 
@@ -125,7 +159,7 @@ def test_inclusion_values_the_compiler_cannot_read_are_repaired():
     assert by["I3"]["atoms"][0]["value"]["value"] == 2  # a measurement level compiles as it is
     assert by["I4"]["atoms"][0]["temporal"]["relation"] == "x_within_t_before_y"
     assert by["E1"]["atoms"][0]["value"] is not None  # exclusions are left as drafted
-    assert [r.target for r in rep.repairs] == ["I1", "I2", "I4"]
+    assert [r.target for r in rep.repairs if r.rule == "R-value"] == ["I1", "I2", "I4"]
     repaired = TargetTrialProtocol.model_validate({**p.model_dump(mode="json"), **changes})
     for c in repaired.eligibility:
         assert c.kind == "exclusion" or design_problem(c, c.atoms[0]) is None, c.id

@@ -21,7 +21,12 @@ Semantics (every one is listed in the compile report):
   constraint, any record up to time zero counts (history).
 - Measurements: "at the time of" and unconstrained use the latest value within
   ``measurement_lookback`` before the anchor; windowed relations accept any value in the window.
-  A missing value means the criterion is not met. Units are not converted.
+  A missing value means the criterion is not met. Thresholds per mm3 are compared with values
+  recorded in thousands per microlitre (``UNIT_CONVERSIONS``); other units are not converted.
+- The frame: against a placebo, usual-care or no-treatment comparator, the comparator is no
+  initiation. Against an active comparator, patients who start either strategy within the
+  grace period are assigned to the one they start first and followed from that start (a
+  new-user, active-comparator design); those who start neither, or both at once, are left out.
 - Records with a date but no datetime are placed at midnight.
 - A criterion compiles fully or not at all: if any atom cannot be compiled, the criterion is
   reported as not compiled with its reasons and left out of ``eligible`` (or raises in strict
@@ -50,6 +55,7 @@ from agentic_tte.protocol.models import (
     MappingStatus,
     TargetTrialProtocol,
     TemporalRelation,
+    ValueConstraint,
 )
 
 _SECONDS = {"minute": 60, "hour": 3600, "day": 86400, "week": 7 * 86400,
@@ -122,6 +128,8 @@ class EventDef(BaseModel):
     concept_ids: list[int]
     occurrence: Literal["first", "last"] = "first"  # anchors: last occurrence up to t0
     note: str | None = None
+    # A measurement that meets a threshold ("PaO2/FiO2 < 150"): time_zero_after events only.
+    value: ValueConstraint | None = None
 
 
 class OutcomeSpec(BaseModel):
@@ -137,6 +145,12 @@ class CompileSpec(BaseModel):
     """What a reviewer supplies besides the protocol and the concept sets."""
 
     time_zero: EventDef
+    # Time zero is when all of these have happened too: each one's first record from
+    # ``measurement_lookback`` before the time-zero event to ``time_zero_window`` after it.
+    # A person without one of them has no time zero. (The autonomous rule, SCORING.md item 34:
+    # ICU admission, then the time-stamped inclusion events.)
+    time_zero_after: list[EventDef] = Field(default_factory=list)
+    time_zero_window: Duration = Field(default_factory=lambda: Duration(amount=72, unit="hour"))
     anchors: dict[str, EventDef] = Field(default_factory=dict)
     concept_sets: dict[str, list[int]] = Field(default_factory=dict)
     descendants: bool = True  # expand concept sets through concept_ancestor
@@ -172,6 +186,9 @@ class CompiledCohort(BaseModel):
     cohort_sql: str
     frame_sql: str | None = None
     horizon_days: float | None = None
+    # "no_initiation" (the comparator is placebo, usual care or nothing) or
+    # "active_comparator" (follow-up from the first strategy started within the grace period)
+    design: Literal["no_initiation", "active_comparator"] | None = None
 
     @property
     def not_compiled(self) -> list[CompiledCriterion]:
@@ -226,6 +243,16 @@ def _time(alias: str, domain: Domain) -> str:
 
 def _days(a: str, b: str) -> str:
     return f"date_diff('second', {a}, {b}) / 86400.0"
+
+
+def _all_of(times: list[str]) -> str:
+    """The latest of several times, or NULL if any is missing. (DuckDB's greatest() skips
+    NULLs: "all components started" must not mean "any component started".)"""
+    if len(times) == 1:
+        return times[0]
+    inf = "CAST('infinity' AS TIMESTAMP)"
+    g = f"greatest({', '.join(f'coalesce({t}, {inf})' for t in times)})"
+    return f"(CASE WHEN isfinite({g}) THEN {g} END)"
 
 
 def _column(name: str) -> str:
@@ -501,11 +528,33 @@ def _base_ctes(protocol: TargetTrialProtocol, spec: CompileSpec) -> str:
     shift = f" + {_interval(offset)}" if offset and offset.amount else ""
     birth = ("coalesce(p.birth_datetime, CAST(make_date(p.year_of_birth, "
              "coalesce(p.month_of_birth, 7), coalesce(p.day_of_birth, 1)) AS TIMESTAMP))")
-    return f"""idx AS (
-  SELECT e.person_id, {agg}({_time('e', Domain(tz.domain))}){shift} AS t0
+    first = f"""SELECT e.person_id, {agg}({_time('e', Domain(tz.domain))}) AS t0
   FROM {table} e
   WHERE {_in_set(f'e.{col}', tz.concept_ids, spec.descendants)}
-  GROUP BY e.person_id
+  GROUP BY e.person_id"""  # fmt: skip
+    if spec.time_zero_after:
+        lb, win = _interval(spec.measurement_lookback), _interval(spec.time_zero_window)
+        events = []
+        for ev in spec.time_zero_after:
+            t_, c_, _, _ = EVENT_TABLE[Domain(ev.domain)]
+            x = _time("r", Domain(ev.domain))
+            src, val = f"{t_} r", ""
+            if ev.value is not None and ev.value.value is not None:
+                expr = "r.value_as_number"
+                factors = unit_factors(ev.value.unit) if ev.domain == Domain.MEASUREMENT else None
+                if factors:
+                    src = f"{t_} r LEFT JOIN concept u ON u.concept_id = r.unit_concept_id"
+                    expr = _converted(expr, factors)
+                val = f" AND {_value_sql(expr, ev.value)}"
+            events.append(f"(SELECT min({x}) FROM {src} WHERE r.person_id = i.person_id AND "
+                          f"{_in_set(f'r.{c_}', ev.concept_ids, spec.descendants)} AND "
+                          f"{x} >= i.t0 - {lb} AND {x} <= i.t0 + {win}{val})")  # fmt: skip
+        first = f"""SELECT person_id, t0 FROM (
+    SELECT i.person_id, {_all_of(['i.t0', *events])} AS t0
+    FROM ({first}) i
+  ) WHERE t0 IS NOT NULL"""  # fmt: skip
+    return f"""idx AS (
+  SELECT person_id, t0{shift} AS t0 FROM ({first})
 ),
 base AS (
   -- index inside an observation period, and alive at time zero
@@ -548,6 +597,33 @@ def _horizon(protocol: TargetTrialProtocol) -> Duration:
     return h
 
 
+def _initiation(ctx: _Ctx, arm, lower: str, notes: list[str]) -> str | None:
+    """SQL for when the arm's strategy starts: the time all its components have started at
+    or after ``lower``; None (with a note) if a component has no approved concept set."""
+    components = list({_norm(c.concept.name): c for c in arm.components}.values())
+    if len(components) < len(arm.components):
+        notes.append(f"'{arm.label}' lists the same component more than once; counted once")
+    starts = []
+    for comp in components:
+        ids = ctx.ids_for(f"T:{arm.label}:{comp.concept.name}", comp.concept)
+        if not ids:
+            notes.append(f"frame not compiled: '{arm.label}' component '{comp.concept.name}' "
+                         "has no approved concept set")
+            return None
+        dom = Domain(comp.concept.domain)
+        table, col, _, _ = EVENT_TABLE[dom]
+        x = _time("r", dom)
+        starts.append(f"(SELECT min({x}) FROM {table} r WHERE r.person_id = c.person_id AND "
+                      f"{_in_set(f'r.{col}', ids, ctx.spec.descendants)} AND {x} >= {lower})")
+    if not starts:
+        notes.append(f"frame not compiled: '{arm.label}' has no components")
+        return None
+    if len(starts) > 1:
+        notes.append(f"initiation of '{arm.label}' is when all {len(starts)} components have "
+                     "started")
+    return _all_of(starts)
+
+
 def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
     p, spec = ctx.protocol, ctx.spec
     arms = [a for a in p.treatment_strategies if not a.is_comparator]
@@ -555,43 +631,40 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
     if len(arms) != 1 or len(comparators) != 1:
         notes.append("frame not compiled: needs exactly one treatment and one comparator arm")
         return None
-    arm = arms[0]
-    comp_names = [c.concept.name for c in comparators[0].components]
-    if comp_names and all(_is_placebo(n) for n in comp_names):
-        notes.append(f"comparator components {', '.join(comp_names)}: placebo or usual care has "
-                     "no real-world record, so the comparator is no initiation")
-    elif comp_names:
-        notes.append("frame not compiled: active comparators are not supported yet")
-        return None
-    starts = []
+    arm, comp = arms[0], comparators[0]
+    comp_names = [c.concept.name for c in comp.components]
+    active = bool(comp_names) and not all(_is_placebo(n) for n in comp_names)
     pre = arm.initiation_before
     lower = f"c.t0 - {_interval(pre)}" if pre else "c.t0"
-    components = list({_norm(c.concept.name): c for c in arm.components}.values())
-    if len(components) < len(arm.components):
-        notes.append(f"'{arm.label}' lists the same component more than once; counted once")
-    for comp in components:
-        ids = ctx.ids_for(f"T:{arm.label}:{comp.concept.name}", comp.concept)
-        if not ids:
-            notes.append(f"frame not compiled: treatment '{comp.concept.name}' has no approved "
-                         "concept set")
-            return None
-        dom = Domain(comp.concept.domain)
-        table, col, _, _ = EVENT_TABLE[dom]
-        x = _time("r", dom)
-        starts.append(f"(SELECT min({x}) FROM {table} r WHERE r.person_id = c.person_id AND "
-                      f"{_in_set(f'r.{col}', ids, spec.descendants)} AND {x} >= {lower})")
-    if not starts:
-        notes.append("frame not compiled: the treatment arm has no components")
+    rx = _initiation(ctx, arm, lower, notes)
+    if rx is None:
         return None
-    rx = starts[0] if len(starts) == 1 else f"greatest({', '.join(starts)})"
-    if len(starts) > 1:
-        notes.append(f"initiation of '{arm.label}' is when all {len(starts)} components have "
-                     "started")
-    notes.append(f"treated: '{arm.label}' initiated after time zero and before follow-up ends; "
-                 f"comparator '{comparators[0].label}' is no initiation")
+    cx = grace = None
+    if not active:
+        if comp_names:
+            notes.append(f"comparator components {', '.join(comp_names)}: placebo or usual "
+                         "care has no real-world record, so the comparator is no initiation")
+        notes.append(f"treated: '{arm.label}' initiated after time zero and before follow-up "
+                     f"ends; comparator '{comp.label}' is no initiation")
+    else:
+        grace = arm.grace_period or comp.grace_period
+        if grace is None:
+            notes.append("frame not compiled: an active comparator needs a grace period (the "
+                         "window after time zero in which either strategy starts)")
+            return None
+        cx = _initiation(ctx, comp, lower, notes)
+        if cx is None:
+            return None
+        notes.append(f"active comparator: '{arm.label}' vs '{comp.label}'. Eligible patients "
+                     f"who start either within {grace.amount:g} {grace.unit}(s) of time zero "
+                     "are assigned to the one they start first; patients who start neither, "
+                     "or both at the same time, are left out. Follow-up starts at that "
+                     "initiation (new-user, active-comparator design); confounders are read "
+                     "at time zero.")
     if pre:
         notes.append(f"initiation up to {pre.amount:g} {pre.unit}(s) before time zero counts as "
                      "initiation at time zero (the strategy starts before the defining event)")
+    t = "c.fu_start" if active else "c.t0"
 
     primaries = [o for o in p.outcomes if o.primary]
     if not primaries:
@@ -618,7 +691,7 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
             x = _time("r", dom)
             parts.append(f"(SELECT min({x}) FROM {table} r WHERE r.person_id = c.person_id AND "
                          f"{_in_set(f'r.{col}', ev.concept_ids, spec.descendants)} "
-                         f"AND {x} > c.t0)")  # fmt: skip
+                         f"AND {x} > {t})")  # fmt: skip
         if spec.outcome.death:
             parts.append(death)
         if not parts:
@@ -635,7 +708,7 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
         table, col, _, _ = EVENT_TABLE[dom]
         x = _time("r", dom)
         outcome = (f"(SELECT min({x}) FROM {table} r WHERE r.person_id = c.person_id AND "
-                   f"{_in_set(f'r.{col}', ids, spec.descendants)} AND {x} > c.t0)")
+                   f"{_in_set(f'r.{col}', ids, spec.descendants)} AND {x} > {t})")
         notes.append(f"outcome '{primary.name}': first {dom} record after time zero; death "
                      "censors")
     elif _death_only(primary.name):
@@ -651,8 +724,9 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
     if end_event:
         notes.append(f"end event '{end_event}' is not compiled yet: follow-up runs to the "
                      "horizon or the end of observation")
-    notes.append(f"follow-up: {h.amount:g} {h.unit}(s) from time zero, ended early by the end "
-                 "of the observation period")
+    notes.append(f"follow-up: {h.amount:g} {h.unit}(s) from "
+                 f"{'initiation' if active else 'time zero'}, ended early by the end of the "
+                 "observation period")
 
     conf_cols, conf_sql = [], []
     for ref in p.assignment.confounders:
@@ -695,27 +769,56 @@ def _frame(ctx: _Ctx, notes: list[str]) -> tuple[str, list[str]] | None:
     ends = "c.death_time, c.admin_end" if outcome is None else \
         "c.death_time, c.outcome_time, c.admin_end"  # fmt: skip
     select_conf = "".join(f",\n       {s}" for s in conf_sql)
-    sql = f""",
+    if active:
+        ok = "{0} IS NOT NULL AND {0} <= c.t0 + " + _interval(grace)
+        rx_ok, cx_ok = ok.format("c.rx_start"), ok.format("c.cx_start")
+        first = f"""fu0 AS (
+  SELECT c.*, {rx} AS rx_start, {cx} AS cx_start
+  FROM cohort c WHERE c.eligible
+),
+ac AS (
+  SELECT c.*, CASE WHEN {rx_ok} AND NOT coalesce({cx_ok} AND c.cx_start <= c.rx_start, FALSE)
+                   THEN 1
+                   WHEN {cx_ok} AND NOT coalesce({rx_ok} AND c.rx_start <= c.cx_start, FALSE)
+                   THEN 0 END AS arm
+  FROM fu0 c
+),
 fu AS (
+  SELECT c.*, greatest(c.t0, CASE WHEN c.arm = 1 THEN c.rx_start ELSE c.cx_start END)
+              AS fu_start
+  FROM ac c WHERE c.arm IS NOT NULL
+),
+fu2 AS (
+  SELECT c.*, {death} AS death_time{f', {outcome} AS outcome_time' if outcome else ''},
+         least({t} + {_interval(h)}, c.obs_end) AS admin_end
+  FROM fu c
+),"""  # fmt: skip
+        treated, treat_start = "c.arm", "0.0"
+    else:
+        first = f"""fu2 AS (
   SELECT c.*, {death} AS death_time{f', {outcome} AS outcome_time' if outcome else ''},
          least(c.t0 + {_interval(h)}, c.obs_end) AS admin_end,
          {rx} AS rx_start
   FROM cohort c WHERE c.eligible
-),
+),"""  # fmt: skip
+        treated = "CAST(coalesce(c.rx_start < c.end_time, FALSE) AS INTEGER)"
+        treat_start = (f"CASE WHEN c.rx_start < c.end_time "
+                       f"THEN greatest({_days('c.t0', 'c.rx_start')}, 0) END")  # fmt: skip
+    sql = f""",
+{first}
 o AS (
   SELECT c.*, least({ends}) AS end_time,
          coalesce({ev} = least({ends}), FALSE) AS hit
-  FROM fu c
+  FROM fu2 c
 )
 SELECT c.person_id{select_conf},
-       CAST(coalesce(c.rx_start < c.end_time, FALSE) AS INTEGER) AS treated,
-       CASE WHEN c.rx_start < c.end_time
-            THEN greatest({_days('c.t0', 'c.rx_start')}, 0) END AS treat_start,
-       {_days('c.t0', 'c.end_time')} AS time,
+       {treated} AS treated,
+       {treat_start} AS treat_start,
+       {_days(t, 'c.end_time')} AS time,
        CAST(c.hit AS INTEGER) AS event,
        CASE WHEN c.hit THEN '{label}'
             WHEN coalesce(c.death_time = c.end_time, FALSE) THEN 'death'
-            WHEN c.end_time = c.t0 + {_interval(h)} THEN 'end_of_follow_up'
+            WHEN c.end_time = {t} + {_interval(h)} THEN 'end_of_follow_up'
             ELSE 'end_of_observation' END AS end_reason
 FROM o c
 ORDER BY c.person_id"""  # fmt: skip
@@ -759,6 +862,16 @@ def compile_protocol(protocol: TargetTrialProtocol, spec: CompileSpec) -> Compil
         else "concept sets are used as given (no descendants)",
         "criteria that are not compiled are left out of 'eligible' and listed above",
     ]  # fmt: skip
+    for ev in spec.time_zero_after:
+        w = spec.time_zero_window
+        v = (f" with value {ev.value.comparator} {ev.value.value:g}"
+             + (f" {ev.value.unit}" if ev.value.unit else "")) if ev.value and \
+            ev.value.value is not None else ""  # fmt: skip
+        assumptions.insert(1, f"time zero waits for the first {ev.domain} record of "
+                              f"{{{_ids(ev.concept_ids)}}}{v} from {lb.amount:g} {lb.unit}(s) "
+                              f"before to {w.amount:g} {w.unit}(s) after the time-zero event"
+                              + (f" ({ev.note})" if ev.note else "")
+                              + "; without one, a person has no time zero")  # fmt: skip
     for name, ev in spec.anchors.items():
         assumptions.append(f"anchor '{name}': {ev.occurrence} {ev.domain} record of "
                            f"{{{_ids(ev.concept_ids)}}} up to time zero")
@@ -768,7 +881,10 @@ def compile_protocol(protocol: TargetTrialProtocol, spec: CompileSpec) -> Compil
         ctes=ctes, cohort_sql=cohort_sql, assumptions=assumptions, frame_notes=notes,
         horizon_days=_days_of(_horizon(protocol)) if frame else None,
         frame_sql=f"WITH {ctes}{frame[0]}" if frame else None,
-        frame_columns=frame[1] if frame else [])  # fmt: skip
+        frame_columns=frame[1] if frame else [],
+        design=(None if not frame else "active_comparator"
+                if any(n.startswith("active comparator:") for n in notes)
+                else "no_initiation"))  # fmt: skip
 
 
 def spec_template(protocol: TargetTrialProtocol) -> dict:

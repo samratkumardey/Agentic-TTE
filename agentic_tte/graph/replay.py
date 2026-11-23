@@ -114,6 +114,7 @@ class ReplayState(TypedDict, total=False):
     audit_md: str
     audit_rounds: int  # failed audits so far
     audit_override: dict  # {"checks": [...], "reason": ..., "reviewer": ..., "auto": bool}
+    autonomy_md: str  # the autonomous rules' choices (concepts from the data, time zero)
     repair: dict  # the Repair agent's report (rules applied, flags)
     repair_md: str
     clinician: dict  # the Clinician's confounder sheet
@@ -155,6 +156,8 @@ class AutoApprove(BaseModel):
     - signoff: approve if ``sign_off``;
     - a failed Protocol Auditor: ``audit="override"`` accepts the findings (labelled in the
       report), ``"stop"`` ends the run;
+    - with ``spec`` left out and the graph built with ``autonomy``, time zero is set by rule
+      (``agents.autonomy.time_zero_spec``);
     - the Clinician's surrogate proposals: kept only if ``accept_surrogates`` (labelled in the
       note), otherwise unmappable;
     - the Clinician's balance advice at design review: applied only if ``accept_balance``
@@ -171,6 +174,7 @@ class AutoApprove(BaseModel):
     audit: Literal["override", "stop"] = "override"
     accept_surrogates: bool = False
     accept_balance: bool = False
+    autonomous: bool = False  # the primary arm (SCORING.md item 34): time zero by rule
 
     def answer(self, stage: Stage, payload: dict) -> dict:
         if stage == "design" and payload.get("balance"):
@@ -181,8 +185,9 @@ class AutoApprove(BaseModel):
         if stage == "design":
             return {**self.design, "reviewer": self.reviewer}
         if stage == "concepts":
-            if self.spec is None:
-                raise ValueError("auto-approving concepts needs a compile spec (time zero)")
+            if self.spec is None and not self.autonomous:
+                raise ValueError("auto-approving concepts needs a compile spec (time zero), "
+                                 "or autonomous=True (time zero by rule)")
             decisions = {}
             for key, d in payload["decisions_template"]["decisions"].items():
                 if key in self.overrides:
@@ -236,7 +241,7 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                  budget: Budget | None = None, balance_advice: bool = False,
                  s8: bool = False, clinician_sheet=None,
                  clinician_source: str | None = None, repair: bool = False,
-                 contrast: str | None = None):  # fmt: skip
+                 contrast: str | None = None, autonomy: bool = False):  # fmt: skip
     """Compile the Replay graph over an open OMOP connection. A checkpointer is needed for
     the human reviews (``InMemorySaver`` in tests, ``SqliteSaver`` for the CLI); with
     ``auto`` covering every stage, the run needs none. ``abbreviations``: an
@@ -253,7 +258,10 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
     ``clinician_sheet``: a ``ConfounderSheet`` the Clinician already wrote for this trial, used
     instead of a new call (no LLM needed); ``clinician_source`` names it in the log.
     ``repair``: the Repair agent's rules run on the draft before design review; ``contrast``
-    is the trial's published comparison ("A vs B"), used only to pick the arms."""
+    is the trial's published comparison ("A vs B"), used only to pick the arms.
+    ``autonomy``: the autonomous arm's rules (SCORING.md item 34): concept proposals with no
+    records in the data move to candidates that have them (``choose_in_data``), and a concept
+    answer without a compile spec gets time zero from ``time_zero_spec``."""
     context = context or DataContext()
     with_clinician = literature is not None or clinician_sheet is not None
     sup = Supervisor(budget, clinician=with_clinician, balance_advice=balance_advice,
@@ -388,6 +396,15 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         book = propose(con, p, abbreviations=abbreviations)
         out = {"book": book.model_dump(mode="json"), "log": [f"concepts proposed: "
                                                              f"{book.summary()}"]}  # fmt: skip
+        if autonomy:
+            from agentic_tte.agents.autonomy import check_visits, choose_in_data
+
+            check_visits(con)
+            book, notes = choose_in_data(con, book, p)
+            out |= {"book": book.model_dump(mode="json"),
+                    "autonomy_md": notes.to_markdown("Concepts chosen from the data"),
+                    "log": [*out["log"], f"data rules ({notes.rules}): {len(notes.notes)} "
+                                         f"change(s); now {book.summary()}"]}  # fmt: skip
         if surrogates:
             from agentic_tte.agents.surrogates import Surrogates
 
@@ -423,10 +440,22 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
                                "proposals: keep, change or replace them.")
         answer, is_auto = review("concepts", payload)
         reviewed = apply_decisions(book, answer["decisions"])
+        extra = {}
+        if answer.get("spec") is None:
+            if not autonomy:
+                raise ValueError("the concept answer needs a compile spec (time zero)")
+            from agentic_tte.agents.autonomy import time_zero_spec
+
+            answer["spec"], tz = time_zero_spec(p, reviewed.gate_sets())
+            extra = {"autonomy_md": (state.get("autonomy_md") or "")
+                     + tz.to_markdown("Time zero by rule"),
+                     "log": [f"time zero by rule ({tz.rules}): "
+                             f"{len(answer['spec']['time_zero_after'])} event(s)"]}  # fmt: skip
         spec = CompileSpec.model_validate({**answer["spec"], "concept_sets": {
             **reviewed.gate_sets(), **(answer["spec"].get("concept_sets") or {})}})
         v = apply_to_protocol(p, reviewed)
-        return {**_version(v, f"concept sets reviewed: {reviewed.summary()}"),
+        out = _version(v, f"concept sets reviewed: {reviewed.summary()}")
+        return {**out, **extra, "log": [*out["log"], *extra.get("log", [])],
                 "book": reviewed.model_dump(mode="json"), "spec": spec.model_dump(mode="json"),
                 "reviews": [_record("concepts", answer, is_auto, str(reviewed.summary()))]}
 
@@ -546,7 +575,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         frame = con.execute(cc.frame_sql).df()  # stays here; only aggregates go to the state
         confounders = _confounders(cc)
         res = analyze(frame, _p(state), confounders=confounders, horizon_days=cc.horizon_days,
-                      n_bootstrap=n_bootstrap)  # fmt: skip
+                      n_bootstrap=n_bootstrap,
+                      active_comparator=cc.design == "active_comparator")  # fmt: skip
         p = res.primary
         msg = f"primary {res.primary_method}: HR {p.hr:.3f} ({p.lower:.3f}-{p.upper:.3f})" \
             if p else "no estimate"  # fmt: skip
@@ -573,6 +603,8 @@ def build_replay(con, *, llm=None, ctgov=None, context: DataContext | None = Non
         parts += ["", sup.to_markdown(state).rstrip()]
         if state.get("repair_md"):
             parts += ["", state["repair_md"].rstrip()]
+        if state.get("autonomy_md"):
+            parts += ["", state["autonomy_md"].rstrip()]
         if state.get("clinician_md"):
             parts += ["", state["clinician_md"].rstrip()]
         if state.get("surrogates_md"):

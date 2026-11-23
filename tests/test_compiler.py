@@ -391,3 +391,39 @@ def test_per_mm3_thresholds_convert_data_recorded_in_thousands():
     assert met(df, "c_e1") == [1, 3, 4]
     assert any("converted to /mm3" in w for w in cc.criteria[0].warnings)
     assert unit_factors("cells/mm³") and unit_factors("per µL") and not unit_factors("mmol/L")
+
+
+def test_active_comparator_frame_assigns_the_first_strategy_started():
+    # Drug 300 (A) vs drug 301 (B), within a 2-day grace period. p1 starts A at +1 d and B
+    # at +2 d (A first); p4 starts B at +2 h; p6 starts both at +1 h (a tie: left out).
+    con = _db()
+    con.execute("DELETE FROM drug_exposure")
+    for pid, cid, t in ((1, 300, T0 + D), (1, 301, T0 + 2 * D), (4, 301, T0 + 2 * H),
+                        (6, 300, T0 + H), (6, 301, T0 + H)):
+        con.execute("INSERT INTO drug_exposure (person_id, drug_concept_id, "
+                    "drug_exposure_start_datetime, drug_exposure_start_date) VALUES (?, ?, ?, ?)",
+                    [pid, cid, t, t.date()])
+    grace = Duration(amount=2, unit="day")
+    p = TargetTrialProtocol(
+        protocol_id="T", eligibility=[crit("A", "inclusion", atom(ref("x", "Condition", 100)))],
+        treatment_strategies=[
+            TreatmentStrategy(label="A", grace_period=grace, components=[TreatmentComponent(
+                concept=ref("drug a", "Drug", 300))]),
+            TreatmentStrategy(label="B", is_comparator=True, components=[TreatmentComponent(
+                concept=ref("drug b", "Drug", 301))])],
+        assignment=AssignmentProcedure(confounders=[ref("age", "Demographic")]),
+        outcomes=[Outcome(name="organ failure", primary=True, concept=ref("of", "Condition", 500),
+                          horizon=Duration(amount=28, unit="day"))])  # fmt: skip
+    cc = compile_protocol(p, SPEC)
+    assert any("active comparator" in n for n in cc.frame_notes)
+    f = con.execute(cc.frame_sql).df().set_index("person_id")
+    assert sorted(f.index) == [1, 4]
+    assert f.loc[1, "treated"] == 1 and f.loc[4, "treated"] == 0
+    assert (f.treat_start == 0).all()
+    # p1's outcome at +4 d is 3 days after starting A; p4 is followed 28 days from +2 h.
+    assert f.loc[1, "event"] == 1 and f.loc[1, "time"] == pytest.approx(3.0)
+    assert f.loc[4, "end_reason"] == "end_of_follow_up" and f.loc[4, "time"] == pytest.approx(28)
+    # Without a grace period the frame is not compiled, and says why.
+    p.treatment_strategies[0].grace_period = None
+    cc = compile_protocol(p, SPEC)
+    assert cc.frame_sql is None and any("needs a grace period" in n for n in cc.frame_notes)

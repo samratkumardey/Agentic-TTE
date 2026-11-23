@@ -758,7 +758,8 @@ def _replay_graph(run: dict, llm=None):
                                            f"{run['clinician_sheet_sha256'][:12]})"
                                            if sheet else None),
                          repair=bool(run.get("repair")),
-                         contrast=run.get("contrast"))  # fmt: skip
+                         contrast=run.get("contrast"),
+                         autonomy=bool(run.get("autonomy")))  # fmt: skip
     return graph, {"configurable": {"thread_id": "replay"}}
 
 
@@ -870,6 +871,10 @@ def replay_start(
     contrast: str = typer.Option(None, help="The published contrast 'A vs B' for the Repair "
                                             "agent; default: the trial's entry in "
                                             "eval/reference/replay_reference_values.json."),
+    autonomy: bool = typer.Option(False, help="The autonomous arm's rules (SCORING.md item "
+                                              "34): concepts chosen from record counts, and "
+                                              "time zero by rule when the concept answer has "
+                                              "no spec."),
 ):
     """Start a Replay. It stops at each clinician review; continue with `replay resume`."""
     if (nct is None) == (protocol is None):
@@ -910,6 +915,7 @@ def replay_start(
         run |= {"repair": True, "contrast": contrast or _reference_contrast(trial)}
         typer.echo(f"Repair agent on; contrast: {run['contrast'] or 'none (arms flagged)'}",
                    err=True)  # fmt: skip
+    run["autonomy"] = autonomy
     (out / "run.json").write_text(json.dumps(run, indent=2), encoding="utf-8")
     if nct is not None or literature is not None or surrogates or balance_advice:
         from agentic_tte.llm import make_client

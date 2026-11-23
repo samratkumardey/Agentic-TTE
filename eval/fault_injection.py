@@ -85,7 +85,8 @@ def run_design(con, p: TargetTrialProtocol, spec: CompileSpec, approved: dict) -
     frame = con.execute(cc.frame_sql).df()
     conf = cc.frame_columns[1:cc.frame_columns.index("treated")]
     try:
-        res = analyze(frame, p, confounders=conf, horizon_days=cc.horizon_days)
+        res = analyze(frame, p, confounders=conf, horizon_days=cc.horizon_days,
+                      active_comparator=cc.design == "active_comparator")
     except Exception as e:  # noqa: BLE001 - a fault may break the analysis; that is a result
         out["notes"] = [f"analysis failed: {type(e).__name__}: {str(e)[:80]}"]
         return out

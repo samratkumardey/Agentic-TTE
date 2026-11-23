@@ -28,6 +28,18 @@ Rules:
   loses what it cannot compile: a value on a non-measurement concept (a duration or a dose) or
   a qualitative value is removed; a cumulative duration becomes a window before time zero.
   Exclusions are left as drafted: one that does not compile removes no one and is reported.
+
+Added in repair-v2 (SCORING.md item 34, before any core run):
+- R-arm-standard: a comparator whose components are all standard fluids (saline, sodium
+  chloride, crystalloids, Ringer's, balanced solutions) is no initiation of the study fluid:
+  nearly every ICU patient gets standard fluids, so starting them defines no strategy.
+- R-arm-timing: a comparator that is the treatment's own intervention at another time
+  ("standard" vs "accelerated" RRT initiation) is no initiation within the grace period.
+- R-grace: a treatment arm with no grace period gets ``DEFAULT_GRACE`` (24 hours), origin
+  default, so initiation after time zero is handled (clone-censor-weight or the active-
+  comparator frame) rather than counted from the future.
+- R-anchor: an atom whose anchor is the name of a temporal relation ("x_at_time_of_y"), a
+  drafting slip, is anchored at time zero.
 """
 
 from __future__ import annotations
@@ -40,7 +52,16 @@ from pydantic import BaseModel, Field
 from agentic_tte.agents.concordance import _null, _words
 from agentic_tte.protocol import TargetTrialProtocol
 
-RULES_VERSION = "repair-v1"
+RULES_VERSION = "repair-v2"
+DEFAULT_GRACE = {"amount": 24, "unit": "hour"}
+_STANDARD_FLUID = re.compile(r"^(?:(?:0\.9 ?%|normal|isotonic|physiological) )?(?:saline|sodium "
+                             r"chloride(?: 0\.9 ?%)?|crystalloids?(?: solutions?)?|(?:lactated )?"
+                             r"ringer'?s?(?: lactate| solution)?|balanced (?:crystalloids?|"
+                             r"solutions?|salt solutions?)|plasma-?lyte)$")
+_TIMING = {"early", "accelerated", "immediate", "delayed", "standard", "late", "deferred",
+           "conventional", "initiation", "strategy", "start", "timing"}
+_RELATIONS = {"x_within_t_before_y", "x_within_t_after_y", "x_before_y", "x_after_y",
+              "x_at_time_of_y", "cumulative_duration"}
 _NULL_TYPES = {"PLACEBO_COMPARATOR", "NO_INTERVENTION", "SHAM_COMPARATOR"}
 _PLACEBO_OF = re.compile(r"placebos? (?:of |for )?(?:the )?([a-z0-9 /-]+?)(?=,|;| and | plus |"
                          r" with |\.|$)")
@@ -135,14 +156,54 @@ def _background(t: dict, c: dict, given_c: set[str], rep: RepairReport) -> None:
                                   f"'{c['label']}' also gets, {gone}: background, removed"))
 
 
+def _standard(name: str) -> bool:
+    return bool(_STANDARD_FLUID.match(" ".join(name.lower().split())))
+
+
+def _timing_words(arm: dict) -> set[str]:
+    return set().union(set(), *(_terms(c["concept"]["name"]) for c in arm["components"]))
+
+
+def _comparator_rules(t: dict, c: dict, rep: RepairReport) -> None:
+    names = [x["concept"]["name"] for x in c["components"]]
+    if not names or _is_null(c):
+        return
+    why = None
+    if all(_standard(n) for n in names):  # R-arm-standard
+        rule, why = "R-arm-standard", (f"standard fluids {names}: nearly every patient gets "
+                                       "them, so the comparator is no initiation of the "
+                                       "study fluid")  # fmt: skip
+    else:  # R-arm-timing
+        wt, wc = _timing_words(t) - _TIMING, _timing_words(c) - _TIMING
+        if wt and wt == wc and _timing_words(t) != _timing_words(c):
+            rule, why = "R-arm-timing", (f"the same intervention at another time ({names}): "
+                                         "the comparator is no initiation within the grace "
+                                         "period")  # fmt: skip
+    if why:
+        c["components"] = []
+        rep.repairs.append(Repair(rule=rule, element="treatment_strategies", target=c["label"],
+                                  what=why))
+
+
 def _arms(arms: list[dict], contrast: str | None, rep: RepairReport) -> list[dict]:
     arms = _pairs(arms, contrast, rep)
     t = [a for a in arms if not a["is_comparator"]]
     c = [a for a in arms if a["is_comparator"]]
     if len(t) == 1 and len(c) == 1:
-        if not _is_null(c[0]):
-            rep.flagged.append(f"the comparator '{c[0]['label']}' is an active treatment: the "
-                               "compiler needs an active-comparator frame")
+        _comparator_rules(t[0], c[0], rep)
+        if not t[0].get("grace_period"):  # R-grace
+            t[0]["grace_period"] = dict(DEFAULT_GRACE)
+            t[0]["grace_period_origin"] = "default"
+            t[0]["grace_period_evidence"] = (f"{RULES_VERSION} R-grace: no grace period "
+                                             "drafted; the default is used")  # fmt: skip
+            rep.repairs.append(Repair(rule="R-grace", element="treatment_strategies",
+                                      target=t[0]["label"],
+                                      what=f"no grace period: {DEFAULT_GRACE['amount']} "
+                                           f"{DEFAULT_GRACE['unit']}s (default)"))  # fmt: skip
+        if not _is_null(c[0]) and c[0]["components"]:
+            rep.flagged.append(f"the comparator '{c[0]['label']}' is an active treatment: "
+                               "the active-comparator frame is used (patients who start "
+                               "either within the grace period, by the one started first)")
     return arms
 
 
@@ -272,6 +333,20 @@ def _amendments(criteria: list[dict], rep: RepairReport) -> list[dict]:
     return out
 
 
+def _anchors(criteria: list[dict], rep: RepairReport) -> list[dict]:
+    out = json.loads(json.dumps(criteria))
+    for c in out:
+        for i, a in enumerate(c["atoms"], 1):
+            t = a.get("temporal")
+            if t and str(t.get("anchor") or "").strip().lower() in _RELATIONS:
+                rep.repairs.append(Repair(rule="R-anchor", element="eligibility",
+                                          target=f"{c['id']}.{i}" if len(c["atoms"]) > 1
+                                          else c["id"], what=f"anchor '{t['anchor']}' is a "
+                                          "relation's name: anchored at time zero"))  # fmt: skip
+                t["anchor"] = "time zero"
+    return out
+
+
 def _values(criteria: list[dict], rep: RepairReport) -> list[dict]:
     from agentic_tte.omop.compiler import T0_ALIASES, design_problem
     from agentic_tte.omop.compiler import _norm as cnorm
@@ -319,7 +394,7 @@ def repair_design(protocol: TargetTrialProtocol,
     rep = RepairReport(contrast=contrast)
     p = protocol.model_dump(mode="json")
     arms = _arms(json.loads(json.dumps(p["treatment_strategies"])), contrast, rep)
-    elig = _values(_amendments(p["eligibility"], rep), rep)
+    elig = _values(_anchors(_amendments(p["eligibility"], rep), rep), rep)
     changes = {}
     if arms != p["treatment_strategies"]:
         changes["treatment_strategies"] = arms

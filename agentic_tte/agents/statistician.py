@@ -130,9 +130,12 @@ def _est(hr, method: str) -> Estimate:
 
 
 def analyze(frame: pd.DataFrame, protocol: TargetTrialProtocol, *, confounders: list[str],
-            horizon_days: float | None = None, n_bootstrap: int = 0) -> AnalysisResult:  # fmt: skip
+            horizon_days: float | None = None, n_bootstrap: int = 0,
+            active_comparator: bool = False) -> AnalysisResult:  # fmt: skip
     """Estimate the treatment effect in an analysis frame (``treated``, ``treat_start``,
-    ``time``, ``event`` and the confounder columns)."""
+    ``time``, ``event`` and the confounder columns). ``active_comparator``: the frame follows
+    each patient from the strategy started first (``CompiledCohort.design``), so there is no
+    time between time zero and initiation to handle and clone-censor-weight does not apply."""
     d = frame.dropna(subset=confounders).reset_index(drop=True)
     res = AnalysisResult(n_frame=len(frame), n_analysed=len(d),
                          dropped_missing=len(frame) - len(d), confounders=confounders,
@@ -150,7 +153,12 @@ def analyze(frame: pd.DataFrame, protocol: TargetTrialProtocol, *, confounders: 
     grace = arm.grace_period if arm else None
     grace_days = grace.amount * _DAYS[grace.unit] if grace else None
     plan = protocol.analysis_plan
-    if plan.immortal_time_handling == "clone_censor_weight" or (
+    if active_comparator:
+        primary = "psm" if protocol.assignment.method == "psm" else "iptw"
+        res.notes.append("active comparator: each patient is followed from the strategy "
+                         f"started first; {primary.upper()} is the primary method "
+                         "(clone-censor-weight is for initiation vs no initiation)")
+    elif plan.immortal_time_handling == "clone_censor_weight" or (
             plan.immortal_time_handling == "auto" and grace_days):  # fmt: skip
         primary = "clone-censor-weight"
     elif protocol.assignment.method == "psm":

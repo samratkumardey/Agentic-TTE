@@ -1,0 +1,13 @@
+{
+  "stages": ["design", "concepts", "gate", "signoff"],
+  "reviewer": "auto-approve (autonomous arm, SCORING.md item 34; no human review)",
+  "design": {},
+  "spec": null,
+  "overrides": {},
+  "proceed_on_amber": true,
+  "sign_off": true,
+  "audit": "stop",
+  "accept_surrogates": false,
+  "accept_balance": true,
+  "autonomous": true
+}
