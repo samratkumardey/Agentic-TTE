@@ -22,7 +22,8 @@ Semantics (every one is listed in the compile report):
 - Measurements: "at the time of" and unconstrained use the latest value within
   ``measurement_lookback`` before the anchor; windowed relations accept any value in the window.
   A missing value means the criterion is not met. Thresholds per mm3 are compared with values
-  recorded in thousands per microlitre (``UNIT_CONVERSIONS``); other units are not converted.
+  recorded in thousands per microlitre, and creatinine thresholds in µmol/L with values in
+  mg/dL (``UNIT_CONVERSIONS``); other units are not converted.
 - The frame: against a placebo, usual-care or no-treatment comparator, the comparator is no
   initiation. Against an active comparator, patients who start either strategy within the
   grace period are assigned to the one they start first and followed from that start (a
@@ -94,7 +95,14 @@ _DEATH_WORDS = ("mortality", "death", "deaths", "survival", "died", "dying")
 _DEATH_QUALIFIERS = {"in", "hospital", "all", "cause", "day", "days", "month", "months", "year",
                      "years", "week", "weeks", "rate", "rates", "risk", "incidence", "or",
                      "and", "at", "of", "the", "by", "to", "within", "from", "overall", "icu",
-                     "time", "any", "total", "crude", "proportion"}  # fmt: skip
+                     "time", "any", "total", "crude", "proportion", "after", "post",
+                     "following", "randomisation", "randomization", "inclusion", "enrollment",
+                     "enrolment", "admission", "discharge", "causes", "reduction", "number",
+                     "d", "j"}  # fmt: skip
+# "... of ARDS patients": the population a mortality outcome is measured in, not another event.
+_POPULATION = re.compile(r"\b(?:of|in|among) (?:[a-z0-9]+ ){1,3}?(?:patients|participants|"
+                         r"subjects)\b")
+_DAY = re.compile(r"^[dj]\d+$")  # d90, j28
 _PLACEBO = ("placebo", "sham", "vehicle", "usual care", "standard care", "standard of care",
             "no treatment", "no intervention", "best supportive care")  # fmt: skip
 _CHANGE = re.compile(r"\b(increase|increased|rise|rising|elevation|decrease|decreased|drop|fall|"
@@ -107,8 +115,11 @@ def _death_only(name: str) -> bool:
     words = _norm(name).split()
     if not any(w in _DEATH_WORDS for w in words):
         return False
+    words = _POPULATION.sub(" ", " ".join(words)).split()
+    if not any(w in _DEATH_WORDS for w in words):
+        return False
     rest = [w for w in words if w not in _DEATH_WORDS and w not in _DEATH_QUALIFIERS
-            and not w.isdigit()]  # fmt: skip
+            and not w.isdigit() and not _DAY.match(w)]  # fmt: skip
     return not rest
 
 
@@ -260,24 +271,30 @@ def _column(name: str) -> str:
     return c if c and not c[0].isdigit() else f"v_{c}"
 
 
-# Unit conversion for measurement thresholds (SCORING.md Phase 3 item 33): a criterion's unit
-# (as drafted) -> the factor that turns a value recorded in a data unit (the unit concept's
-# name, lower case) into the criterion's unit. Only conversions that are exact by definition;
-# any other unit is read as it is, with a warning.
+# Unit conversion for measurement thresholds (SCORING.md Phase 3 items 33, 34): a criterion's
+# unit (as drafted), and for a molar unit the analyte -> the factor that turns a value recorded
+# in a data unit (the unit concept's name, lower case) into the criterion's unit. Only
+# conversions fixed by definition or by the analyte's molar mass (creatinine, 113.12 g/mol:
+# 1 mg/dL = 88.4 µmol/L); any other unit is read as it is, with a warning.
 _PER_MM3 = re.compile(r"^(?:cells? ?)?(?:per|/) ?(?:mm3|mm\^3|mm³|cubic millimet(?:er|re)s?|"
                       r"(?:µ|u|micro)l(?:iter|itre)?)$")
-UNIT_CONVERSIONS: list[tuple[re.Pattern, dict[str, float]]] = [
-    (_PER_MM3, {"thousand per microliter": 1000.0, "thousand per cubic millimeter": 1000.0,
-                "billion per liter": 1000.0, "10*3/ul": 1000.0, "10^3/ul": 1000.0,
-                "k/ul": 1000.0, "per microliter": 1.0, "per cubic millimeter": 1.0}),
+_UMOL_L = re.compile(r"^(?:µ|u|micro)mol(?:e|es)? ?(?:/|per) ?l(?:iter|itre)?$")
+UNIT_CONVERSIONS: list[tuple[re.Pattern, re.Pattern | None, dict[str, float]]] = [
+    (_PER_MM3, None, {"thousand per microliter": 1000.0, "thousand per cubic millimeter": 1000.0,
+                      "billion per liter": 1000.0, "10*3/ul": 1000.0, "10^3/ul": 1000.0,
+                      "k/ul": 1000.0, "per microliter": 1.0, "per cubic millimeter": 1.0}),
+    (_UMOL_L, re.compile(r"creatinin", re.I),
+     {"milligram per deciliter": 88.4, "mg/dl": 88.4, "micromole per liter": 1.0,
+      "umol/l": 1.0}),
 ]  # fmt: skip
 
 
-def unit_factors(unit: str | None) -> dict[str, float] | None:
-    """Data unit name -> factor into the criterion's ``unit``, or None (no conversion known)."""
+def unit_factors(unit: str | None, analyte: str = "") -> dict[str, float] | None:
+    """Data unit name -> factor into the criterion's ``unit``, or None (no conversion known).
+    ``analyte`` (the measurement's name) selects analyte-specific conversions."""
     u = " ".join((unit or "").lower().split())
-    for pattern, factors in UNIT_CONVERSIONS:
-        if pattern.match(u):
+    for pattern, which, factors in UNIT_CONVERSIONS:
+        if pattern.match(u) and (which is None or which.search(analyte or "")):
             return factors
     return None
 
@@ -469,7 +486,8 @@ def _record(ctx: _Ctx, dom: Domain, ids: list[int], atom: CriterionAtom,
         where.append(f"{x} <= b.t0")  # no look-ahead, whatever the anchor
     concept_txt = f"{dom} {{{_ids(ids)}}}" + ("+descendants" if ctx.spec.descendants else "")
     v = atom.value
-    factors = unit_factors(v.unit) if v is not None and dom == Domain.MEASUREMENT else None
+    factors = (unit_factors(v.unit, " ".join(c.name for c in atom.concepts))
+               if v is not None and dom == Domain.MEASUREMENT else None)  # fmt: skip
     src, val = f"{table} r", "r.value_as_number"
     if factors:
         src = f"{table} r LEFT JOIN concept u ON u.concept_id = r.unit_concept_id"
@@ -541,7 +559,8 @@ def _base_ctes(protocol: TargetTrialProtocol, spec: CompileSpec) -> str:
             src, val = f"{t_} r", ""
             if ev.value is not None and ev.value.value is not None:
                 expr = "r.value_as_number"
-                factors = unit_factors(ev.value.unit) if ev.domain == Domain.MEASUREMENT else None
+                factors = (unit_factors(ev.value.unit, ev.note or "")
+                           if ev.domain == Domain.MEASUREMENT else None)  # fmt: skip
                 if factors:
                     src = f"{t_} r LEFT JOIN concept u ON u.concept_id = r.unit_concept_id"
                     expr = _converted(expr, factors)

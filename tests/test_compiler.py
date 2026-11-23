@@ -391,6 +391,25 @@ def test_per_mm3_thresholds_convert_data_recorded_in_thousands():
     assert met(df, "c_e1") == [1, 3, 4]
     assert any("converted to /mm3" in w for w in cc.criteria[0].warnings)
     assert unit_factors("cells/mm³") and unit_factors("per µL") and not unit_factors("mmol/L")
+    # creatinine in µmol/L against data in mg/dL (item 34); µmol/L of another analyte: no
+    assert unit_factors("µmol/L", "serum creatinine")["milligram per deciliter"] == 88.4
+    assert unit_factors("umol/l", "Creatinine") and not unit_factors("µmol/L", "bilirubin")
+
+
+def test_creatinine_in_micromoles_against_data_in_mg_per_dl():
+    con = _db()
+    con.execute("CREATE TABLE concept AS SELECT * FROM (VALUES (8840, 'milligram per deciliter'))"
+                " t(concept_id, concept_name)")
+    con.execute("DELETE FROM measurement")
+    con.execute("ALTER TABLE measurement ADD COLUMN unit_concept_id INTEGER")
+    for pid, v in ((1, 1.5), (2, 1.0)):  # 132.6 and 88.4 µmol/L
+        con.execute("INSERT INTO measurement (person_id, measurement_concept_id, "
+                    "measurement_datetime, measurement_date, value_as_number, unit_concept_id) "
+                    "VALUES (?, 210, ?, ?, ?, 8840)", [pid, T0 - H, (T0 - H).date(), v])
+    cr = atom(ref("serum creatinine", "Measurement", 210),
+              value=ValueConstraint(comparator=">=", value=130, unit="µmol/L"))
+    _, df = flags([crit("I1", "inclusion", cr)], con=con)
+    assert met(df, "c_i1") == [1]
 
 
 def test_active_comparator_frame_assigns_the_first_strategy_started():

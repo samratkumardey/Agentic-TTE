@@ -40,6 +40,19 @@ Added in repair-v2 (SCORING.md item 34, before any core run):
   comparator frame) rather than counted from the future.
 - R-anchor: an atom whose anchor is the name of a temporal relation ("x_at_time_of_y"), a
   drafting slip, is anchored at time zero.
+
+Added in repair-v3 (SCORING.md item 34, after the counts-only MIMIC check and before any core
+run; repair-v2 never ran a trial):
+- R-amend also drops a criterion that says one was changed or clarified ('"X" was changed for
+  "Y"'; the criterion as listed is kept, flagged), and an amendment heading (a dated line, or
+  one starting "Amendments", that ends with a colon). A criterion an amendment added is kept.
+- R-subgroup: a criterion that names a sub-group and ends with a colon ("On the sub-group of
+  patients included with COVID19:") is a heading, dropped, with the criteria right after it of
+  the same kind that name its condition (they define the sub-group, not the trial).
+- R-name: a treatment component named with timing or action words ("Accelerated RRT
+  initiation", "ECLS insertion") is named without them; when what is left is one
+  abbreviation, it is expanded from the trial's registered title when the title spells it
+  out (Schwartz-Hearst: "Renal Replacement Therapy" for RRT), else kept.
 """
 
 from __future__ import annotations
@@ -52,7 +65,7 @@ from pydantic import BaseModel, Field
 from agentic_tte.agents.concordance import _null, _words
 from agentic_tte.protocol import TargetTrialProtocol
 
-RULES_VERSION = "repair-v2"
+RULES_VERSION = "repair-v3"
 DEFAULT_GRACE = {"amount": 24, "unit": "hour"}
 _STANDARD_FLUID = re.compile(r"^(?:(?:0\.9 ?%|normal|isotonic|physiological) )?(?:saline|sodium "
                              r"chloride(?: 0\.9 ?%)?|crystalloids?(?: solutions?)?|(?:lactated )?"
@@ -69,6 +82,15 @@ _REMOVED = re.compile(r"\b(?:was|were|is|are|has been|have been) (?:removed|dele
                       r"suppressed)\b", re.I)
 _LIST_FOLLOWS = re.compile(r"(?:removed|deleted|withdrawn|suppressed)\s*:\s*$", re.I)
 _DATED = re.compile(r"\b(?:on )?\d{1,2}/\d{1,2}/\d{2,4}\b", re.I)
+_CHANGED = re.compile(r"\b(?:was|were|has been|have been) (?:changed|clarified|modified|"
+                      r"replaced|amended|reworded)\b", re.I)
+_AMEND_HEAD = re.compile(r"^\s*amendments?\b", re.I)
+_SUBGROUP = re.compile(r"\bsub-? ?(?:groups?|stud(?:y|ies)|populations?)\b", re.I)
+_GENERIC = {"group", "groups", "subgroup", "subgroups", "patients", "patient", "included",
+            "inclusion", "study", "studies", "substudy", "population", "sub"}
+_NAME_DROP = {"early", "accelerated", "immediate", "delayed", "late", "deferred", "initiation",
+              "insertion", "placement", "implantation", "start", "timing", "strategy"}
+_ABBR = re.compile(r"^[A-Z][A-Z0-9-]{1,7}$")
 
 
 class Repair(BaseModel):
@@ -185,7 +207,50 @@ def _comparator_rules(t: dict, c: dict, rep: RepairReport) -> None:
                                   what=why))
 
 
-def _arms(arms: list[dict], contrast: str | None, rep: RepairReport) -> list[dict]:
+def _expand(abbr: str, texts: list[str]) -> str | None:
+    """The phrase of the registered title that spells out ``abbr`` (all its words used)."""
+    from agentic_tte.omop.abbreviations import _best_long_form
+
+    letters = re.sub(r"[^a-z0-9]", "", abbr.lower())
+    spans = []
+    for text in texts:
+        words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text or "")
+        spans += [words[i:i + n] for n in range(2, len(abbr) + 2)
+                  for i in range(len(words) - n + 1)]  # fmt: skip
+    for span in spans:  # first: the words' initials are the abbreviation
+        if "".join(w[0].lower() for w in span) == letters:
+            return " ".join(span)
+    for span in spans:  # then Schwartz-Hearst (ExtraCorporeal Life Support)
+        phrase = " ".join(span)
+        if _best_long_form(abbr, phrase) == phrase and phrase[0].lower() == letters[:1]:
+            return phrase
+    return None
+
+
+def _names(arms: list[dict], texts: list[str], rep: RepairReport) -> None:
+    """R-name: treatment components without timing or action words."""
+    for a in arms:
+        if a["is_comparator"]:
+            continue
+        for comp in a["components"]:
+            name = comp["concept"]["name"]
+            tokens = name.split()
+            rest = [w for w in tokens if w.lower().strip(",.;:") not in _NAME_DROP]
+            if not rest or rest == tokens:
+                continue
+            new, how = " ".join(rest), "timing or action words removed"
+            if len(rest) == 1 and _ABBR.match(rest[0]):
+                full = _expand(rest[0], texts)
+                if full:
+                    new, how = full.lower(), (f"timing or action words removed; {rest[0]} as "
+                                              "spelled out in the registered title")  # fmt: skip
+            comp["concept"] = {**comp["concept"], "name": new}
+            rep.repairs.append(Repair(rule="R-name", element="treatment_strategies",
+                                      target=a["label"], what=f"'{name}' -> '{new}' ({how})"))
+
+
+def _arms(arms: list[dict], contrast: str | None, rep: RepairReport,
+          texts: list[str] | None = None) -> list[dict]:  # fmt: skip
     arms = _pairs(arms, contrast, rep)
     t = [a for a in arms if not a["is_comparator"]]
     c = [a for a in arms if a["is_comparator"]]
@@ -204,6 +269,7 @@ def _arms(arms: list[dict], contrast: str | None, rep: RepairReport) -> list[dic
             rep.flagged.append(f"the comparator '{c[0]['label']}' is an active treatment: "
                                "the active-comparator frame is used (patients who start "
                                "either within the grace period, by the one started first)")
+    _names(arms, texts or [], rep)
     return arms
 
 
@@ -329,6 +395,37 @@ def _amendments(criteria: list[dict], rep: RepairReport) -> list[dict]:
                 rep.flagged.append(f"{c['id']} says a criterion was removed ('{text[:80]}'); "
                                    "a kept criterion may be the one it removed")
             continue
+        if _CHANGED.search(text):
+            rep.repairs.append(Repair(rule="R-amend", element="eligibility", target=c["id"],
+                                      what="amendment text (a criterion changed or clarified): "
+                                           "dropped"))  # fmt: skip
+            rep.flagged.append(f"{c['id']} says a criterion was changed ('{text[:80]}'); the "
+                               "criterion as listed is kept: check it is the current version")
+            continue
+        if text.strip().endswith(":") and (_DATED.search(text) or _AMEND_HEAD.match(text)):
+            rep.repairs.append(Repair(rule="R-amend", element="eligibility", target=c["id"],
+                                      what="an amendment heading: dropped"))
+            continue
+        out.append(c)
+    return out
+
+
+def _subgroups(criteria: list[dict], rep: RepairReport) -> list[dict]:
+    """R-subgroup: a sub-group heading and the criteria after it that name its condition."""
+    out, words, kind = [], set(), None
+    for c in criteria:
+        text = (c.get("text") or "").strip()
+        if words and c["kind"] == kind and _terms(text) & words:
+            rep.repairs.append(Repair(rule="R-subgroup", element="eligibility", target=c["id"],
+                                      what=f"defines the sub-group ({', '.join(sorted(words))})"
+                                           ", not the trial: dropped"))  # fmt: skip
+            continue
+        words = set()
+        if _SUBGROUP.search(text) and text.endswith(":"):
+            words, kind = _terms(text) - _GENERIC, c["kind"]
+            rep.repairs.append(Repair(rule="R-subgroup", element="eligibility", target=c["id"],
+                                      what="a sub-group heading: dropped"))
+            continue
         out.append(c)
     return out
 
@@ -393,8 +490,9 @@ def repair_design(protocol: TargetTrialProtocol,
     report. No change: an empty dict."""
     rep = RepairReport(contrast=contrast)
     p = protocol.model_dump(mode="json")
-    arms = _arms(json.loads(json.dumps(p["treatment_strategies"])), contrast, rep)
-    elig = _values(_anchors(_amendments(p["eligibility"], rep), rep), rep)
+    texts = [str(p.get("source", {}).get("title") or "")]
+    arms = _arms(json.loads(json.dumps(p["treatment_strategies"])), contrast, rep, texts)
+    elig = _values(_anchors(_subgroups(_amendments(p["eligibility"], rep), rep), rep), rep)
     changes = {}
     if arms != p["treatment_strategies"]:
         changes["treatment_strategies"] = arms

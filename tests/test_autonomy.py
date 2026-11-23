@@ -10,6 +10,7 @@ from agentic_tte.agents.autonomy import (
     INPATIENT_VISIT,
     check_visits,
     choose_in_data,
+    name_match,
     time_zero_spec,
 )
 from agentic_tte.omop.compiler import CompileSpec, EventDef, compile_protocol
@@ -43,7 +44,10 @@ def _vocab_db():
                             "concept_name": ["hydrocortisone", "hydrocortisone 100 MG Injection",
                                              "hydrocortisone 10 MG Oral Tablet", "SOFA score",
                                              "Lactate [Moles/volume] in Blood", "procalcitonin",
-                                             "Intensive Care", "Inpatient Visit"]})
+                                             "Intensive Care", "Inpatient Visit"],
+                            "domain_id": ["Drug", "Drug", "Drug", "Measurement", "Measurement",
+                                          "Measurement", "Visit", "Visit"],
+                            "standard_concept": ["S"] * 8})
     ancestor = pd.DataFrame({"ancestor_concept_id": [1, 1], "descendant_concept_id": [11, 12]})
     drug = pd.DataFrame({"person_id": [1, 2, 3], "drug_concept_id": [11, 12, 12],
                          "drug_exposure_start_datetime": [t] * 3,
@@ -66,22 +70,45 @@ def test_concepts_move_to_candidates_with_records():
         ConceptSet(key="T:HC:hydrocortisone", scope="treatment", criterion_text="", domain="Drug",
                    concept_name="hydrocortisone", candidates=[cand(1, "hydrocortisone")],
                    concept_ids=[1], status="proposed"),
-        ConceptSet(key="I1:severity", scope="eligibility", criterion_text="", domain="Measurement",
-                   concept_name="severity", candidates=[cand(2, "SOFA score", "Measurement"),
-                                                        cand(3, "Lactate", "Measurement")],
+        ConceptSet(key="I1:lactate", scope="eligibility", criterion_text="", domain="Measurement",
+                   concept_name="lactate", candidates=[cand(2, "SOFA score", "Measurement"),
+                                                       cand(3, "Lactate", "Measurement")],
                    concept_ids=[2], status="proposed"),
         ConceptSet(key="I2:procalcitonin", scope="eligibility", criterion_text="",
                    domain="Measurement", concept_name="procalcitonin",
                    candidates=[cand(4, "procalcitonin", "Measurement")], concept_ids=[4],
-                   status="proposed")])  # fmt: skip
+                   status="proposed"),
+        # a candidate with records whose name does not match the term is not taken
+        ConceptSet(key="I3:severity", scope="eligibility", criterion_text="", domain="Measurement",
+                   concept_name="severity", candidates=[cand(2, "SOFA score", "Measurement"),
+                                                        cand(3, "Lactate", "Measurement")],
+                   concept_ids=[2], status="proposed"),
+        # no vocabulary candidate: the concepts in use whose name matches
+        ConceptSet(key="I4:blood lactate", scope="eligibility", criterion_text="",
+                   domain="Measurement", concept_name="blood lactate", status="no_match"),
+        ConceptSet(key="I5:intensive care unit", scope="eligibility", criterion_text="",
+                   domain="Visit", concept_name="admission to an intensive care unit",
+                   status="no_match")])  # fmt: skip
+    p = p.model_copy(update={"eligibility": [Criterion(id="I6", kind="inclusion", text="icu")]})
     out, notes = choose_in_data(con, book, p)
     sets = {s.key: s for s in out.sets}
     assert sets["T:HC:hydrocortisone"].concept_ids == [11]  # the injectable form only
-    assert sets["I1:severity"].concept_ids == [3] and "has no records" in sets["I1:severity"].note
+    assert sets["I1:lactate"].concept_ids == [3] and "has no records" in sets["I1:lactate"].note
     pct = sets["I2:procalcitonin"]
     assert pct.status == "no_match" and not pct.concept_ids
-    assert len(notes.notes) == 3 and notes.rules == "data-v1"
+    assert sets["I3:severity"].status == "no_match"  # not 'Lactate', though it has records
+    assert sets["I4:blood lactate"].concept_ids == [3] and "in use" in sets["I4:blood lactate"].note
+    assert sets["I5:intensive care unit"].concept_ids == [ICU_VISIT]
+    assert len(notes.notes) == 6 and notes.rules == "data-v2"
     assert book.sets[1].concept_ids == [2]  # the input is unchanged
+
+
+def test_name_match():
+    assert name_match("platelet count", "Platelets [#/volume] in Blood by Automated count") == 1
+    assert name_match("mean arterial pressure", "Mean blood pressure") == pytest.approx(2 / 3)
+    assert name_match("underlying disease", "Chronic kidney disease") == 0  # two words: both
+    assert name_match("mean arterial pressure", "Arterial blood gas") == 0  # the head is missing
+    assert name_match("Hydroxy-ethyl starch", "hydroxyethyl starch 130/0.4") == 1
 
 
 def test_check_visits_refuses_a_wrong_concept():
@@ -239,3 +266,14 @@ def test_the_mimic_check_on_a_small_database(tmp_path):
     assert any("time zero waits for I2" in n for n in res["time_zero"]["notes"])
     assert "R-grace" in md and "Pooled counts only" in md
     assert not {"arms", "events", "risk_at_horizon"} & set(res)  # nothing by arm or outcome
+    # An inclusion event too few persons have is not recorded in the data: no time-zero event.
+    import agentic_tte.agents.autonomy as au
+
+    old, au.SPARSE = au.SPARSE, 0.9  # 20 of 30 is under 90%
+    try:
+        res, _ = mod.check(con, p, "hydrocortisone vs placebo")
+    finally:
+        au.SPARSE = old
+    assert res["persons_with_time_zero"] == 30
+    assert any("barely record" in n for n in res["data_rules"]["notes"])
+    assert {c["id"]: c for c in res["criteria"]}["I2"]["status"] == "not_compiled"

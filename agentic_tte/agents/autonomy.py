@@ -1,11 +1,18 @@
 """Rules for the autonomous arm (SCORING.md Phase 3 item 34): the choices a reviewer makes at
 concept review, made instead by fixed rules, recorded and labelled.
 
-- ``choose_in_data`` (rules ``data-v1``): a proposed concept with no records in the data is
-  replaced by the vocabulary candidate with the most records; with none, the set is unmappable
-  (its criterion is reported as not compiled). A treatment given intravenously keeps only the
-  injectable forms of the drug that have records. Counts are whole-database aggregates, never
-  split by arm or outcome; concept IDs come only from the vocabulary search.
+- ``choose_in_data`` (rules ``data-v2``; data-v1 never ran a trial): a proposed concept with
+  no records in the data is replaced by the vocabulary candidate with the most records among
+  those whose name matches the protocol's term (``name_match``); with none, by the standard
+  concepts of the domain that are in use in the data and whose name matches the term (a
+  measurement takes the one with the most records, other domains all of the best-matching
+  ones); with none, the set is unmappable (its criterion is reported as not compiled). A
+  visit named as intensive care is the ICU admission concept. A drug, procedure, device or
+  measurement in an inclusion criterion that fewer than ``SPARSE`` of the persons with the
+  time-zero admission have is unmappable too: the data barely record it, so waiting for it
+  would leave no one. A treatment given intravenously keeps only the injectable forms of the
+  drug that have records. Counts are whole-database aggregates, never split by arm or
+  outcome; concept IDs come only from the vocabulary.
 - ``time_zero_spec`` (rules ``tz-v1``): time zero is the first ICU admission (the first
   inpatient visit for a trial that never mentions intensive care), then waits for the
   time-stamped inclusion events: each positive drug, procedure or device atom, and each
@@ -29,7 +36,8 @@ from agentic_tte.omop.concept_sets import ConceptSetBook
 from agentic_tte.omop.gate import concept_key, suppress
 from agentic_tte.protocol.models import Domain, TargetTrialProtocol
 
-DATA_RULES = "data-v1"
+DATA_RULES = "data-v2"
+SPARSE = 0.01  # an inclusion event fewer than 1% of the base admissions have: not recorded
 TZ_RULES = "tz-v1"
 # Standard OMOP visit concepts, checked by name against the vocabulary (``check_visits``).
 ICU_VISIT, INPATIENT_VISIT = 32037, 9201
@@ -77,6 +85,52 @@ SELECT x.cid, count(*) FROM {table} r JOIN x ON r.{col} = x.did GROUP BY x.cid""
     return {int(c): int(n) for c, n in con.execute(sql).fetchall()}
 
 
+_STOP = {"of", "the", "a", "an", "in", "on", "to", "for", "with", "by", "and", "or", "at",
+         "per", "as", "level", "levels", "value", "values", "test", "serum", "plasma", "blood"}
+
+
+def _content(text: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]+", text.lower()) if w not in _STOP and len(w) > 1]
+
+
+def name_match(term: str, name: str) -> float:
+    """How well a concept name matches a protocol term: the share of the term's content words
+    (plural s dropped) found in the name; 0 unless the term's last word (its head) is found
+    and, for a term of up to two words, every word is. "platelet count" matches "Platelets
+    [#/volume] in Blood by Automated count" (1.0); "mean arterial pressure" matches "Mean blood
+    pressure" (0.67); "underlying disease" does not match "Chronic kidney disease" (0)."""
+    words, name_words = _content(term), _content(name)
+    if not words:
+        return 0.0
+
+    def hit(w: str) -> bool:
+        stem = w[:-1] if w.endswith("s") and len(w) > 3 else w
+        return any(stem in x for x in name_words)
+
+    hits = [hit(w) for w in words]
+    share = sum(hits) / len(words)
+    if not hits[-1] or (len(words) <= 2 and share < 1) or share < 2 / 3:
+        return 0.0
+    return share
+
+
+def _in_use(con, domain: Domain, cache: dict) -> list[tuple[int, str, int]]:
+    """Standard concepts of the domain with records in its table: (id, name, records)."""
+    if domain not in cache:
+        table, col, _, _ = EVENT_TABLE[domain]
+        cache[domain] = [(int(i), n, int(k)) for i, n, k in con.execute(f"""
+SELECT c.concept_id, c.concept_name, r.n FROM (SELECT {col} AS cid, count(*) AS n FROM {table}
+  GROUP BY 1) r JOIN concept c ON c.concept_id = r.cid
+WHERE c.standard_concept = 'S' AND c.domain_id = ?""", [domain.value]).fetchall()]
+    return cache[domain]
+
+
+def _persons(con, ids: list[int], domain: Domain, descendants: bool) -> int:
+    table, col, _, _ = EVENT_TABLE[domain]
+    return int(con.execute(f"SELECT count(DISTINCT person_id) FROM {table} r WHERE "
+                           f"{_in_set(f'r.{col}', ids, descendants)}").fetchone()[0])
+
+
 def _injectable(con, ids: list[int]) -> list[int]:
     """Drug concepts under ``ids`` whose name is an injectable form and that have records."""
     like = " OR ".join(f"lower(c.concept_name) LIKE '{p}'" for p in _INJECTABLE)
@@ -96,21 +150,51 @@ def _route(protocol: TargetTrialProtocol, key: str) -> str | None:
     return None
 
 
+def _from_data(con, s, cache: dict) -> tuple[list[int], str] | None:
+    """In-use standard concepts whose name matches the set's term (``name_match``)."""
+    dom = Domain(s.domain)
+    scored = [(name_match(s.concept_name, n), n, i, k) for i, n, k in _in_use(con, dom, cache)]
+    scored = [x for x in scored if x[0] > 0]
+    if not scored:
+        return None
+    top = max(x[0] for x in scored)
+    best = sorted((x for x in scored if x[0] == top), key=lambda x: -x[3])
+    if dom == Domain.MEASUREMENT:
+        best = best[:1]
+    names = "; ".join(f"{i} {n} ({suppress(k)})" for _, n, i, k in best[:5])
+    more = f" and {len(best) - 5} more" if len(best) > 5 else ""
+    return [x[2] for x in best], (f"data rule: no vocabulary candidate matching "
+                                  f"'{s.concept_name}' has records; in use and matching the "
+                                  f"name: {names}{more}")  # fmt: skip
+
+
 def choose_in_data(con, book: ConceptSetBook, protocol: TargetTrialProtocol
                    ) -> tuple[ConceptSetBook, AutonomyNotes]:  # fmt: skip
-    """The book with every open proposal moved to a concept that has records (rules data-v1)."""
+    """The book with every open proposal moved to concepts that have records (rules data-v2)."""
     out = book.model_copy(deep=True)
     notes: list[str] = []
-    open_sets = [s for s in out.sets if s.status in ("proposed", "no_match") and s.candidates
+    icu = bool(_ICU_WORDS.search(protocol.model_dump_json()))
+    open_sets = [s for s in out.sets if s.status in ("proposed", "no_match")
                  and Domain(s.domain) in EVENT_TABLE]  # fmt: skip
     counts: dict[int, int] = {}
     for dom in {Domain(s.domain) for s in open_sets}:
         counts |= _records(con, {s.key: [c.concept_id for c in s.candidates]
                                  for s in open_sets if Domain(s.domain) == dom}, dom)  # fmt: skip
+    inclusion = {c.id for c in protocol.eligibility if c.kind == "inclusion"}
+    base_visit = ICU_VISIT if icu else INPATIENT_VISIT
+    base = None
+    cache: dict = {}
     for s in open_sets:
-        top = s.candidates[0]
-        have = [c for c in s.candidates if counts.get(c.concept_id, 0) > 0]
-        if counts.get(top.concept_id, 0) > 0:
+        dom = Domain(s.domain)
+        if dom == Domain.VISIT and icu and _ICU_WORDS.search(s.concept_name):
+            s.concept_ids, s.status = [ICU_VISIT], "proposed"
+            s.note = f"data rule: an ICU admission, Visit {ICU_VISIT} (the time-zero admission)"
+            notes.append(f"`{s.key}`: {s.note}")
+            continue
+        top = s.candidates[0] if s.candidates else None
+        have = [c for c in s.candidates if counts.get(c.concept_id, 0) > 0
+                and name_match(s.concept_name, c.concept_name) > 0]  # fmt: skip
+        if top is not None and counts.get(top.concept_id, 0) > 0:
             s.concept_ids, s.status = [top.concept_id], "proposed"
         elif have:
             best = max(have, key=lambda c: (counts[c.concept_id], -s.candidates.index(c)))
@@ -119,11 +203,28 @@ def choose_in_data(con, book: ConceptSetBook, protocol: TargetTrialProtocol
                       f"{best.concept_id} {best.concept_name} has "
                       f"{suppress(counts[best.concept_id])}")  # fmt: skip
             notes.append(f"`{s.key}`: {s.note}")
+        elif (found := _from_data(con, s, cache)) is not None:
+            s.concept_ids, s.status = found[0], "proposed"
+            s.note = found[1]
+            notes.append(f"`{s.key}`: {s.note}")
         else:
             s.concept_ids, s.status = [], "no_match"
-            s.note = "data rule: no vocabulary candidate has records in the data"
+            s.note = ("data rule: no vocabulary candidate, and no concept in use in the data, "
+                      "matches the name")  # fmt: skip
             notes.append(f"`{s.key}`: {s.note}; criteria that use it are not compiled")
             continue
+        if (s.scope == "eligibility" and s.key.split(":", 1)[0] in inclusion
+                and dom in _EVENT_DOMAINS):  # fmt: skip
+            if base is None:
+                base = _persons(con, [base_visit], Domain.VISIT, False)
+            n = _persons(con, s.concept_ids, dom, s.include_descendants)
+            if base and n < SPARSE * base:
+                s.concept_ids, s.status = [], "no_match"
+                s.note = (f"data rule: {suppress(n)} persons have a record, under "
+                          f"{SPARSE:.0%} of the {suppress(base)} with the time-zero admission: "
+                          "the data barely record it")  # fmt: skip
+                notes.append(f"`{s.key}`: {s.note}; criteria that use it are not compiled")
+                continue
         route = _route(protocol, s.key) if s.scope == "treatment" else None
         if route and _IV.search(route) and Domain(s.domain) == Domain.DRUG:
             inj = _injectable(con, s.concept_ids)

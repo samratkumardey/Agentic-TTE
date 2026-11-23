@@ -1,6 +1,6 @@
 """Check the autonomous arm's rules on the data before any run (SCORING.md Phase 3 item 34).
 
-For each trial: the Repair agent's changes, the concept choices from record counts (data-v1),
+For each trial: the Repair agent's changes, the concept choices from record counts (data-v2),
 time zero by rule (tz-v1), what compiles, and pooled counts: persons with the time-zero
 admission, persons with a time zero, eligible persons, and how many meet each criterion. No
 analysis frame is run, nothing is split by arm, and no outcome is read: the counts are what the
@@ -132,7 +132,7 @@ def main() -> None:
             continue
         nc = [c["id"] for c in r["criteria"]
               if c["kind"] == "inclusion" and c["status"] == "not_compiled"]  # fmt: skip
-        gone = sum("no vocabulary candidate has records" in n for n in r["data_rules"]["notes"])
+        gone = sum("criteria that use it are not compiled" in n for n in r["data_rules"]["notes"])
         lines.append(f"| {r['nct_id']} | {r['persons_with_time_zero']} | {r['eligible']} | "
                      f"{', '.join(nc) or '–'} | {gone} | {r['frame_design'] or 'none'} |")
     (a.out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

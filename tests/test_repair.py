@@ -77,6 +77,40 @@ def test_an_active_comparator_is_flagged_not_changed():
                                      "active-comparator frame is used")  # fmt: skip
 
 
+def test_repair_v3_amendments_subgroups_and_names():
+    def c(cid, text, kind="exclusion", name="x"):
+        return Criterion(id=cid, kind=kind, text=text, atoms=[CriterionAtom(concepts=[
+            ConceptRef(name=name, domain="Condition")])])  # fmt: skip
+
+    p = proto([arm("Accelerated", "Accelerated RRT initiation"),
+               arm("Standard", "Standard RRT initiation", comparator=True)], [
+        c("I1", "acute kidney injury", "inclusion"),
+        c("I2", "On the sub-group of patients included with COVID19 :", "inclusion"),
+        c("I3", "Diagnosis of COVID19 by PCR", "inclusion", "covid19"),
+        c("I4", "study drug within 24 hours", "inclusion"),
+        c("E1", "Amendments to eligibility criteria were:"),
+        c("E2", "On 27/03/2008: Changes in following exclusion criteria :"),
+        c("E3", '"chronic liver disease" was clarified as "chronic liver disease with Child C".'),
+        c("E4", 'and a new exclusion criteria was added: "a previous episode of sepsis"'),
+    ])  # fmt: skip
+    p = p.model_copy(update={"source": p.source.model_copy(update={
+        "title": "Standard Versus Accelerated Initiation of Renal Replacement Therapy"})})
+    changes, rep = repair_design(p, "accelerated vs standard RRT initiation")
+    assert [x["id"] for x in changes["eligibility"]] == ["I1", "I4", "E4"]
+    rules = [(r.target, r.rule) for r in rep.repairs]
+    assert ("I2", "R-subgroup") in rules and ("I3", "R-subgroup") in rules
+    assert {("E1", "R-amend"), ("E2", "R-amend"), ("E3", "R-amend")} <= set(rules)
+    assert any(f.startswith("E3 says a criterion was changed") for f in rep.flagged)
+    names = shape(changes, p)
+    assert names[0] == ("Accelerated", "T", ["renal replacement therapy"])
+    assert names[1] == ("Standard", "C", [])
+    assert rep.rules_version == "repair-v3"
+    # Without the title, the abbreviation is kept.
+    changes, _ = repair_design(p.model_copy(update={"source": p.source.model_copy(
+        update={"title": None})}), "accelerated vs standard RRT initiation")  # fmt: skip
+    assert shape(changes, p)[0][2] == ["RRT"]
+
+
 def test_standard_fluid_and_timing_comparators_are_no_initiation():
     p = proto([arm("Colloids", "colloids"), arm("Crystalloids", "crystalloids", comparator=True)])
     changes, rep = repair_design(p, "colloids vs crystalloids")
@@ -173,7 +207,9 @@ def test_aprocchss_factorial_draft():
         ("1", "C", ["placebo of hydrocortisone", "placebo of fludrocortisone",
                     "placebo of activated protein C"])]  # fmt: skip
     dropped = {r.target for r in rep.repairs if r.rule == "R-amend"}
-    assert dropped == {"E22", "E24", "E25", "E26", "E27", "E28", "E29", "E30"}
+    # repair-v3 also drops the amendment headings (E16, E17) and the changed or clarified
+    # criteria (E18-E21); E23, a criterion an amendment added, is kept.
+    assert dropped == {f"E{i}" for i in range(16, 31)} - {"E23"}
     assert {r.target for r in rep.repairs if r.rule == "R-value"} >= {"I2", "I3"}
     assert any(f.startswith("E22 says a criterion was removed") for f in rep.flagged)
     assert any(f.startswith("I4:") for f in rep.flagged)  # multi-domain value: for a person
@@ -183,7 +219,8 @@ def test_core_drafts_get_one_treatment_and_one_comparator():
     cases = {"NCT02643381": ("etomidate vs ketamine",
                              [("Etomidate", "T", ["Etomidate"]), ("Ketamine", "C", ["Ketamine"])]),
              "NCT03637205": ("ECLS vs usual care",
-                             [("ECLS", "T", ["ECLS insertion"]), ("No ECLS", "C", [])]),
+                             [("ECLS", "T", ["extracorporeal life support"]),
+                              ("No ECLS", "C", [])]),
              "NCT03680274": ("vitamin C vs placebo",
                              [("Vitamin C", "T", ["Ascorbic acid"]), ("Control", "C", [])])}
     for nct, (contrast, want) in cases.items():

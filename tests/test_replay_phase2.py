@@ -44,6 +44,12 @@ _spec.loader.exec_module(rp)
     ("Mortality", True), ("28-day all-cause mortality", True),
     ("Composite of Rehospitalization Due to Heart Failure and All-Cause Mortality", False),
     ("Death or disability", False), ("Ventilator-free days", False),
+    # SCORING.md item 34: found by the counts-only MIMIC check (core drafts)
+    ("All cause mortality at 90 days after randomisation", True),
+    ("Day 28 all causes mortality", True),
+    ("Reduction of the mortality rate of ARDS patients at d90", True),
+    ("Composite criteria of Day 28 mortality and/or patients with at least one organ failure "
+     "defined as a SOFA score of 3 or 4", False),
 ])  # fmt: skip
 def test_only_pure_mortality_outcomes_default_to_death(name, death):
     assert _death_only(name) is death
