@@ -1,9 +1,10 @@
 """Check the autonomous arm's rules on the data before any run (SCORING.md Phase 3 item 34).
 
 For each trial: the Repair agent's changes, the concept choices from record counts (data-v2),
-time zero by rule (tz-v1), what compiles, and pooled counts: persons with the time-zero
-admission, persons with a time zero, eligible persons, and how many meet each criterion. No
-analysis frame is run, nothing is split by arm, and no outcome is read: the counts are what the
+time zero by rule (tz-v1), what compiles, the Protocol Auditor as the run calls it, and pooled
+counts: persons with the time-zero admission, persons with a time zero, eligible persons, and
+how many meet each criterion. The analysis frame runs only for the auditor's pooled shares
+(treatment starts), nothing is split by arm, and no outcome is read: the counts are what the
 gate's attrition table shows, small cells suppressed. The point is to see whether the rules
 behave on MIMIC (sets that lose all records, time-zero events nobody has), not to choose
 trials: S8 is still applied at each run's first gate.
@@ -20,6 +21,7 @@ import argparse
 import json
 from pathlib import Path
 
+from agentic_tte.agents.auditor import audit, data_summary
 from agentic_tte.agents.autonomy import ICU_VISIT, check_visits, choose_in_data, time_zero_spec
 from agentic_tte.agents.repair import repair_design
 from agentic_tte.graph import AutoApprove
@@ -92,6 +94,15 @@ def check(con, protocol: TargetTrialProtocol, contrast: str | None) -> tuple[dic
            f"{c['persons_meeting'] if c['persons_meeting'] is not None else '–'} | "
            f"{'; '.join(c['reasons'])[:160] or '–'} |" for c in crit]
     md += ["", "## 5. Frame (not run)", ""] + [f"- {n}" for n in cc.frame_notes]
+    # The Protocol Auditor as the run calls it (graph/replay.py audit_node): the autonomous
+    # policy stops a run whose audit fails. Its data shares are pooled; no outcome is read.
+    ids = sorted({i for k, v in cc.spec.concept_sets.items() if k.startswith("T:") for i in v})
+    names = dict(con.execute(f"SELECT concept_id, concept_name FROM concept WHERE concept_id IN "
+                             f"({', '.join(map(str, ids))})").fetchall()) if ids else None
+    rep_a = audit(p, cc.spec, compiled=cc, summary=data_summary(con, p, cc.spec, cc),
+                  concept_names=names or None, surrogate_keys=set())
+    out["audit_failed"] = rep_a.failed
+    md += ["", rep_a.to_markdown().replace("## Protocol audit", "## 5b. Protocol audit")]
     units = _units(con, reviewed, spec.descendants)
     out["measurement_units"] = units
     md += ["", "## 6. Measurement sets: units in the data (whole database, pooled)", "",
@@ -157,16 +168,18 @@ def main() -> None:
     lines = ["# Autonomy check (pooled counts only)", "",
              f"ICU admission concept {ICU_VISIT}. One file per trial.", "",
              "| Trial | With time zero | Eligible | Inclusions not compiled | Sets without "
-             "records | Frame |", "|---|---|---|---|---|---|"]  # fmt: skip
+             "records | Frame | Audit |", "|---|---|---|---|---|---|---|"]  # fmt: skip
     for r in summary:
         if "error" in r:
-            lines.append(f"| {r['nct_id']} | FAILED: {r['error'][:80]} | | | | |")
+            lines.append(f"| {r['nct_id']} | FAILED: {r['error'][:80]} | | | | | |")
             continue
         nc = [c["id"] for c in r["criteria"]
               if c["kind"] == "inclusion" and c["status"] == "not_compiled"]  # fmt: skip
         gone = sum("criteria that use it are not compiled" in n for n in r["data_rules"]["notes"])
+        aud = f"failed {', '.join(r['audit_failed'])}" if r["audit_failed"] else "passed"
         lines.append(f"| {r['nct_id']} | {r['persons_with_time_zero']} | {r['eligible']} | "
-                     f"{', '.join(nc) or '–'} | {gone} | {r['frame_design'] or 'none'} |")
+                     f"{', '.join(nc) or '–'} | {gone} | {r['frame_design'] or 'none'} | "
+                     f"{aud} |")
     (a.out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"-> {a.out}/summary.md")
 

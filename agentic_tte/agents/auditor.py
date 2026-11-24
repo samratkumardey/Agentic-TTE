@@ -231,7 +231,10 @@ def audit(protocol: TargetTrialProtocol, spec: CompileSpec, *,
             add(Finding(check="A-d", severity="fail", element="treatment_strategies",
                         message=f"'{a.label}' is a {kind} arm in the registry but is the "
                                 "treatment arm here"))
-        if "EXPERIMENTAL" in kind and a.is_comparator:
+        # Two EXPERIMENTAL arms (a head-to-head trial, EvK): one has to be the comparator.
+        if "EXPERIMENTAL" in kind and a.is_comparator and not any(
+                "EXPERIMENTAL" in (b.arm_type or "").upper()
+                for b in p.treatment_strategies if not b.is_comparator):  # fmt: skip
             add(Finding(check="A-d", severity="fail", element="treatment_strategies",
                         message=f"'{a.label}' is the EXPERIMENTAL arm in the registry but is "
                                 "the comparator here"))

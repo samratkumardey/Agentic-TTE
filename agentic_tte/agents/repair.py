@@ -53,6 +53,23 @@ run; repair-v2 never ran a trial):
   initiation", "ECLS insertion") is named without them; when what is left is one
   abbreviation, it is expanded from the trial's registered title when the title spells it
   out (Schwartz-Hearst: "Renal Replacement Therapy" for RRT), else kept.
+
+Added in repair-v4 (SCORING.md item 35, after a synthetic dry run of the autonomous batch and
+before any core run; repair-v3 never ran a trial):
+- R-new-user: when no exclusion names a treatment component before time zero, one exclusion
+  per treatment component (and per component of an active comparator) is added: any record
+  of it strictly before time zero (a new-user design, all available lookback). Strictly
+  before, so a start at time zero itself (etomidate at the intubation that is time zero) is
+  treatment, not prior use. Without it the Protocol Auditor's A-f fails, and the autonomous
+  policy stops the run.
+- R-arm-registry: with an active comparator, when the registry marks the comparator arm
+  EXPERIMENTAL and the treatment arm not, the two swap (the auditor's A-d). The published
+  contrast's orientation is then the Concordance agent's to handle, confirmed by the user.
+- R-lookahead: an atom that needs records after time zero (the auditor's A-b: an "after"
+  relation anchored at time zero) is removed; a criterion left with no atom is dropped. No
+  look-ahead can be emulated, and the compiler would not compile it anyway.
+- R-horizon: a primary outcome whose horizon is missing or differs from the trial's own time
+  frame (parsed as the auditor's A-e parses it) takes that time frame.
 """
 
 from __future__ import annotations
@@ -65,7 +82,7 @@ from pydantic import BaseModel, Field
 from agentic_tte.agents.concordance import _null, _words
 from agentic_tte.protocol import TargetTrialProtocol
 
-RULES_VERSION = "repair-v3"
+RULES_VERSION = "repair-v4"
 DEFAULT_GRACE = {"amount": 24, "unit": "hour"}
 _STANDARD_FLUID = re.compile(r"^(?:(?:0\.9 ?%|normal|isotonic|physiological) )?(?:saline|sodium "
                              r"chloride(?: 0\.9 ?%)?|crystalloids?(?: solutions?)?|(?:lactated )?"
@@ -254,6 +271,15 @@ def _arms(arms: list[dict], contrast: str | None, rep: RepairReport,
     arms = _pairs(arms, contrast, rep)
     t = [a for a in arms if not a["is_comparator"]]
     c = [a for a in arms if a["is_comparator"]]
+    if len(t) == 1 and len(c) == 1 and c[0]["components"] and not _is_null(c[0]) and \
+            "EXPERIMENTAL" in str(c[0].get("arm_type") or "").upper() and \
+            "EXPERIMENTAL" not in str(t[0].get("arm_type") or "").upper():  # fmt: skip
+        t[0]["is_comparator"], c[0]["is_comparator"] = True, False  # R-arm-registry
+        rep.repairs.append(Repair(rule="R-arm-registry", element="treatment_strategies",
+                                  target=c[0]["label"], what="the registry's EXPERIMENTAL arm: "
+                                  "made the treatment (the contrast's orientation is for the "
+                                  "Concordance agent)"))  # fmt: skip
+        t, c = c, t
     if len(t) == 1 and len(c) == 1:
         _comparator_rules(t[0], c[0], rep)
         if not t[0].get("grace_period"):  # R-grace
@@ -484,6 +510,90 @@ def _values(criteria: list[dict], rep: RepairReport) -> list[dict]:
     return out
 
 
+def _new_users(arms: list[dict], criteria: list[dict], rep: RepairReport) -> list[dict]:
+    """R-new-user: exclude prior use of each treatment component (all lookback, strictly
+    before time zero) when no exclusion already does."""
+    from agentic_tte.agents.auditor import _AFTER
+    from agentic_tte.protocol.models import TemporalRelation
+
+    comps = [c["concept"] for a in arms for c in a["components"]
+             if not _placebo(c["concept"]["name"])]  # fmt: skip
+    names = {_norm(c["name"]) for c in comps}
+    done = any(c["kind"] == "exclusion" and any(
+        _norm(r["name"]) in names and (not a.get("temporal") or TemporalRelation(
+            a["temporal"]["relation"]) not in _AFTER)
+        for a in c["atoms"] for r in a["concepts"]) for c in criteria)  # fmt: skip
+    if not comps or done:
+        return criteria
+    out, seen = list(criteria), set()
+    for i, c in enumerate(comps, 1):
+        if _norm(c["name"]) in seen:
+            continue
+        seen.add(_norm(c["name"]))
+        cid = f"NU{i}"
+        out.append({"id": cid, "kind": "exclusion", "source": "agent",
+                    "text": f"prior use of {c['name']} before time zero (new user)",
+                    "notes": f"{RULES_VERSION} R-new-user",
+                    "atoms": [{"concepts": [{"name": c["name"], "domain": c["domain"],
+                                             "source_text": c["name"]}],
+                               "temporal": {"relation": "x_before_y",
+                                            "anchor": "time zero"}}]})  # fmt: skip
+        rep.repairs.append(Repair(rule="R-new-user", element="eligibility", target=cid,
+                                  what=f"no exclusion of prior use: excludes any record of "
+                                       f"'{c['name']}' before time zero"))  # fmt: skip
+    return out
+
+
+def _lookahead(protocol: TargetTrialProtocol, criteria: list[dict],
+               rep: RepairReport) -> list[dict]:  # fmt: skip
+    """R-lookahead: atoms that need records after time zero are removed."""
+    from agentic_tte.agents.auditor import _AFTER, _is_t0
+    from agentic_tte.protocol.models import TemporalRelation
+
+    out = []
+    for c in criteria:
+        keep = [a for a in c["atoms"] if not (
+            a.get("temporal") and TemporalRelation(a["temporal"]["relation"]) in _AFTER
+            and _is_t0(a["temporal"].get("anchor") or "time zero", protocol))]  # fmt: skip
+        if len(keep) == len(c["atoms"]):
+            out.append(c)
+            continue
+        gone = len(c["atoms"]) - len(keep)
+        if keep:
+            out.append({**c, "atoms": keep})
+            what = f"{gone} atom(s) needing records after time zero: removed"
+        else:
+            what = "needs records after time zero (look-ahead): dropped"
+        rep.repairs.append(Repair(rule="R-lookahead", element="eligibility", target=c["id"],
+                                  what=what))
+    return out
+
+
+def _horizon(p: dict, rep: RepairReport) -> list[dict] | None:
+    """R-horizon: the primary outcome's horizon is the trial's own time frame."""
+    from agentic_tte.agents.auditor import _days
+    from agentic_tte.protocol.models import Duration, Outcome
+    from agentic_tte.protocol.normalize import parse_time_frame
+
+    outs = json.loads(json.dumps(p["outcomes"]))
+    for o in outs:
+        if not o.get("primary"):
+            continue
+        stated, _, _ = parse_time_frame(Outcome.model_validate(o).time_frame)
+        h = o.get("horizon") or (p.get("follow_up") or {}).get("horizon")
+        if stated is None or (h and abs(_days(Duration.model_validate(h)) - _days(stated))
+                              <= 0.01 * _days(stated)):  # fmt: skip
+            return None
+        o["horizon"] = stated.model_dump(mode="json")
+        rep.repairs.append(Repair(rule="R-horizon", element="outcomes", target=o["name"][:60],
+                                  what=f"horizon {h['amount']:g} {h['unit']}(s) -> the trial's "
+                                       f"time frame, {stated.amount:g} {stated.unit}(s)"
+                                       if h else f"no horizon -> the trial's time frame, "
+                                       f"{stated.amount:g} {stated.unit}(s)"))  # fmt: skip
+        return outs
+    return None
+
+
 def repair_design(protocol: TargetTrialProtocol,
                   contrast: str | None = None) -> tuple[dict, RepairReport]:  # fmt: skip
     """The changes the rules make (protocol fields -> new values, for ``new_version``) and the
@@ -493,11 +603,15 @@ def repair_design(protocol: TargetTrialProtocol,
     texts = [str(p.get("source", {}).get("title") or "")]
     arms = _arms(json.loads(json.dumps(p["treatment_strategies"])), contrast, rep, texts)
     elig = _values(_anchors(_subgroups(_amendments(p["eligibility"], rep), rep), rep), rep)
+    elig = _new_users(arms, _lookahead(protocol, elig, rep), rep)
     changes = {}
     if arms != p["treatment_strategies"]:
         changes["treatment_strategies"] = arms
     if elig != p["eligibility"]:
         changes["eligibility"] = elig
+    outs = _horizon(p, rep)
+    if outs is not None:
+        changes["outcomes"] = outs
     if changes:
         TargetTrialProtocol.model_validate({**p, **changes})
     return changes, rep

@@ -5,6 +5,8 @@ make a drafted design emulable, on hand-built protocols and on four of the core-
 import json
 from pathlib import Path
 
+import pytest
+
 from agentic_tte.agents.repair import RULES_VERSION, repair_design
 from agentic_tte.agents.supervisor import Supervisor
 from agentic_tte.omop.compiler import design_problem
@@ -21,6 +23,17 @@ from agentic_tte.protocol import (
 )
 
 FIX = Path(__file__).parent / "fixtures" / "protocols"
+
+
+@pytest.fixture(autouse=True)
+def _without_new_users(request, monkeypatch):
+    """R-new-user (repair-v4) adds an exclusion to nearly every design; the tests written for
+    earlier rules check those rules alone. Tests named *new_user* or on the drafts keep it."""
+    import agentic_tte.agents.repair as rp
+
+    if not any(k in request.node.name for k in ("new_user", "draft", "aprocchss", "supervisor",
+                                                "replay")):  # fmt: skip
+        monkeypatch.setattr(rp, "_new_users", lambda arms, crit, rep: crit)
 
 
 def _draft(nct: str) -> TargetTrialProtocol:
@@ -104,11 +117,45 @@ def test_repair_v3_amendments_subgroups_and_names():
     names = shape(changes, p)
     assert names[0] == ("Accelerated", "T", ["renal replacement therapy"])
     assert names[1] == ("Standard", "C", [])
-    assert rep.rules_version == "repair-v3"
+    assert rep.rules_version == RULES_VERSION
     # Without the title, the abbreviation is kept.
     changes, _ = repair_design(p.model_copy(update={"source": p.source.model_copy(
         update={"title": None})}), "accelerated vs standard RRT initiation")  # fmt: skip
     assert shape(changes, p)[0][2] == ["RRT"]
+
+
+def test_repair_v4_new_user_lookahead_horizon_and_registry():
+    from agentic_tte.protocol import Outcome
+
+    p = proto([arm("Ketamine", "ketamine", arm_type="EXPERIMENTAL", comparator=True),
+               arm("Etomidate", "etomidate", arm_type="ACTIVE_COMPARATOR", grace=DAY)], [
+        Criterion(id="I1", kind="inclusion", text="intubated", atoms=[CriterionAtom(
+            concepts=[ConceptRef(name="intubation", domain="Procedure")])]),
+        Criterion(id="I2", kind="inclusion", text="drug within 24 h after inclusion",
+                  atoms=[CriterionAtom(concepts=[ConceptRef(name="study drug", domain="Drug")],
+                                       temporal=TemporalConstraint(relation="x_after_y",
+                                                                   anchor="time zero"))]),
+    ])  # fmt: skip
+    p = p.model_copy(update={"outcomes": [Outcome(name="28-day mortality", primary=True,
+                                                  time_frame="Day 28",
+                                                  horizon=Duration(amount=0, unit="day"))]})
+    changes, rep = repair_design(p, "etomidate vs ketamine")
+    rules = [r.rule for r in rep.repairs]
+    assert "R-lookahead" in rules and "I2" not in [c["id"] for c in changes["eligibility"]]
+    nu = [c for c in changes["eligibility"] if c["id"].startswith("NU")]
+    assert [c["atoms"][0]["concepts"][0]["name"] for c in nu] == ["ketamine", "etomidate"]
+    assert all(c["atoms"][0]["temporal"]["relation"] == "x_before_y" for c in nu)
+    assert changes["outcomes"][0]["horizon"] == {"amount": 28.0, "unit": "day"}
+    # The contrast made etomidate the treatment; the registry's EXPERIMENTAL arm wins.
+    t = [a for a in changes["treatment_strategies"] if not a["is_comparator"]]
+    assert [a["label"] for a in t] == ["Ketamine"] and "R-arm-registry" in rules
+    # An existing prior-use exclusion: nothing added.
+    p2 = proto([arm("Drug", "hydrocortisone", grace=DAY),
+                arm("Placebo", "placebo", comparator=True)], [
+        Criterion(id="E1", kind="exclusion", text="prior steroids", atoms=[CriterionAtom(
+            concepts=[ConceptRef(name="hydrocortisone", domain="Drug")])])])  # fmt: skip
+    changes, rep = repair_design(p2, "hydrocortisone vs placebo")
+    assert "R-new-user" not in {r.rule for r in rep.repairs}
 
 
 def test_standard_fluid_and_timing_comparators_are_no_initiation():

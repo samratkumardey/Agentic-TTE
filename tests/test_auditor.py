@@ -88,6 +88,19 @@ def test_concept_names_check_without_reviewed_sets(con):
     assert any(f.check == "A-j" and f.severity == "warn" for f in audit(p, spec).findings)
 
 
+def test_two_experimental_arms_are_not_an_arm_error(con):
+    """A head-to-head trial (EvK): both arms EXPERIMENTAL, one must be the comparator."""
+    p, spec = fi.synthetic_design()
+    arms = [a.model_copy(update={"arm_type": "EXPERIMENTAL"}) for a in p.treatment_strategies]
+    p = p.model_copy(update={"treatment_strategies": arms})
+    rep = audit(p, spec, compiled=compile_protocol(p, spec))
+    assert not [f for f in rep.findings if f.check == "A-d"]
+    arms = [a.model_copy(update={"arm_type": None if not a.is_comparator else "EXPERIMENTAL"})
+            for a in p.treatment_strategies]  # fmt: skip
+    rep = audit(p.model_copy(update={"treatment_strategies": arms}), spec)
+    assert any(f.check == "A-d" and "EXPERIMENTAL" in f.message for f in rep.findings)
+
+
 def test_missing_time_frame_is_a_warning_not_a_pass(con):
     p, spec = fi.synthetic_design()
     p.outcomes[0].time_frame = None
