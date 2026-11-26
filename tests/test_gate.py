@@ -148,6 +148,17 @@ def test_quality_violations():
     assert q.values["violations"]["visit ends before it starts"] == 30
 
 
+def test_measurements_without_a_value_are_amber_never_red():
+    """Item 36: MIMIC has 12.67% of measurement rows with no value; that is completeness."""
+    def no_values(tables):
+        m = tables["measurement"]
+        m["value_as_number"] = None
+
+    q = run_gate(db(q=no_values), None, context=SYNTH).check("quality")
+    assert q.status == "amber" and "measurement without a value" in q.values["missing"]
+    assert "never red" in q.detail
+
+
 def test_small_cells_are_suppressed():
     assert suppress(0) == 0 and suppress(5) == "<11" and suppress(11) == 11
     r = run_gate(db(n=6), protocol(crit("I1", "inclusion", SHOCK)),

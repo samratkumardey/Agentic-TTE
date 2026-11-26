@@ -13,7 +13,8 @@ Checks:
   time           datetime coverage and time-of-day, against the protocol's finest window
   death          death records and their consistency with observation periods
   follow_up      observation time after the index visit, against the follow-up horizon
-  quality        plausibility (end before start, death before birth, impossible ages, ...)
+  quality        plausibility (end before start, death before birth, impossible ages, ...);
+                 measurements with no value are completeness, amber at most (item 36)
   concepts       patients with a record for each protocol concept (needs concept IDs)
   governance     data classification and approval; no patient rows to any LLM
   feasibility    eligible N, events per arm, power: from the compiled cohort's attrition
@@ -350,24 +351,40 @@ def _quality(con, tables: set[str]) -> GateCheck:
         "observation period ends before it starts":
             "SELECT count(*) FROM observation_period "
             "WHERE observation_period_end_date < observation_period_start_date",
-        "measurement without a value": "SELECT count(*) FROM measurement "
-                                       "WHERE value_as_number IS NULL",
     }  # fmt: skip
+    # A measurement with no value is allowed in OMOP (a qualitative result, or the record that a
+    # test was done), and a threshold criterion is simply not met by it: completeness, not
+    # plausibility, so it is amber at most, never red (SCORING.md item 36).
+    cols = _columns(con, "measurement") if "measurement" in tables else set()
+    no_value = "value_as_number IS NULL" + (
+        " AND value_as_concept_id IS NULL" if "value_as_concept_id" in cols else "")
+    completeness = {"measurement without a value": f"SELECT count(*) FROM measurement "
+                                                   f"WHERE {no_value}"} if cols else {}
     persons = max(_scalar(con, "SELECT count(*) FROM person"), 1)
-    rows = max(_scalar(con, "SELECT count(*) FROM measurement"), 1)
-    found = {}
+    rows = max(_scalar(con, "SELECT count(*) FROM measurement"), 1) if cols else 1
+    found, missing = {}, {}
     for label, sql in checks.items():
         n = _scalar(con, sql)
         if n:
             found[label] = n
-    rates = {k: v / (rows if k.startswith("measurement") else persons) for k, v in found.items()}
-    values = {"violations": found, "rates": rates}
-    if not found:
+    for label, sql in completeness.items():
+        n = _scalar(con, sql)
+        if n:
+            missing[label] = n
+    rates = {k: v / persons for k, v in found.items()}
+    rates |= {k: v / rows for k, v in missing.items()}
+    values = {"violations": found, "missing": missing, "rates": rates}
+    if not found and not missing:
         return GateCheck(id="quality", title="Data quality", status=GateStatus.GREEN,
                          detail="no plausibility violations found", values=values)
-    worst = max(rates.values())
-    detail = "; ".join(f"{k}: {suppress(v)} ({100 * rates[k]:.2f}%)" for k, v in found.items())
+    detail = "; ".join(f"{k}: {suppress(v)} ({100 * rates[k]:.2f}%)"
+                       for k, v in (found | missing).items())  # fmt: skip
+    worst = max((rates[k] for k in found), default=0.0)
     status = GateStatus.RED if worst > 0.05 else GateStatus.AMBER
+    if missing and not found:
+        status = GateStatus.AMBER if max(rates[k] for k in missing) > 0.05 else GateStatus.GREEN
+    if missing:
+        detail += " (missing values: completeness, not plausibility; never red)"
     return GateCheck(id="quality", title="Data quality", status=status, detail=detail,
                      values=values)  # fmt: skip
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# The autonomous arm of the Phase 3 MIMIC Replay (eval/SCORING.md items 33-35): the 12 core
+# The autonomous arm of the Phase 3 MIMIC Replay (eval/SCORING.md items 33-36): the 12 core
 # trials, each run end to end with no person, under the frozen rules and policy. Run from the
 # repository root after `source hpc/env.sh`, in a GPU session (Open OnDemand), inside tmux:
 #
@@ -7,7 +7,8 @@
 #   bash hpc/replay_autonomous.sh NCT02643381  # one trial
 #   bash hpc/replay_autonomous.sh status       # each trial's status and stop reason
 #
-# Each trial: runs/<label>/<NCT>/ (label $ATTE_REPLAY_LABEL, default mimic-autonomous) with
+# Each trial: runs/<label>/<NCT>/ (label $ATTE_REPLAY_LABEL, default mimic-autonomous-2,
+# item 36: the first batch, blocked at the gate, is kept in runs/mimic-autonomous/) with
 # report.md, result.json (for the Concordance agent), run.json, checkpoints.sqlite (aggregates,
 # no patient rows) and manifest.txt. A few MB per trial; under 200 MB for all 12.
 #
@@ -23,7 +24,7 @@ set -uo pipefail
 # shellcheck source=/dev/null
 source hpc/exit_run_common.sh
 
-LABEL="${ATTE_REPLAY_LABEL:-mimic-autonomous}"
+LABEL="${ATTE_REPLAY_LABEL:-mimic-autonomous-2}"
 DRAFTS="${ATTE_DRAFTS:-runs/exit-H100-core/qwen3_32b/rep1}"
 SHEETS="${ATTE_CLINICIAN_SHEETS:-runs/exit-A100-core-clinician-v4/qwen3_32b/rep1}"
 CDM="${ATTE_CDM:-${ATTE_OMOP_DIR:-}/mimiciv-3.1-cdm54-19365483.duckdb}"
@@ -44,8 +45,8 @@ if [[ "${1:-}" == status ]]; then
   exit 0
 fi
 
-# The rules must be confirmed before any trial runs (items 34 and 35).
-for item in 34 35; do
+# The rules must be confirmed before any trial runs (items 34 to 36).
+for item in 34 35 36; do
   grep -qE "^  $item\. .*confirmed by the user on" eval/SCORING.md || {
     echo "[atte] SCORING.md item $item is not confirmed: no autonomous run before it is"; exit 1; }
 done
@@ -53,6 +54,8 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "[atte] uncommitted changes in the checkout; run 'git status' and 'git pull' first"; exit 1
 fi
 [[ -f "$CDM" ]] || { echo "[atte] no CDM at $CDM (set ATTE_CDM)"; exit 1; }
+# One GPU per model, as in every earlier run: a two-GPU session uses its first (item 36).
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES%%,*}"
 exit_refuse_mig || exit 1
 [[ -n "$(exit_gpu_query --query-gpu=name --format=csv,noheader 2>/dev/null)" ]] || {
   echo "[atte] the balance advice may call the model: run this in a GPU session"; exit 1; }
@@ -89,6 +92,7 @@ for t in $TRIALS; do
     echo "policy=$POLICY sha256=$(sha256sum "$POLICY" | cut -c1-16)"
     echo "flags=--repair --autonomy --balance-advice --s8 --bootstrap 500"
     echo "gpu=$(exit_gpu_query --query-gpu=name,memory.total --format=csv,noheader)"
+    echo "cuda_visible_devices=${CUDA_VISIBLE_DEVICES:-}"
     echo "ollama_version=$(curl -sf "$ATTE_OLLAMA_HOST/api/version")"
     echo "ollama_num_parallel=$OLLAMA_NUM_PARALLEL"
     echo "model=$ATTE_MODEL think=$ATTE_THINK"
